@@ -17,7 +17,39 @@
   --text-b-4: 0.75rem;  --text-b-4--line-height: 1.125rem;  --text-b-4--font-weight: 500;
   --text-b-5: 0.625rem; --text-b-5--line-height: 0.9375rem; --text-b-5--font-weight: 500;
 
-  --color-accent: var(--accent);
+  --color-primary-1: #9BE2A2;
+  --color-primary-2: #69D373;
+  --color-primary-3: #138A2B;
+  --color-primary-4: #0E7122;
+  --color-primary-5: #18521E;
+
+  --color-secondary-1: #FFC300;
+  --color-secondary-2: #FFB700;
+  --color-secondary-3: #FFAA00; 
+  --color-secondary-4: #FF9B00;
+  --color-secondary-5: #FF8C00;
+
+  --color-neutral-1: #FFFFFF;
+  --color-neutral-2: #E8E8E8;
+  --color-neutral-3: #D2D2D2;
+  --color-neutral-4: #BBBBBB;
+  --color-neutral-5: #A4A4A4;
+  --color-neutral-6: #8E8E8E;
+  --color-neutral-7: #777777;
+  --color-neutral-8: #606060;
+  --color-neutral-9: #4A4A4A;
+  --color-neutral-10: #333333;
+  
+  --color-yellow-1: #FFEE7D;
+  --color-yellow-2: #f3d447;
+
+  --color-red-1: #FF7676;
+  --color-red-2: #EE4251;
+
+  --color-green-light: #EDFAF1;
+  --color-red-light: #FEF3F6;
+  --color-blue-light: #F3F7FD;
+
   --color-text-main: var(--text);
   --color-text-heading: var(--text-h);
 }
@@ -100,7 +132,7 @@
 
 @layer base {
   :root {
-    --text: #6b6375;
+    --text: #4C5359;
     --text-h: #08060d;
     --bg: #fff;
     --border: #e5e4e7;
