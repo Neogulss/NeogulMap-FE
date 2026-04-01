@@ -1,6 +1,7 @@
 import { useNavigate, NavLink } from "react-router-dom";
 import CustomButton from "../common/CustomButton";
 
+
 export default function Header() {
   const navigate = useNavigate();
 
@@ -13,15 +14,20 @@ export default function Header() {
 
   return (
     <header className="flex items-center justify-between px-10 py-4 bg-white border-b border-gray-100">
-      <div className="flex items-center">
         <button onClick={() => navigate("/")} className="focus:outline-none">
-          <img
-            src="/path/to/your/logo.png"
-            alt="입지너구리 로고"
-            className="h-8 w-auto object-contain"
-          />
-        </button>
+      <div className="flex items-center gap-1">
+            <img
+              src="src/assets/images/logo.svg"
+              alt="입지너구리 로고"
+              className="object-contain w-auto h-8"
+            />
+          <div className="flex flex-col items-start">
+          <div className="font-bold text-b-7 text-neutral-9">입지너구리</div>
+          <div className="font-medium text-b-5 text-primary-3">AI 상권 분석 서비스</div>
+        </div> 
+        
       </div>
+        </button>
 
       <nav className="flex items-center gap-8">
         <NavLink to="/analysis" className={menuClass}>
@@ -40,12 +46,10 @@ export default function Header() {
           챗봇
         </NavLink>
       </nav>
-
-      {/* 버튼 */}
       <div className="flex items-center gap-3">
         <CustomButton
           variant="white"
-          className="px-4 py-1.5 text-sm font-medium"
+          className="px-4 py-1.5 text-b-3 font-extrabold text-neutral-7"
           onClick={() => navigate("/auth/signin")}
         >
           로그인
@@ -53,7 +57,7 @@ export default function Header() {
 
         <CustomButton
           variant="primary"
-          className="px-4 py-1.5 text-sm font-medium text-white"
+          className="px-4 py-1.5 text-b-3 font-extrabold text-neutral-2"
           onClick={() => navigate("/auth/signup")}
         >
           회원가입
