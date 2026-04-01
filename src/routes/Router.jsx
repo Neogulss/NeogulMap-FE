@@ -12,18 +12,19 @@ import ChatbotPage from "../pages/ChatbotPage";
 export default function Router() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />} >
-      <Route index element={<MainPage />} />
-      <Route path="auth">
-        <Route path="signin" element={<SigninPage />} />
-        <Route path="signup" element={<SignupPage />} />
-      </Route>
+      {/* 전체화면 독립 레이아웃 페이지 (Layout 미사용) */}
+      <Route path="/"        element={<MainPage />} />
       <Route path="analysis" element={<AnalysisPage />} />
-       <Route path="community" element={<CommunityPage />} />
-       <Route path="notice" element={<NoticePage />} />
-       <Route path="mypage" element={<MyPage />} />
-       <Route path="chatbot" element={<ChatbotPage />} /> 
-       </Route>
+
+      {/* 나머지 페이지는 공통 Header/Footer Layout 사용 */}
+      <Route element={<Layout />}>
+        <Route path="auth/signin" element={<SigninPage />} />
+        <Route path="auth/signup" element={<SignupPage />} />
+        <Route path="community"   element={<CommunityPage />} />
+        <Route path="notice"      element={<NoticePage />} />
+        <Route path="mypage"      element={<MyPage />} />
+        <Route path="chatbot"     element={<ChatbotPage />} />
+      </Route>
     </Routes>
   );
 }
