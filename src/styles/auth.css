@@ -1,0 +1,241 @@
+/* src/styles/auth.css */
+
+/* ── Body/Root overrides ── */
+body.auth-active {
+    overflow-x: hidden;
+    background-color: #ffffff;
+}
+body.auth-active,
+body.auth-active button,
+body.auth-active input,
+body.auth-active textarea,
+body.auth-active select {
+    font-family: 'Pretendard', sans-serif;
+    color: #1a1d20;
+    letter-spacing: -0.3px;
+}
+#root.auth-fullwidth {
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* ── CSS variables scoped to .auth-page ── */
+.auth-page {
+    --bg:      #ffffff;
+    --bg2:     #f8f9fa;
+    --bg3:     #f1f3f5;
+    --surface: #e9ecef;
+    --line:    rgba(0,0,0,.08);
+    --line2:   rgba(0,0,0,.15);
+    --g:       #009624;
+    --g2:      #00B34A;
+    --g3:      #00C853;
+    --g4:      #69F0ae;
+    --g5:      rgba(0,200,83,.08);
+    --text:    #1a1d20;
+    --text2:   #495057;
+    --text3:   #868e96;
+    --sans:    'Pretendard', sans-serif;
+    --ease:    cubic-bezier(.16,1,.3,1);
+
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    letter-spacing: -0.3px;
+}
+
+/* ── AUTH HERO ── */
+.auth-hero {
+    position: relative;
+    padding: 100px 0 20px;
+    background-color: var(--bg);
+    overflow: hidden;
+}
+.auth-hero .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(0,200,83,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,83,.05) 1px, transparent 1px);
+    background-size: 64px 64px;
+    animation: authGridShift 20s linear infinite;
+    z-index: 0; pointer-events: none;
+}
+@keyframes authGridShift {
+    from { background-position: 0 0; }
+    to   { background-position: 64px 64px; }
+}
+.auth-hero .hero-glow {
+    position: absolute; top: -100px; left: -100px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,200,83,.06) 0%, transparent 65%);
+    pointer-events: none;
+    animation: authGlowPulse 6s ease-in-out infinite;
+}
+.auth-hero .hero-glow2 {
+    position: absolute; bottom: -100px; right: -100px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,200,83,.04) 0%, transparent 65%);
+    pointer-events: none;
+}
+@keyframes authGlowPulse {
+    0%,100% { opacity: .7; transform: scale(1); }
+    50%     { opacity: 1;  transform: scale(1.08); }
+}
+
+/* ── AUTH WRAP & CONTAINER ── */
+.auth-wrap {
+    padding: 40px 52px 120px;
+    max-width: 1400px; margin: 0 auto;
+    display: flex; justify-content: center;
+    position: relative; z-index: 10;
+}
+.auth-container {
+    width: 100%; max-width: 480px;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    padding: 48px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    animation: authFadeUp 0.6s var(--ease) both;
+}
+@keyframes authFadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── FORM COMMON ── */
+.form-title {
+    font-size: 26px; font-weight: 800; color: var(--text);
+    margin-bottom: 32px; text-align: center; letter-spacing: -1px;
+}
+.form-group { margin-bottom: 20px; }
+.form-group-row { display: flex; gap: 16px; margin-bottom: 20px; }
+.form-group-row > div { flex: 1; }
+
+.form-label {
+    display: block; font-size: 14px; font-weight: 700;
+    color: var(--text2); margin-bottom: 8px;
+}
+.form-input {
+    width: 100%; padding: 14px 16px; border-radius: 10px;
+    border: 1px solid var(--line2); background: var(--bg2);
+    font-size: 15px; color: var(--text); font-weight: 500;
+    transition: all 0.2s; outline: none;
+    font-family: var(--sans); letter-spacing: -0.3px;
+}
+.form-input::placeholder { color: #adb5bd; font-weight: 400; }
+.form-input:focus {
+    border-color: var(--g); background: var(--bg);
+    box-shadow: 0 0 0 3px rgba(0,200,83,.1);
+}
+
+/* ── RADIO ── */
+.radio-group { display: flex; gap: 16px; align-items: center; height: 50px; }
+.radio-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 14px; font-weight: 500; cursor: pointer; color: var(--text);
+}
+.radio-label input[type="radio"] {
+    width: 16px; height: 16px; accent-color: var(--g); cursor: pointer;
+}
+
+/* ── OPTIONS (remember / forgot) ── */
+.form-options {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px;
+}
+.checkbox-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; color: var(--text2); font-weight: 500; cursor: pointer;
+}
+input[type="checkbox"] { display: none; }
+.checkbox-custom {
+    width: 18px; height: 18px; border: 1px solid var(--line2);
+    border-radius: 4px; display: inline-flex; align-items: center; justify-content: center;
+    transition: all 0.2s; background: var(--bg); flex-shrink: 0;
+}
+input[type="checkbox"]:checked + .checkbox-custom { background: var(--g); border-color: var(--g); }
+input[type="checkbox"]:checked + .checkbox-custom::after {
+    content: '✓'; color: white; font-size: 12px; font-weight: bold;
+}
+.link-forgot {
+    font-size: 14px; font-weight: 600; color: var(--text3);
+    text-decoration: none; transition: color 0.2s; cursor: pointer;
+    background: none; border: none; font-family: var(--sans); letter-spacing: -0.3px;
+}
+.link-forgot:hover { color: var(--g); text-decoration: underline; }
+
+/* ── PRIMARY BUTTON ── */
+.btn-primary {
+    width: 100%; padding: 16px; border-radius: 12px;
+    background: var(--g); color: #ffffff; border: none;
+    font-size: 16px; font-weight: 700; cursor: pointer;
+    transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,200,83,.2);
+    font-family: var(--sans); letter-spacing: -0.3px;
+}
+.btn-primary:hover {
+    background: var(--g2); transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,200,83,.3);
+}
+
+/* ── SWITCH VIEW LINK ── */
+.switch-view-link {
+    text-align: center; margin-top: 24px;
+    font-size: 14px; font-weight: 500; color: var(--text3);
+}
+.switch-view-link button {
+    background: none; border: none; font-family: var(--sans);
+    font-size: 14px; font-weight: 700; color: var(--text);
+    cursor: pointer; padding: 0 4px; transition: color 0.2s; text-decoration: underline;
+    letter-spacing: -0.3px;
+}
+.switch-view-link button:hover { color: var(--g); }
+
+/* ── TERMS BOX ── */
+.terms-box {
+    padding: 16px; border-radius: 10px; background: var(--bg2);
+    border: 1px solid var(--line); margin-bottom: 24px;
+    display: flex; flex-direction: column; gap: 12px;
+}
+.terms-box .checkbox-label { font-size: 13px; font-weight: 500; }
+.term-item { display: flex; justify-content: space-between; align-items: center; }
+.term-detail {
+    font-size: 12px; font-weight: 500; color: var(--text3);
+    cursor: pointer; text-decoration: underline;
+}
+.terms-divider { border: none; border-top: 1px solid var(--line); margin: 4px 0; }
+
+/* ── AUTH FOOTER ── */
+.auth-footer {
+    background: #1a1d20; color: #adb5bd;
+    padding: 40px 52px;
+    font-family: 'Pretendard', sans-serif; letter-spacing: -0.3px;
+}
+.auth-footer-inner { max-width: 1400px; margin: 0 auto; }
+.auth-footer-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    padding-bottom: 24px; margin-bottom: 24px;
+}
+.auth-footer-brand { display: flex; flex-direction: column; gap: 12px; }
+.auth-footer-brand-title {
+    color: #ffffff; font-size: 18px; font-weight: 700;
+    letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px;
+}
+.auth-footer-logo-mark {
+    width: 24px; height: 24px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+}
+.auth-footer-company-info { font-size: 13px; line-height: 1.6; color: #868e96; font-weight: 400; }
+.auth-footer-cs { text-align: right; }
+.auth-footer-cs-title { font-size: 13px; font-weight: 500; color: #868e96; margin-bottom: 6px; }
+.auth-footer-cs-phone { color: #ffffff; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 6px; }
+.auth-footer-cs-time { font-size: 12px; line-height: 1.5; color: #6c757d; font-weight: 400; }
+.auth-footer-bottom { display: flex; justify-content: space-between; align-items: center; }
+.auth-footer-links { display: flex; gap: 24px; }
+.auth-footer-links a {
+    color: #adb5bd; text-decoration: none; font-size: 13px; font-weight: 500;
+    transition: color 0.2s; cursor: pointer;
+}
+.auth-footer-links a:hover { color: #ffffff; }
+.auth-footer-links a.bold { color: #ffffff; font-weight: 600; }
+.auth-footer-copy { font-size: 12px; font-weight: 400; color: #6c757d; }
