@@ -13,13 +13,13 @@ export default function Router() {
   return (
     <Routes>
       {/* 전체화면 독립 레이아웃 페이지 (Layout 미사용) */}
-      <Route path="/"        element={<MainPage />} />
-      <Route path="analysis" element={<AnalysisPage />} />
+      <Route path="/"           element={<MainPage />} />
+      <Route path="analysis"    element={<AnalysisPage />} />
+      <Route path="auth/signin" element={<SigninPage />} />
+      <Route path="auth/signup" element={<SignupPage />} />
 
       {/* 나머지 페이지는 공통 Header/Footer Layout 사용 */}
       <Route element={<Layout />}>
-        <Route path="auth/signin" element={<SigninPage />} />
-        <Route path="auth/signup" element={<SignupPage />} />
         <Route path="community"   element={<CommunityPage />} />
         <Route path="notice"      element={<NoticePage />} />
         <Route path="mypage"      element={<MyPage />} />
