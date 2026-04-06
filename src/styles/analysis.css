@@ -124,6 +124,14 @@ body.analysis-active {
 .budget-unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text3); font-weight: 500; pointer-events: none; }
 .budget-tilde { font-weight: 700; color: var(--text3); }
 
+/* RightPanel 분기 선택 바 */
+.quarter-bar { display: flex; align-items: center; gap: 10px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.qbar-year { padding: 6px 10px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text1); background: #fff; cursor: pointer; }
+.qbar-btns { display: flex; gap: 4px; }
+.qbar-btn { padding: 6px 12px; border: 1.5px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text2); background: #fff; cursor: pointer; transition: all 0.15s; }
+.qbar-btn:hover { border-color: var(--g); color: var(--g); }
+.qbar-btn.active { background: var(--g); border-color: var(--g); color: #fff; }
+
 .btn-search { width: 100%; padding: 16px; background: var(--g); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
 .btn-search:hover { background: var(--g2); }
 
@@ -273,3 +281,109 @@ body.analysis-active {
 .ai-advice { background: var(--text); border-radius: 16px; padding: 28px; color: #fff; margin-bottom: 0; }
 .ai-advice-title { font-size: 16px; font-weight: 800; color: var(--g4); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 .ai-advice-desc { font-size: 15px; line-height: 1.7; font-weight: 400; color: rgba(255,255,255,0.9); word-break: keep-all; }
+
+/* ── 헤더 메타 ── */
+.rh-meta { font-size: 12px; color: var(--text3); font-weight: 500; margin-top: 6px; }
+
+/* ── null stat 카드 ── */
+.null-stat { opacity: 0.5; }
+.ss-main-val.ss-null { font-size: 14px; font-weight: 600; color: var(--text3); font-family: var(--sans); }
+.ss-diff-box.neutral { color: var(--text3); }
+
+/* ── null 섹션 카드 ── */
+.null-data-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 40px; border: 2px dashed var(--line2); border-radius: 12px;
+    background: var(--bg2); text-align: center; gap: 8px;
+}
+.null-data-icon { font-size: 28px; }
+.null-data-label { font-size: 14px; font-weight: 700; color: var(--text2); }
+.null-data-desc { font-size: 12px; color: var(--text3); font-weight: 500; }
+
+/* ── 빈 차트 ── */
+.empty-chart {
+    width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+    border: 1.5px dashed var(--line2); border-radius: 8px;
+    font-size: 12px; color: var(--text3); font-weight: 500;
+}
+
+/* ── 점포수 요약 행 ── */
+.store-summary-row {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+}
+.ssrow-item {
+    background: var(--bg2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+}
+.ssrow-label { font-size: 11px; font-weight: 600; color: var(--text3); }
+.ssrow-val { font-size: 16px; font-weight: 800; color: var(--text); font-family: var(--mono); }
+.ssrow-val.up   { color: #e91e63; }
+.ssrow-val.down { color: #1a73e8; }
+
+/* ── 프랜차이즈 통계 ── */
+.franchise-stats { display: flex; gap: 12px; margin-bottom: 12px; }
+.fr-item { flex: 1; padding: 12px; border-radius: 8px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.fr-item span { font-size: 11px; font-weight: 600; color: var(--text3); }
+.fr-item strong { font-size: 18px; font-weight: 800; font-family: var(--mono); }
+.fr-franchise { background: rgba(26,115,232,0.08); color: #1a73e8; }
+.fr-franchise strong { color: #1a73e8; }
+.fr-general { background: var(--bg2); }
+.fr-general strong { color: var(--text); }
+
+/* ── 개업/폐업 그리드 ── */
+.open-close-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.oc-card { border-radius: 12px; padding: 20px; text-align: center; display: flex; flex-direction: column; gap: 6px; }
+.oc-open     { background: rgba(0,200,83,0.08);  border: 1px solid rgba(0,200,83,0.2); }
+.oc-close    { background: rgba(233,30,99,0.06); border: 1px solid rgba(233,30,99,0.15); }
+.oc-survival { background: rgba(26,115,232,0.06); border: 1px solid rgba(26,115,232,0.15); }
+.oc-operating{ background: var(--bg2); border: 1px solid var(--line); }
+.oc-label { font-size: 11px; font-weight: 600; color: var(--text3); }
+.oc-val { font-size: 22px; font-weight: 900; color: var(--text); font-family: var(--mono); }
+.oc-open .oc-val     { color: var(--g); }
+.oc-close .oc-val    { color: #e91e63; }
+.oc-survival .oc-val { color: #1a73e8; }
+.oc-diff { font-size: 11px; color: var(--text3); font-weight: 500; }
+
+/* ── 업종 비율 바 ── */
+.industry-ratio-row { display: flex; flex-direction: column; gap: 10px; }
+.ir-item { display: flex; align-items: center; gap: 12px; }
+.ir-label { font-size: 13px; font-weight: 600; color: var(--text2); width: 52px; flex-shrink: 0; }
+.ir-bar-wrap { flex: 1; height: 10px; background: var(--bg3); border-radius: 6px; overflow: hidden; }
+.ir-bar { height: 100%; border-radius: 6px; transition: width 0.6s var(--ease); }
+.ir-pct { font-size: 13px; font-weight: 700; color: var(--text); font-family: var(--mono); width: 40px; text-align: right; flex-shrink: 0; }
+.ir-count { font-size: 12px; color: var(--text3); font-family: var(--mono); width: 48px; text-align: right; flex-shrink: 0; }
+
+/* ── 성별 유동인구 바 ── */
+.gender-bar-wrap { background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.gb-label-row { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; color: var(--text2); margin-bottom: 10px; }
+.gender-bar { display: flex; height: 12px; border-radius: 6px; overflow: hidden; }
+.gb-male   { background: #1a73e8; }
+.gb-female { background: #e91e63; }
+
+/* ── 집객시설 그리드 ── */
+.facility-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.fac-item {
+    background: var(--bg2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+}
+.fac-label { font-size: 12px; font-weight: 600; color: var(--text3); }
+.fac-val { font-size: 20px; font-weight: 900; color: var(--text); font-family: var(--mono); }
+
+/* ── 소득/소비트렌드 ── */
+.income-summary { display: grid; grid-template-columns: 180px 1fr; gap: 16px; align-items: start; }
+.income-level-card {
+    background: linear-gradient(135deg, #e8f0fe 0%, #d2e3fc 100%);
+    border: 1px solid rgba(26,115,232,0.2); border-radius: 14px;
+    padding: 24px; text-align: center; display: flex; flex-direction: column; gap: 8px;
+}
+.il-label { font-size: 12px; font-weight: 700; color: #1a73e8; }
+.il-val { font-size: 40px; font-weight: 900; color: var(--text); font-family: var(--mono); line-height: 1; }
+.il-val span { font-size: 16px; font-weight: 600; }
+.il-range { font-size: 11px; color: var(--text3); font-weight: 500; line-height: 1.5; }
+.consumption-chart-wrap { min-height: 0; }
+.consumption-table { display: flex; flex-direction: column; gap: 8px; }
+.ct-row { display: flex; align-items: center; gap: 10px; }
+.ct-label { font-size: 12px; font-weight: 600; color: var(--text2); width: 60px; flex-shrink: 0; }
+.ct-bar-wrap { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+.ct-bar { height: 100%; background: #1a73e8; border-radius: 4px; transition: width 0.5s var(--ease); }
+.ct-val { font-size: 12px; font-weight: 700; color: var(--text); font-family: var(--mono); width: 36px; text-align: right; flex-shrink: 0; }
