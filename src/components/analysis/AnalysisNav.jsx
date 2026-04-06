@@ -11,7 +11,7 @@ export default function AnalysisNav() {
                 onClick={e => { e.preventDefault(); navigate('/'); }}
             >
                 <div className="logo-mark">
-                    <img src="/neoguri.svg" alt="입지너구리 로고 아이콘" />
+                    <img src="/favicon.svg" alt="입지너구리 로고 아이콘" />
                 </div>
                 <div className="logo-text-wrap">
                     <span className="logo-ko">입지너구리</span>

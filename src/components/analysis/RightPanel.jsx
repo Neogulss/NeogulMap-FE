@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
 
 const X_LABELS = ['24년 4Q', '25년 1Q', '25년 2Q', '25년 3Q', '25년 4Q'];
@@ -33,9 +34,15 @@ function EmptyChart() {
 export default function RightPanel({
     isShow, isCollapsed, onToggle, onClose,
     selectedData, selectedSubCategory,
-    isReportUnlocked, onUnlock,
+    isLoggedIn,
 }) {
+    const navigate = useNavigate();
     const innerRef = useRef(null);
+
+    const handleLoginClick = () => {
+        sessionStorage.setItem('returnPath', '/analysis');
+        navigate('/auth/signin');
+    };
 
     const chartStoresHistoryRef    = useRef(null);
     const chartFranchisePieRef     = useRef(null);
@@ -349,7 +356,7 @@ export default function RightPanel({
     }, [selectedData]);
 
     const panelClass = ['right-panel', isShow ? 'show' : '', isCollapsed ? 'collapsed' : ''].filter(Boolean).join(' ');
-    const blurClass  = ['report-content-blur', !isReportUnlocked ? 'locked' : ''].filter(Boolean).join(' ');
+    const blurClass  = ['report-content-blur', !isLoggedIn ? 'locked' : ''].filter(Boolean).join(' ');
 
     if (!selectedData) return <aside className="right-panel" id="right-panel" />;
 
@@ -417,10 +424,14 @@ export default function RightPanel({
                 </div>
 
                 <div className="report-wrapper">
-                    <div id="login-overlay" className={`login-overlay${isReportUnlocked ? ' hidden' : ''}`}>
-                        <h3>상세 분석 리포트 보기</h3>
-                        <button onClick={onUnlock}>로그인</button>
-                    </div>
+                    {!isLoggedIn && (
+                        <div className="login-overlay">
+                            <div className="lo-icon">🔒</div>
+                            <h3 className="lo-title">로그인이 필요합니다</h3>
+                            <p className="lo-desc">상권 분석 리포트는 로그인 후 열람할 수 있습니다.</p>
+                            <button className="lo-btn" onClick={handleLoginClick}>로그인하러 가기</button>
+                        </div>
+                    )}
 
                     <div id="blur-content" className={blurClass}>
                         {!hasReport && (

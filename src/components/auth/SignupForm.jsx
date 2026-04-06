@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { signUpUser } from '../../api/api';
 
 export default function SignupForm() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [nickname, setNickname] = useState('');
@@ -12,6 +13,8 @@ export default function SignupForm() {
   const [checkAll, setCheckAll] = useState(false);
   const [termService, setTermService] = useState(false);
   const [termPrivacy, setTermPrivacy] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleCheckAll = (e) => {
     const checked = e.target.checked;
@@ -32,8 +35,48 @@ export default function SignupForm() {
     else if (termService) setCheckAll(true);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
+    if (userId.length < 4 || userId.length > 50) {
+      setError('아이디는 4~50자 이내여야 합니다.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('비밀번호는 8자 이상이어야 합니다.');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    if (!nickname.trim()) {
+      setError('닉네임을 입력해주세요.');
+      return;
+    }
+    if (!termService || !termPrivacy) {
+      setError('필수 약관에 동의해주세요.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signUpUser(
+        userId,
+        password,
+        nickname,
+        age ? Number(age) : null,
+        businessType === 'reg' ? 'Y' : 'N'
+      );
+      alert('회원가입이 완료되었습니다. 로그인해주세요.');
+      navigate('/auth/signin');
+    } catch (err) {
+      const msg = err.response?.data?.message;
+      setError(msg || '회원가입 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -41,13 +84,14 @@ export default function SignupForm() {
       <h2 className="form-title">회원가입</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label className="form-label">이메일</label>
+          <label className="form-label">아이디</label>
           <input
-            type="email"
+            type="text"
             className="form-input"
-            placeholder="example@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="4~50자 영문, 숫자"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            autoComplete="username"
           />
         </div>
         <div className="form-group">
@@ -55,9 +99,10 @@ export default function SignupForm() {
           <input
             type="password"
             className="form-input"
-            placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+            placeholder="8자 이상"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
           />
         </div>
         <div className="form-group">
@@ -68,6 +113,7 @@ export default function SignupForm() {
             placeholder="비밀번호를 다시 한 번 입력해주세요"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
+            autoComplete="new-password"
           />
         </div>
 
@@ -146,7 +192,11 @@ export default function SignupForm() {
           </div>
         </div>
 
-        <button type="submit" className="btn-primary">가입 완료하기</button>
+        {error && <p className="form-error">{error}</p>}
+
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? '처리 중...' : '가입 완료하기'}
+        </button>
       </form>
 
       <div className="switch-view-link">

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/main.css";
 import "../styles/community.css";
 import MainNav from "../components/main/MainNav";
 import { createPost } from "../api/api";
@@ -17,11 +16,21 @@ const WritePage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!title.trim()) { alert("제목을 입력하세요"); return; }
-    if (!content.trim()) { alert("내용을 입력하세요"); return; }
+    if (!title.trim()) {
+      alert("제목을 입력하세요");
+      return;
+    }
+    if (!content.trim()) {
+      alert("내용을 입력하세요");
+      return;
+    }
 
-    // TODO: 로그인 연동 후 실제 userIdx로 교체 (임시 하드코딩)
-    const userIdx = Number(localStorage.getItem("userIdx")) || 1;
+    const userIdx = Number(localStorage.getItem("userIdx"));
+    if (!userIdx) {
+      alert("로그인이 필요합니다.");
+      navigate("/auth/signin");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -46,7 +55,9 @@ const WritePage = () => {
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Write a Post</div>
           <h1 className="comm-title">새 글 쓰기</h1>
-          <p className="comm-desc">창업 고민, 상권 분석 결과 등을 자유롭게 작성해보세요.</p>
+          <p className="comm-desc">
+            창업 고민, 상권 분석 결과 등을 자유롭게 작성해보세요.
+          </p>
         </div>
       </div>
 
@@ -80,10 +91,17 @@ const WritePage = () => {
 
           <div className="write-actions">
             <div className="btn-group">
-              <button className="btn-cancel" onClick={() => navigate("/community")}>
+              <button
+                className="btn-cancel"
+                onClick={() => navigate("/community")}
+              >
                 취소
               </button>
-              <button className="btn-submit" onClick={handleSubmit} disabled={submitting}>
+              <button
+                className="btn-submit"
+                onClick={handleSubmit}
+                disabled={submitting}
+              >
                 {submitting ? "등록 중..." : "등록하기"}
               </button>
             </div>

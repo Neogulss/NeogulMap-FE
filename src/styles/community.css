@@ -183,6 +183,9 @@ nav {
 .nav-btn-solid:hover {
   background: var(--g2);
 }
+.nav-user { display: flex; align-items: center; gap: 10px; }
+.nav-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--g); color: #fff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.nav-nickname { font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
 
 /* ─── COMMUNITY HERO ─── */
 .comm-hero {

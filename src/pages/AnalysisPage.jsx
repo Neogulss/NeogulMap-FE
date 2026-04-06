@@ -43,7 +43,7 @@ export default function AnalysisPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [selectedData, setSelectedData]     = useState(null);
     const [activeCardId, setActiveCardId]     = useState(null);
-    const [isReportUnlocked, setIsReportUnlocked] = useState(false);
+    const isLoggedIn = !!localStorage.getItem('userIdx');
     const [isLeftCollapsed, setIsLeftCollapsed]   = useState(false);
     const [isRightShow, setIsRightShow]           = useState(false);
     const [isRightCollapsed, setIsRightCollapsed] = useState(false);
@@ -369,8 +369,7 @@ export default function AnalysisPage() {
                     onClose={handleCloseDetail}
                     selectedData={selectedData}
                     selectedSubCategory={selectedSubCategory}
-                    isReportUnlocked={isReportUnlocked}
-                    onUnlock={() => setIsReportUnlocked(true)}
+                    isLoggedIn={isLoggedIn}
                 />
             </div>
         </div>

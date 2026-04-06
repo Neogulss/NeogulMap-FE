@@ -6,7 +6,7 @@ export default function MainFooter() {
                     <div className="footer-brand">
                         <div className="footer-brand-title">
                             <div className="logo-mark">
-                                <img src="/neoguri.svg" alt="Ipji Neoguri Footer Icon" />
+                                <img src="/favicon.svg" alt="Ipji Neoguri Footer Icon" />
                             </div>
                             입지너구리
                         </div>

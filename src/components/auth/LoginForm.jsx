@@ -1,14 +1,39 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { loginUser } from '../../api/api';
 
 export default function LoginForm() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(true);
+  const [userId, setUserId] = useState('');
+  const [userPwd, setUserPwd] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!userId.trim() || !userPwd.trim()) {
+      setError('아이디와 비밀번호를 입력해주세요.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await loginUser(userId, userPwd);
+      const user = res.data?.data;
+      if (user?.userIdx) {
+        localStorage.setItem('userIdx', user.userIdx);
+        localStorage.setItem('userNickname', user.userNickname);
+        localStorage.setItem('userId', user.userId);
+      }
+      const returnPath = sessionStorage.getItem('returnPath') || '/';
+      sessionStorage.removeItem('returnPath');
+      window.location.href = returnPath;
+    } catch (err) {
+      const msg = err.response?.data?.message;
+      setError(msg || '아이디 또는 비밀번호가 올바르지 않습니다.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -16,13 +41,14 @@ export default function LoginForm() {
       <h2 className="form-title">로그인</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label className="form-label">이메일</label>
+          <label className="form-label">아이디</label>
           <input
-            type="email"
+            type="text"
             className="form-input"
-            placeholder="example@email.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            placeholder="아이디를 입력해주세요"
+            value={userId}
+            onChange={(e) => setUserId(e.target.value)}
+            autoComplete="username"
           />
         </div>
         <div className="form-group">
@@ -31,25 +57,17 @@ export default function LoginForm() {
             type="password"
             className="form-input"
             placeholder="비밀번호를 입력해주세요"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={userPwd}
+            onChange={(e) => setUserPwd(e.target.value)}
+            autoComplete="current-password"
           />
         </div>
 
-        <div className="form-options">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            <span className="checkbox-custom"></span>
-            로그인 상태 유지
-          </label>
-          <a href="#" className="link-forgot">비밀번호를 잊으셨나요?</a>
-        </div>
+        {error && <p className="form-error">{error}</p>}
 
-        <button type="submit" className="btn-primary">로그인</button>
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? '로그인 중...' : '로그인'}
+        </button>
       </form>
 
       <div className="switch-view-link">
