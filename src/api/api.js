@@ -100,3 +100,43 @@ export const fetchIncomeReport = (adminDongCode, yearQuarter) =>
  */
 export const fetchCommercialReport = (adminDongCode, yearQuarter) =>
   api.post("/report/commercial", { adminDongCode, yearQuarter });
+
+// =====================================================
+// Community API
+// =====================================================
+
+/** 게시글 목록 조회 - sortType: "LATEST" | "VIEWS" | "LIKES" */
+export const fetchPostList = (page = 1, size = 10, sortType = "LATEST", keyword = null) =>
+  api.post("/community/list", { page, size, sortType, keyword, offset: (page - 1) * size });
+
+/** 게시글 상세 조회 */
+export const fetchPostDetail = (postIdx) =>
+  api.post("/community/detail", { postIdx });
+
+/** 게시글 작성 */
+export const createPost = (userIdx, title, contents, attachment = null) =>
+  api.post("/community/write", { userIdx, title, contents, attachment });
+
+/** 게시글 수정 */
+export const updatePost = (postIdx, userIdx, title, contents, attachment = null) =>
+  api.post("/community/update", { postIdx, userIdx, title, contents, attachment });
+
+/** 게시글 삭제 */
+export const deletePost = (postIdx, userIdx) =>
+  api.post("/community/delete", { postIdx, userIdx });
+
+/** 이번 주 HOT 게시글 */
+export const fetchHotPostList = () =>
+  api.post("/community/hot");
+
+/** 댓글 작성 */
+export const createComment = (postIdx, userIdx, contents) =>
+  api.post("/community/comment/write", { postIdx, userIdx, contents });
+
+/** 댓글 수정 */
+export const updateComment = (commentIdx, userIdx, contents) =>
+  api.post("/community/comment/update", { commentIdx, userIdx, contents });
+
+/** 댓글 삭제 */
+export const deleteComment = (commentIdx, userIdx) =>
+  api.post("/community/comment/delete", { commentIdx, userIdx });
