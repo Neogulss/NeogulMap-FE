@@ -73,13 +73,13 @@ export default function LeftPanel({
                         resultList.map((data, idx) => (
                             <div key={data.id} className={`list-card${activeCardId === data.id ? ' active' : ''}`} onClick={() => onSelectData(data, idx)}>
                                 <div className="lc-head">
-                                    <div className="lc-title">마포구 {data.name}</div>
+                                    <div className="lc-title">{data.districtName} {data.name}</div>
                                 </div>
                                 <div className="lc-desc">
                                     <strong style={{ color: 'var(--g)' }}>[{selectedSubCategory}]</strong> {data.desc}
                                 </div>
                                 <div className="lc-meta">
-                                    <span className="lc-tag">매물 {data.count}건</span>
+                                    <span className="lc-tag">점포수 {data.count > 0 ? `${data.count}개` : '-'}</span>
                                 </div>
                             </div>
                         ))
