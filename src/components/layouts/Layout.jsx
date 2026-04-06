@@ -1,18 +1,16 @@
-import React from 'react'
-import Header from './Header';
-import Footer from './Footer';
 import { Outlet } from 'react-router-dom';
+import MainNav from '../main/MainNav';
+import MainFooter from '../main/MainFooter';
+import '../../styles/main.css';
 
 export default function Layout() {
   return (
-    <div className="flex flex-col min-h-screen">
-        <Header/>
-
-        <main className="flex-1">
-            <Outlet />
-        </main>
-
-        <Footer/>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <MainNav />
+      <main style={{ flex: 1, paddingTop: '64px' }}>
+        <Outlet />
+      </main>
+      <MainFooter />
     </div>
-  )
+  );
 }

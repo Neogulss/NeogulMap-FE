@@ -102,6 +102,26 @@ export const fetchCommercialReport = (adminDongCode, yearQuarter) =>
   api.post("/report/commercial", { adminDongCode, yearQuarter });
 
 // =====================================================
+// Auth API
+// =====================================================
+
+/** 로그인 - 성공 시 세션 저장 + UserResponse 반환 */
+export const loginUser = (userId, userPwd) =>
+  api.post("/user/login", { userId, userPwd }, { withCredentials: true });
+
+/** 회원가입 */
+export const signUpUser = (userId, userPwd, userNickname, userAge, isRegisteredBusiness) =>
+  api.post("/user/sign-up", { userId, userPwd, userNickname, userAge, isRegisteredBusiness });
+
+/** 로그아웃 */
+export const logoutUser = () =>
+  api.post("/user/logout", {}, { withCredentials: true });
+
+/** 세션 유저 조회 (로그인 상태 확인) */
+export const getSessionUser = () =>
+  api.post("/user/session", {}, { withCredentials: true });
+
+// =====================================================
 // Community API
 // =====================================================
 

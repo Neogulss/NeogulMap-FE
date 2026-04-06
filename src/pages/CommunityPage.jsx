@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/main.css";
 import "../styles/community.css";
-import MainNav from "../components/main/MainNav";
 import PostItem from "../components/community/PostItem";
 import Sidebar from "../components/community/Sidebar";
 import { fetchPostList } from "../api/api";
@@ -48,8 +46,6 @@ const CommunityPage = () => {
 
   return (
     <>
-      <MainNav />
-
       <div className="comm-hero">
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Community</div>

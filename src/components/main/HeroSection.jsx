@@ -1,4 +1,7 @@
+import { useNavigate } from 'react-router-dom';
+
 export default function HeroSection() {
+    const navigate = useNavigate();
     return (
         <section className="hero-section">
             <div className="hero-grid" />
@@ -21,7 +24,7 @@ export default function HeroSection() {
                         </p>
                         <button
                             className="btn-action"
-                            onClick={() => alert('맞춤형 입지 분석 페이지로 이동합니다.')}
+                            onClick={() => navigate('/analysis')}
                         >
                             AI 리포트 작성하러 가기
                         </button>
