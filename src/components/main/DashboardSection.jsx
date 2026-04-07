@@ -1,3 +1,24 @@
+import { useState, useEffect } from 'react';
+import {
+    fetchMyFavoriteList,
+    fetchFloatingReport,
+    fetchDistrictRecommendList,
+    fetchStoreReport,
+} from '../../api/api';
+import { categoryData } from '../../data/analysisData';
+
+const YEAR_QUARTER = 20254;
+const CATEGORY_CODES = { '외식업': 'MC1', '서비스업': 'MC2', '소매업': 'MC3' };
+
+function findMainCatCode(serviceCategoryName) {
+    for (const [cat, items] of Object.entries(categoryData)) {
+        if (cat !== '전체' && items.includes(serviceCategoryName)) {
+            return CATEGORY_CODES[cat] ?? null;
+        }
+    }
+    return null;
+}
+
 /* ── 카드 공통 헤더 ─────────────────────────── */
 function CardHeader({ title, accent, date }) {
     return (
@@ -34,18 +55,136 @@ function CardHeaderV3({ title, date }) {
     );
 }
 
+/* ── 로딩 스켈레톤 ─── */
+function ValSkeleton() {
+    return <span style={{ display: 'inline-block', width: 80, height: 18, borderRadius: 4, background: '#e9ecef', verticalAlign: 'middle' }} />;
+}
+
 export default function DashboardSection() {
+    const userIdx = Number(localStorage.getItem('userIdx'));
+
+    // 즐겨찾기 목록
+    const [favorites, setFavorites]   = useState([]);
+    const [favLoading, setFavLoading] = useState(false);
+
+    // 선택된 즐겨찾기 + 리포트 데이터
+    const [selectedFav, setSelectedFav]       = useState(null);
+    const [reportData, setReportData]         = useState(null);
+    const [reportLoading, setReportLoading]   = useState(false);
+
+    useEffect(() => {
+        if (!userIdx) return;
+        setFavLoading(true);
+        fetchMyFavoriteList(userIdx)
+            .then(res => setFavorites(res.data.data?.favorites ?? []))
+            .catch(() => {})
+            .finally(() => setFavLoading(false));
+    }, [userIdx]);
+
+    const handleFavSelect = async (e) => {
+        const idx = Number(e.target.value);
+        if (!idx) return;
+        const fav = favorites.find(f => f.favoriteIdx === idx);
+        if (!fav) return;
+
+        setSelectedFav(fav);
+        setReportData(null);
+        setReportLoading(true);
+
+        try {
+            // 유동인구 (adminDongCode만 필요)
+            const floatingRes = await fetchFloatingReport(fav.adminDongCode, YEAR_QUARTER);
+            const f = floatingRes.data.data;
+            const dailyPop = Math.round(f.totalFloatingPopulation / 91);
+
+            // 업소 수 (serviceIndustryCode 역조회 필요)
+            let storeCount = null;
+            let districtName = null;
+            try {
+                const mainCatCode = findMainCatCode(fav.serviceCategoryName);
+                if (mainCatCode) {
+                    const distRes = await fetchDistrictRecommendList(mainCatCode, fav.serviceCategoryName);
+                    const match = distRes.data.data.districtRecommendLists
+                        .find(item => item.adminDongCode === fav.adminDongCode);
+                    if (match) {
+                        const storeRes = await fetchStoreReport(fav.adminDongCode, match.serviceIndustryCode, YEAR_QUARTER);
+                        storeCount = storeRes.data.data.storeCount;
+                        districtName = match.districtName;
+                    }
+                }
+            } catch { /* 업소 수 조회 실패 시 null 유지 */ }
+
+            setReportData({ dailyPop, storeCount, districtName });
+        } catch (err) {
+            console.error('대시보드 데이터 오류:', err);
+        } finally {
+            setReportLoading(false);
+        }
+    };
+
+    const speechText = () => {
+        if (!userIdx) return '로그인 후 이용하세요!';
+        if (favLoading) return '불러오는 중...';
+        if (favorites.length === 0) return '상권을 즐겨찾기해보세요!';
+        if (reportLoading) return '데이터 불러오는 중...';
+        if (selectedFav) return `${selectedFav.adminDongName} 데이터예요!`;
+        return '어느 상권을 볼까요?';
+    };
+
+    // 제목
+    const areaTitle = selectedFav
+        ? `${selectedFav.districtName} ${selectedFav.adminDongName} 상권 정보`
+        : '서울특별시 마포구 서교동 상권 정보';
+
+    // 카드 2 — 업소 수
+    const storeCountVal = reportLoading
+        ? null
+        : reportData?.storeCount ?? (selectedFav ? null : 187);
+    const storeSubLabel = selectedFav && reportData?.districtName
+        ? `서울특별시 ${reportData.districtName}`
+        : '서울특별시 양천구';
+
+    // 카드 3 — 유동인구
+    const dailyPopVal = reportLoading
+        ? null
+        : reportData?.dailyPop ?? (selectedFav ? null : 41086);
+    const popSubLabel = selectedFav && reportData?.districtName
+        ? `서울특별시 ${reportData.districtName}`
+        : '서울특별시 양천구';
+
     return (
         <section className="dashboard-section">
             <div className="dashboard-inner">
 
                 <div className="dashboard-header">
-                    <h2 className="dh-title">서울특별시 마포구 서교동 상권 정보</h2>
+                    <div className="fav-section">
+                        <div className="fav-mascot-wrap">
+                            <div className="fav-speech">{speechText()}</div>
+                            <img src="/neoguri2.png" className="fav-neoguri" alt="AI 상권 분석 너구리 마스코트" />
+                        </div>
+                        <select
+                            className="addr-dropdown"
+                            value={selectedFav?.favoriteIdx ?? ''}
+                            onChange={handleFavSelect}
+                            disabled={!userIdx || favLoading || favorites.length === 0}
+                        >
+                            <option value="" disabled>
+                                {!userIdx ? '로그인이 필요합니다' : favorites.length === 0 ? '즐겨찾기가 없습니다' : '즐겨찾기 상권 선택'}
+                            </option>
+                            {favorites.map(fav => (
+                                <option key={fav.favoriteIdx} value={fav.favoriteIdx}>
+                                    {fav.districtName} {fav.adminDongName} · {fav.serviceCategoryName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
+
+                <h2 className="dh-title">{areaTitle}</h2>
 
                 <div className="hero-dashboard-grid">
 
-                    {/* 카드 1 — 평균매출 */}
+                    {/* 카드 1 — 평균매출 (하드코딩) */}
                     <div className="grid-card">
                         <CardHeader title="평균매출은?" accent date="2025년 12월" />
                         <div className="gc-illus">
@@ -65,7 +204,7 @@ export default function DashboardSection() {
                         </div>
                     </div>
 
-                    {/* 카드 2 — 업소 수 */}
+                    {/* 카드 2 — 업소 수 (API 연동) */}
                     <div className="grid-card">
                         <CardHeader title="업소 수는?" date="2025년 12월" />
                         <div className="gc-illus">
@@ -82,12 +221,16 @@ export default function DashboardSection() {
                             </svg>
                         </div>
                         <div className="gc-val-wrap">
-                            <div className="gc-val-main"><strong>187</strong>개</div>
-                            <div className="gc-val-sub">서울특별시 양천구 <strong>19,347 개</strong></div>
+                            <div className="gc-val-main">
+                                {storeCountVal != null
+                                    ? <><strong>{storeCountVal.toLocaleString()}</strong>개</>
+                                    : <ValSkeleton />}
+                            </div>
+                            <div className="gc-val-sub">{storeSubLabel} <strong>19,347 개</strong></div>
                         </div>
                     </div>
 
-                    {/* 카드 3 — 유동인구 */}
+                    {/* 카드 3 — 유동인구 (API 연동) */}
                     <div className="grid-card">
                         <CardHeader title="유동인구는?" date="2025년 12월" />
                         <div className="gc-illus">
@@ -101,12 +244,17 @@ export default function DashboardSection() {
                             </svg>
                         </div>
                         <div className="gc-val-wrap">
-                            <div className="gc-val-main">일 평균 <strong>41,086</strong>명</div>
-                            <div className="gc-val-sub">서울특별시 양천구 <strong>일 평균 1,311,318명</strong></div>
+                            <div className="gc-val-main">
+                                일 평균&nbsp;
+                                {dailyPopVal != null
+                                    ? <><strong>{dailyPopVal.toLocaleString()}</strong>명</>
+                                    : <ValSkeleton />}
+                            </div>
+                            <div className="gc-val-sub">{popSubLabel} <strong>일 평균 1,311,318명</strong></div>
                         </div>
                     </div>
 
-                    {/* 카드 4 — 주요 업종 매출 (style-v3) */}
+                    {/* 카드 4 — 주요 업종 매출 (하드코딩) */}
                     <div className="grid-card style-v3">
                         <CardHeaderV3 title="주요 업종 매출은?" date="2026년 01월" />
                         <div className="gc-illus">
@@ -125,7 +273,7 @@ export default function DashboardSection() {
                         </div>
                     </div>
 
-                    {/* 카드 5 — 배달 건수 (style-v3) */}
+                    {/* 카드 5 — 배달 건수 (하드코딩) */}
                     <div className="grid-card style-v3">
                         <CardHeaderV3 title="배달 건수는?" date="2026년 01월" />
                         <div className="gc-illus">
@@ -146,20 +294,6 @@ export default function DashboardSection() {
                             <div className="gc-category" style={{ color: '#6a6a6a' }}>패스트푸드</div>
                             <div className="gc-val-right">월 평균 <strong>1,550</strong>건</div>
                         </div>
-                    </div>
-
-                    {/* 카드 6 — 즐겨찾기 너구리 */}
-                    <div className="fav-section">
-                        <div className="fav-mascot-wrap">
-                            <div className="fav-speech">어느 상권을 볼까요?</div>
-                            <img src="/neoguri.png" className="fav-neoguri" alt="AI 상권 분석 너구리 마스코트" />
-                        </div>
-                        <select className="addr-dropdown" defaultValue="">
-                            <option value="" disabled>즐겨찾기 주소 선택</option>
-                            <option value="1">서울특별시 마포구 서교동 123-45</option>
-                            <option value="2">서울특별시 강남구 역삼동 789-10</option>
-                            <option value="3">경기도 성남시 분당구 456-78</option>
-                        </select>
                     </div>
 
                 </div>

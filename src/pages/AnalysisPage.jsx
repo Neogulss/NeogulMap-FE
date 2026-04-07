@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import '../styles/main.css';
 import '../styles/analysis.css';
 import MainNav from '../components/main/MainNav';
@@ -34,7 +35,16 @@ function getCategoryCode(selectedCategory, subCategory) {
     return null;
 }
 
+function findCategoryForSub(subCategory) {
+    for (const [cat, items] of Object.entries(categoryData)) {
+        if (cat !== '전체' && items.includes(subCategory)) return cat;
+    }
+    return '전체';
+}
+
 export default function AnalysisPage() {
+    const location = useLocation();
+
     const [selectedCategory, setSelectedCategory]       = useState('전체');
     const [selectedSubCategory, setSelectedSubCategory] = useState('');
     const [budgetMin, setBudgetMin]     = useState(5000);
@@ -53,6 +63,8 @@ export default function AnalysisPage() {
     const pinOverlaysRef     = useRef([]);
     const handleSelectRef    = useRef(null);
     const activeDataRef      = useRef(null);
+    const pendingDongRef     = useRef(null); // 즐겨찾기에서 자동 선택할 adminDongCode
+    const runAnalysisRef     = useRef(null); // 항상 최신 runAnalysis를 가리키는 ref
 
     useEffect(() => { activeDataRef.current = selectedData; }, [selectedData]);
 
@@ -222,6 +234,16 @@ export default function AnalysisPage() {
 
     useEffect(() => { handleSelectRef.current = handleSelectData; }, [handleSelectData]);
 
+    // resultList 갱신 후 pendingDong 자동 선택
+    useEffect(() => {
+        if (!pendingDongRef.current || resultList.length === 0) return;
+        const target = resultList.find(item => item.adminDongCode === pendingDongRef.current);
+        if (target) {
+            pendingDongRef.current = null;
+            handleSelectData(target);
+        }
+    }, [resultList, handleSelectData]);
+
     const runAnalysis = useCallback(async () => {
         if (!selectedSubCategory) { alert('상세 업종을 선택해주세요.'); return; }
         if (!budgetMin || !budgetMax) { alert('최소 및 최대 자본금을 입력해주세요.'); return; }
@@ -302,6 +324,23 @@ export default function AnalysisPage() {
         }
     }, [selectedCategory, selectedSubCategory, budgetMin, budgetMax]);
 
+    // runAnalysis ref 동기화 (항상 최신 버전 유지)
+    useEffect(() => { runAnalysisRef.current = runAnalysis; }, [runAnalysis]);
+
+    // 즐겨찾기에서 넘어온 경우: 조건 복원 후 자동 분석
+    useEffect(() => {
+        const state = location.state;
+        if (!state?.serviceCategoryName) return;
+        const { adminDongCode, serviceCategoryName, budgetMin: min, budgetMax: max } = state;
+        if (min != null) setBudgetMin(Number(min));
+        if (max != null) setBudgetMax(Number(max));
+        setSelectedCategory(findCategoryForSub(serviceCategoryName));
+        setSelectedSubCategory(serviceCategoryName);
+        if (adminDongCode) pendingDongRef.current = Number(adminDongCode);
+        // React 상태 업데이트 후 최신 runAnalysis 호출
+        setTimeout(() => { runAnalysisRef.current?.(); }, 0);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const handleCloseDetail = useCallback(() => {
         setIsRightShow(false);
         setIsRightCollapsed(false);
@@ -370,6 +409,8 @@ export default function AnalysisPage() {
                     selectedData={selectedData}
                     selectedSubCategory={selectedSubCategory}
                     isLoggedIn={isLoggedIn}
+                    budgetMin={budgetMin}
+                    budgetMax={budgetMax}
                 />
             </div>
         </div>
