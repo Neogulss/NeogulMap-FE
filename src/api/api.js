@@ -160,3 +160,27 @@ export const updateComment = (commentIdx, userIdx, contents) =>
 /** 댓글 삭제 */
 export const deleteComment = (commentIdx, userIdx) =>
   api.post("/community/comment/delete", { commentIdx, userIdx });
+
+// =====================================================
+// Notice API
+// =====================================================
+
+/** 공지사항 목록 조회 */
+export const fetchNoticeList = (page = 1, size = 10, keyword = "") =>
+  api.post("/notice/list", { page, size, keyword });
+
+/** 공지사항 상세 조회 */
+export const fetchNoticeDetail = (noticeIdx) =>
+  api.post("/notice/detail", { noticeIdx });
+
+/** 공지사항 작성 (어드민) */
+export const createNotice = (title, contents, isFixed = "N") =>
+  api.post("/notice/write", { title, contents, isFixed }, { withCredentials: true });
+
+/** 공지사항 수정 (어드민) */
+export const updateNotice = (noticeIdx, title, contents, isFixed = "N") =>
+  api.post("/notice/update", { noticeIdx, title, contents, isFixed }, { withCredentials: true });
+
+/** 공지사항 삭제 (어드민) */
+export const deleteNotice = (noticeIdx) =>
+  api.post("/notice/delete", { noticeIdx }, { withCredentials: true });

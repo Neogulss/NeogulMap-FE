@@ -6,6 +6,8 @@ import SignupPage from "../pages/auth/SignupPage";
 import AnalysisPage from "../pages/AnalysisPage";
 import CommunityPage from "../pages/CommunityPage";
 import NoticePage from "../pages/NoticePage";
+import NoticeDetailPage from "../pages/NoticeDetailPage";
+import NoticeWritePage from "../pages/NoticeWritePage";
 import MyPage from "../pages/MyPage";
 import ChatbotPage from "../pages/ChatbotPage";
 import WritePage from "../pages/WritePage";
@@ -26,6 +28,9 @@ export default function Router() {
         <Route path="community" element={<CommunityPage />} />
         <Route path="community/write" element={<WritePage />} />
         <Route path="notice" element={<NoticePage />} />
+        <Route path="notice/write" element={<NoticeWritePage />} />
+        <Route path="notice/:noticeIdx" element={<NoticeDetailPage />} />
+        <Route path="notice/:noticeIdx/edit" element={<NoticeWritePage />} />
         <Route path="mypage" element={<MyPage />} />
         <Route path="chatbot" element={<ChatbotPage />} />
       </Route>

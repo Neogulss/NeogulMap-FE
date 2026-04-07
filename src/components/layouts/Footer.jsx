@@ -1,31 +1,47 @@
-import React from "react";
-import { Link } from "react-router-dom";
 export default function Footer() {
   return (
-    <footer className="bg-[#121415] text-neutral-5 px-10 pb-4 pt-6 text-b-4">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-2 text-lg font-bold text-neutral-2">
-            <img
-            src="src/assets/images/logo.svg"
-            alt="입지너구리 로고"
-            className="object-contain w-auto h-8 rounded-full bg-neutral-2 "
-          />
-            <span>입지너구리</span>
+    <footer className="main-footer">
+      <div className="footer-inner">
+        <div className="footer-top">
+          <div className="footer-brand">
+            <div className="footer-brand-title">
+              <div className="logo-mark">
+                <img src="/favicon.svg" alt="Ipji Neoguri Footer Icon" />
+              </div>
+              입지너구리
+            </div>
+            <p className="footer-company-info">
+              (주)입지너구리 | 대표: 김너굴
+              <br />
+              사업자등록번호: 123-45-67890 | 통신판매업신고:
+              제2026-서울마포-0000호
+              <br />
+              서울특별시 마포구 합정동 123-45, 너구리빌딩 6층
+            </p>
           </div>
 
-          <div className="text-right">
-            <p className="mb-1 text-neutral-2">고객센터</p>
-            <p className="mb-2 text-neutral-2 text-h-6">1588-0000</p>
-            <p className="text-neutral-2">
+          <div className="footer-cs">
+            <div className="footer-cs-title">고객센터</div>
+            <div className="footer-cs-phone">1588-0000</div>
+            <p className="footer-cs-time">
               평일 09:00 - 18:00 (점심시간 12:00 - 13:00)
+              <br />
+              주말 및 공휴일 휴무
             </p>
-            <p className="text-neutral-2 ">주말 및 공휴일 휴무</p>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-8 border-t border-neutral-9">
-          <div className="text-neutral-5">
+        <div className="footer-bottom">
+          <div className="footer-links">
+            <a href="#">회사소개</a>
+            <a href="#">이용약관</a>
+            <a href="#" className="bold">
+              개인정보처리방침
+            </a>
+            <a href="#">제휴문의</a>
+            <a href="#">고객센터</a>
+          </div>
+          <div className="footer-copy">
             © 2026 IPJI-NEOGURI Inc. All rights reserved.
           </div>
         </div>
