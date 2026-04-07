@@ -184,3 +184,43 @@ export const updateNotice = (noticeIdx, title, contents, isFixed = "N") =>
 /** 공지사항 삭제 (어드민) */
 export const deleteNotice = (noticeIdx) =>
   api.post("/notice/delete", { noticeIdx }, { withCredentials: true });
+
+// =====================================================
+// Mypage API
+// =====================================================
+
+/** 프로필 조회 */
+export const fetchMyProfile = (userIdx) =>
+  api.post("/mypage/profile", { userIdx }, { withCredentials: true });
+
+/** 프로필 수정 (닉네임, 나이, 사업자등록여부, 비밀번호 변경) */
+export const updateMyProfile = (userIdx, userNickname, userAge, isRegisteredBusiness, currentPwd = null, newPwd = null) =>
+  api.post("/mypage/profile/update", { userIdx, userNickname, userAge, isRegisteredBusiness, currentPwd, newPwd }, { withCredentials: true });
+
+/** 내가 쓴 글 목록 조회 */
+export const fetchMyPostList = (userIdx, page = 1, size = 10) =>
+  api.post("/mypage/posts", { userIdx, page, size, offset: (page - 1) * size }, { withCredentials: true });
+
+/** 내가 쓴 댓글 목록 조회 */
+export const fetchMyCommentList = (userIdx, page = 1, size = 10) =>
+  api.post("/mypage/comments", { userIdx, page, size, offset: (page - 1) * size }, { withCredentials: true });
+
+/** 회원 탈퇴 (비밀번호 확인 후 탈퇴) */
+export const withdrawUser = (userIdx, userPwd) =>
+  api.post("/mypage/withdraw", { userIdx, userPwd }, { withCredentials: true });
+
+/** 즐겨찾기 목록 조회 (마이페이지 경로) */
+export const fetchMyFavoriteList = (userIdx) =>
+  api.post("/mypage/favorites", { userIdx }, { withCredentials: true });
+
+// =====================================================
+// Favorite API
+// =====================================================
+
+/** 즐겨찾기 추가 */
+export const addFavorite = (userIdx, adminDongCode, initialCapital, serviceCategoryName) =>
+  api.post("/favorite/add", { userIdx, adminDongCode, initialCapital, serviceCategoryName }, { withCredentials: true });
+
+/** 즐겨찾기 삭제 */
+export const deleteFavorite = (favoriteIdx, userIdx) =>
+  api.post("/favorite/delete", { favoriteIdx, userIdx }, { withCredentials: true });

@@ -151,8 +151,18 @@ body.main-active { overflow-x: hidden; }
 }
 .dashboard-inner { width: 100%; max-width: 1400px; margin: 0 auto; padding: 0 52px; }
 
-.dashboard-header { margin-bottom: 32px; animation: fadeUp .6s .3s var(--ease) both; }
-.dh-title { font-size: 26px; font-weight: 700; color: #1a1d20; letter-spacing: -1px; line-height: 1.3; }
+.dashboard-header {
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px; animation: fadeUp .6s .3s var(--ease) both;
+}
+.dh-title { font-size: 22px; font-weight: 700; color: #1a1d20; letter-spacing: -1px; line-height: 1.3; margin-bottom: 28px; animation: fadeUp .6s .35s var(--ease) both; }
+
+/* 헤더 안 즐겨찾기 섹션 재정의 */
+.dashboard-header .fav-section {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    height: auto; padding-top: 0; position: relative;
+}
+.dashboard-header .fav-mascot-wrap { margin-bottom: 0; }
 
 .hero-dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; animation: fadeUp .6s .4s var(--ease) both; }
 

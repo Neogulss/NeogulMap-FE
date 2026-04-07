@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Chart from 'chart.js/auto';
+import { addFavorite } from '../../api/api';
 
 const X_LABELS = ['24년 4Q', '25년 1Q', '25년 2Q', '25년 3Q', '25년 4Q'];
 const DAY_LABELS = ['월', '화', '수', '목', '금', '토', '일'];
@@ -34,10 +35,45 @@ function EmptyChart() {
 export default function RightPanel({
     isShow, isCollapsed, onToggle, onClose,
     selectedData, selectedSubCategory,
-    isLoggedIn,
+    isLoggedIn, budgetMin, budgetMax,
 }) {
     const navigate = useNavigate();
     const innerRef = useRef(null);
+
+    const [isFavorited, setIsFavorited] = useState(false);
+    const [favLoading, setFavLoading]   = useState(false);
+
+    // 상권이 바뀌면 즐겨찾기 상태 초기화
+    useEffect(() => { setIsFavorited(false); }, [selectedData?.id]);
+
+    const handleFavorite = async () => {
+        if (!isLoggedIn) {
+            sessionStorage.setItem('returnPath', '/analysis');
+            navigate('/auth/signin');
+            return;
+        }
+        if (isFavorited || favLoading) return;
+
+        const userIdx     = Number(localStorage.getItem('userIdx'));
+        // budgetMin과 budgetMax를 하나의 Integer에 인코딩 (둘 다 만원 단위)
+        const initialCap  = Math.floor(budgetMin ?? 0) * 100000 + Math.floor(budgetMax ?? 0);
+        const catName     = selectedSubCategory || selectedData?.serviceIndustryCodeName || '';
+
+        setFavLoading(true);
+        try {
+            await addFavorite(userIdx, selectedData.adminDongCode, initialCap, catName);
+            setIsFavorited(true);
+        } catch (err) {
+            const msg = err.response?.data?.message;
+            if (msg?.includes('이미')) {
+                setIsFavorited(true); // 이미 추가된 경우 별표만 채움
+            } else {
+                alert(msg || '즐겨찾기 추가에 실패했습니다.');
+            }
+        } finally {
+            setFavLoading(false);
+        }
+    };
 
     const handleLoginClick = () => {
         sessionStorage.setItem('returnPath', '/analysis');
@@ -419,7 +455,20 @@ export default function RightPanel({
 
                 <div className="report-header">
                     <span className="rh-tag">{selectedData.score != null ? `매칭률 ${selectedData.score}%` : '상권 분석'}</span>
-                    <h2 className="rh-title">서울시 {selectedData.districtName} {selectedData.name}</h2>
+                    <div className="rh-title-row">
+                        <h2 className="rh-title">서울시 {selectedData.districtName} {selectedData.name}</h2>
+                        <button
+                            className={`rh-fav-btn${isFavorited ? ' active' : ''}`}
+                            onClick={handleFavorite}
+                            disabled={favLoading}
+                            title={isFavorited ? '즐겨찾기 완료' : '즐겨찾기 추가'}
+                        >
+                            <svg viewBox="0 0 24 24" fill={isFavorited ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                            </svg>
+                            {isFavorited ? '즐겨찾기 완료' : '즐겨찾기'}
+                        </button>
+                    </div>
                     <div className="rh-meta">기준: 2025년 4분기 · {selectedSubCategory || selectedData.serviceIndustryCodeName || '-'}</div>
                 </div>
 
