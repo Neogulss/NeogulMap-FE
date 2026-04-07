@@ -14,7 +14,16 @@ const Sidebar = () => {
 
   return (
     <div className="comm-side">
-      <button className="write-btn" onClick={() => navigate("/community/write")}>
+      <button
+        className="write-btn"
+        onClick={() => {
+          if (!localStorage.getItem("userId")) {
+            navigate("/auth/signin");
+          } else {
+            navigate("/community/write");
+          }
+        }}
+      >
         새 글 쓰기
       </button>
 

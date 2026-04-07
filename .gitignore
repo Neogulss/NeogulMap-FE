@@ -7,16 +7,32 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Node
 node_modules
 dist
 dist-ssr
 *.local
 
-# Editor directories and files
+# Env (중요)
+.env
+.env.*
+
+# AI / local config
+permissions.json
+*.permissions.json
+.cursor/
+.config/
+
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Misc
 *.suo
 *.ntvs*
 *.njsproj
