@@ -18,6 +18,8 @@ dist-ssr
 .env.*
 
 # AI / local config
+.claude/
+.claude
 permissions.json
 *.permissions.json
 .cursor/
@@ -38,3 +40,6 @@ Thumbs.db
 *.njsproj
 *.sln
 *.sw?
+
+# Env files
+.env*

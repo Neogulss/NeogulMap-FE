@@ -4,7 +4,7 @@ import axios from "axios";
 // Axios 인스턴스
 // =====================================================
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },
