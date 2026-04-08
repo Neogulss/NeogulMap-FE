@@ -5,7 +5,7 @@ import axios from "axios";
 // =====================================================
 const baseURL = import.meta.env.DEV
   ? import.meta.env.VITE_API_URL
-  : `http://${window.location.hostname}:8081/api`;
+  : '/api';
 
 const api = axios.create({
   baseURL,
