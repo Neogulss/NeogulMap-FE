@@ -3,14 +3,9 @@ import axios from "axios";
 // =====================================================
 // Axios 인스턴스
 // =====================================================
-const getBaseURL = () => {
-  if (import.meta.env.DEV) return import.meta.env.VITE_API_URL;
-  const host = window.location.hostname;
-  const port = host === '13.209.5.156' ? 8081 : 8080;
-  return `http://${host}:${port}/api`;
-};
-
-const baseURL = getBaseURL();
+const baseURL = import.meta.env.DEV
+  ? import.meta.env.VITE_API_URL
+  : `http://${window.location.hostname}:8081/api`;
 
 const api = axios.create({
   baseURL,
