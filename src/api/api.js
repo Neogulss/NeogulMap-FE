@@ -3,8 +3,12 @@ import axios from "axios";
 // =====================================================
 // Axios 인스턴스
 // =====================================================
+const baseURL = import.meta.env.DEV
+  ? import.meta.env.VITE_API_URL
+  : `http://${window.location.hostname}:8081/api`;
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },
