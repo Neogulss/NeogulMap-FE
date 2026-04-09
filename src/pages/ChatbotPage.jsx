@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getChatSessions,
   getChatLogs,
@@ -9,6 +9,7 @@ import {
 import ChatbotSidebar from "../components/chatbot/ChatbotSidebar";
 import ChatbotMessages from "../components/chatbot/ChatbotMessages";
 import ChatbotInput from "../components/chatbot/ChatbotInput";
+import "../styles/ChatbotPage.css";
 
 export default function ChatbotPage() {
   const [sessions, setSessions] = useState([]);
@@ -18,6 +19,42 @@ export default function ChatbotPage() {
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  const messagesContainerRef = useRef(null);
+  const prevLogLengthRef = useRef(0);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    loadSessions();
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [selectedSessionIdx]);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    if (logs.length > 0) {
+      const hasNewMessage = logs.length !== prevLogLengthRef.current;
+
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: hasNewMessage ? "smooth" : "auto",
+      });
+    } else {
+      container.scrollTo({
+        top: 0,
+        behavior: "auto",
+      });
+    }
+
+    prevLogLengthRef.current = logs.length;
+  }, [logs, sending]);
+
+  const hasMessages = useMemo(() => logs && logs.length > 0, [logs]);
 
   useEffect(() => {
     loadSessions();
@@ -27,6 +64,7 @@ export default function ChatbotPage() {
     try {
       setLoadingSessions(true);
       setErrorMessage("");
+
       const data = await getChatSessions();
       setSessions(data);
 
@@ -47,6 +85,7 @@ export default function ChatbotPage() {
     try {
       setLoadingLogs(true);
       setErrorMessage("");
+
       const data = await getChatLogs(sessionIdx);
       setLogs(data);
       setSelectedSessionIdx(sessionIdx);
@@ -62,9 +101,21 @@ export default function ChatbotPage() {
     setSelectedSessionIdx(null);
     setLogs([]);
     setErrorMessage("");
+
+    requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      if (messagesContainerRef.current) {
+        messagesContainerRef.current.scrollTop = 0;
+      }
+    });
   };
 
-  const handleSendMessage = async ({ userQuery, industry, age, hasBusinessRegistration }) => {
+  const handleSendMessage = async ({
+    userQuery,
+    industry,
+    age,
+    hasBusinessRegistration,
+  }) => {
     if (!userQuery.trim()) return;
 
     try {
@@ -73,22 +124,26 @@ export default function ChatbotPage() {
 
       const userProfile = {};
       if (industry?.trim()) userProfile.industry = industry.trim();
-      if (age !== "" && age !== null && age !== undefined) userProfile.age = Number(age);
+      if (age !== "" && age !== null && age !== undefined) {
+        userProfile.age = Number(age);
+      }
       if (hasBusinessRegistration !== "") {
-        userProfile.hasBusinessRegistration = hasBusinessRegistration === "true";
+        userProfile.hasBusinessRegistration =
+          hasBusinessRegistration === "true";
       }
 
       const payload = {
         sessionIdx: selectedSessionIdx,
         userQuery: userQuery.trim(),
-        userProfile: Object.keys(userProfile).length > 0 ? userProfile : null,
+        userProfile:
+          Object.keys(userProfile).length > 0 ? userProfile : null,
       };
 
       const response = await sendChatMessage(payload);
 
       await loadSessions();
 
-      if (response.sessionIdx) {
+      if (response?.sessionIdx) {
         await loadLogs(response.sessionIdx);
       }
     } catch (error) {
@@ -131,6 +186,8 @@ export default function ChatbotPage() {
         setSelectedSessionIdx(firstSessionIdx);
         await loadLogs(firstSessionIdx);
       }
+
+      window.scrollTo(0, 0);
     } catch (error) {
       console.error(error);
       setErrorMessage("세션 삭제에 실패했습니다.");
@@ -138,67 +195,69 @@ export default function ChatbotPage() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.left}>
-        <ChatbotSidebar
-          sessions={sessions}
-          selectedSessionIdx={selectedSessionIdx}
-          onSelectSession={loadLogs}
-          onNewChat={handleNewChat}
-          onUpdateTitle={handleUpdateTitle}
-          onDeleteSession={handleDeleteSession}
-          loading={loadingSessions}
-        />
-      </div>
+    <div className="chatbot-shell">
+      <div className="chat-page">
+        <div className="hero-grid" />
+        <div className="hero-glow" />
+        <div className="hero-glow2" />
 
-      <div style={styles.right}>
-        <div style={styles.chatArea}>
-          {errorMessage && <div style={styles.errorBox}>{errorMessage}</div>}
+        <div className="chat-container">
+          <ChatbotSidebar
+            sessions={sessions}
+            selectedSessionIdx={selectedSessionIdx}
+            onSelectSession={loadLogs}
+            onNewChat={handleNewChat}
+            onUpdateTitle={handleUpdateTitle}
+            onDeleteSession={handleDeleteSession}
+            loading={loadingSessions}
+            collapsed={sidebarCollapsed}
+            onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+          />
 
-          <ChatbotMessages logs={logs} loading={loadingLogs} />
-        </div>
+          <main className="chat-main">
+            <div className="chat-messages" ref={messagesContainerRef}>
+              {!hasMessages && !loadingLogs && (
+                <section className="welcome-banner">
+                  <h2>창업 정책과 대출 정보를 빠르게 찾아보세요</h2>
+                  <p>
+                    업종, 나이, 사업자등록 여부를 입력하면 더 정확한 답변을
+                    받을 수 있어요.
+                  </p>
+                </section>
+              )}
 
-        <div style={styles.inputArea}>
-          <ChatbotInput onSend={handleSendMessage} sending={sending} />
+              {errorMessage && <div className="error-box">{errorMessage}</div>}
+
+              <ChatbotMessages logs={logs} loading={loadingLogs} />
+
+              {sending && (
+                <div className="msg-row bot">
+                  <div className="msg-content">
+                    <div className="msg-sender">입지너구리 AI</div>
+                    <div className="msg-bubble">
+                      답변을 생성하고 있습니다...
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="chat-input-area">
+              <div className="chat-bottom-container">
+                <ChatbotInput
+                  onSend={handleSendMessage}
+                  sending={sending}
+                  showProfileForm={!hasMessages}
+                />
+                <div className="input-footer">
+                  입지너구리는 정책·대출 정보를 바탕으로 답변하며, 실제 신청 전
+                  세부 자격 조건을 꼭 확인해 주세요.
+                </div>
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: {
-    display: "flex",
-    width: "100%",
-    minHeight: "calc(100vh - 80px)",
-    backgroundColor: "#f8f9fb",
-  },
-  left: {
-    width: "320px",
-    borderRight: "1px solid #ddd",
-    backgroundColor: "#fff",
-  },
-  right: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-  },
-  chatArea: {
-    flex: 1,
-    padding: "16px",
-    overflowY: "auto",
-  },
-  inputArea: {
-    borderTop: "1px solid #ddd",
-    backgroundColor: "#fff",
-    padding: "12px",
-  },
-  errorBox: {
-    marginBottom: "12px",
-    padding: "10px",
-    border: "1px solid #f1b0b7",
-    backgroundColor: "#fdecef",
-    color: "#842029",
-    borderRadius: "6px",
-  },
-};
