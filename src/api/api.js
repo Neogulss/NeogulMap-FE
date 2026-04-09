@@ -228,3 +228,46 @@ export const addFavorite = (userIdx, adminDongCode, initialCapital, serviceCateg
 /** 즐겨찾기 삭제 */
 export const deleteFavorite = (favoriteIdx, userIdx) =>
   api.post("/favorite/delete", { favoriteIdx, userIdx }, { withCredentials: true });
+
+
+
+// =====================================================
+// Chatbot API
+// =====================================================
+export const getChatSessions = async () => {
+  const response = await axios.get("/api/chatbot/sessions", {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const getChatLogs = async (sessionIdx) => {
+  const response = await axios.get(`/api/chatbot/sessions/${sessionIdx}/logs`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const sendChatMessage = async (payload) => {
+  const response = await axios.post("/api/chatbot/send", payload, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
+export const updateChatSessionTitle = async (sessionIdx, title) => {
+  const response = await axios.patch(
+    `/api/chatbot/sessions/${sessionIdx}/title`,
+    { title },
+    { withCredentials: true }
+  );
+  return response.data;
+};
+
+export const deleteChatSession = async (sessionIdx) => {
+  const response = await axios.delete(`/api/chatbot/sessions/${sessionIdx}`, {
+    withCredentials: true,
+  });
+  return response.data;
+};
+
