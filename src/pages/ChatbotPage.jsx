@@ -15,6 +15,7 @@ export default function ChatbotPage() {
   const [sessions, setSessions] = useState([]);
   const [selectedSessionIdx, setSelectedSessionIdx] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [pendingUserQuery, setPendingUserQuery] = useState("");
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [sending, setSending] = useState(false);
@@ -54,7 +55,10 @@ export default function ChatbotPage() {
     prevLogLengthRef.current = logs.length;
   }, [logs, sending]);
 
-  const hasMessages = useMemo(() => logs && logs.length > 0, [logs]);
+  const hasMessages = useMemo(
+    () => (logs && logs.length > 0) || Boolean(pendingUserQuery),
+    [logs, pendingUserQuery]
+  );
 
   useEffect(() => {
     loadSessions();
@@ -100,6 +104,7 @@ export default function ChatbotPage() {
   const handleNewChat = () => {
     setSelectedSessionIdx(null);
     setLogs([]);
+    setPendingUserQuery("");
     setErrorMessage("");
 
     requestAnimationFrame(() => {
@@ -119,6 +124,8 @@ export default function ChatbotPage() {
     if (!userQuery.trim()) return;
 
     try {
+      const trimmedQuery = userQuery.trim();
+      setPendingUserQuery(trimmedQuery);
       setSending(true);
       setErrorMessage("");
 
@@ -134,7 +141,7 @@ export default function ChatbotPage() {
 
       const payload = {
         sessionIdx: selectedSessionIdx,
-        userQuery: userQuery.trim(),
+        userQuery: trimmedQuery,
         userProfile:
           Object.keys(userProfile).length > 0 ? userProfile : null,
       };
@@ -150,6 +157,7 @@ export default function ChatbotPage() {
       console.error(error);
       setErrorMessage("메시지 전송에 실패했습니다.");
     } finally {
+      setPendingUserQuery("");
       setSending(false);
     }
   };
@@ -228,18 +236,12 @@ export default function ChatbotPage() {
 
               {errorMessage && <div className="error-box">{errorMessage}</div>}
 
-              <ChatbotMessages logs={logs} loading={loadingLogs} />
-
-              {sending && (
-                <div className="msg-row bot">
-                  <div className="msg-content">
-                    <div className="msg-sender">입지너구리 AI</div>
-                    <div className="msg-bubble">
-                      답변을 생성하고 있습니다...
-                    </div>
-                  </div>
-                </div>
-              )}
+              <ChatbotMessages
+                logs={logs}
+                loading={loadingLogs}
+                pendingUserQuery={pendingUserQuery}
+                sending={sending}
+              />
             </div>
 
             <div className="chat-input-area">

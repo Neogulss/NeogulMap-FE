@@ -6,12 +6,17 @@ function formatText(text) {
   return text;
 }
 
-export default function ChatbotMessages({ logs, loading }) {
+export default function ChatbotMessages({
+  logs,
+  loading,
+  pendingUserQuery,
+  sending,
+}) {
   if (loading) {
     return <div className="chat-placeholder">대화 내역 불러오는 중...</div>;
   }
 
-  if (!logs || logs.length === 0) {
+  if ((!logs || logs.length === 0) && !pendingUserQuery) {
     return (
       <div className="chat-placeholder">
         아직 대화가 없습니다. 아래 입력창에서 질문을 시작해보세요.
@@ -93,6 +98,24 @@ export default function ChatbotMessages({ logs, loading }) {
           </div>
         </div>
       ))}
+
+      {pendingUserQuery && (
+        <div className="msg-row user">
+          <div className="msg-content">
+            <div className="msg-sender">나</div>
+            <div className="msg-bubble">{pendingUserQuery}</div>
+          </div>
+        </div>
+      )}
+
+      {sending && (
+        <div className="msg-row bot">
+          <div className="msg-content">
+            <div className="msg-sender">입지너구리 AI</div>
+            <div className="msg-bubble">답변을 생성하고 있습니다...</div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
