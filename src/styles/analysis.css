@@ -88,41 +88,125 @@ body.analysis-active {
 .left-toggle { right: -24px; border-radius: 0 8px 8px 0; border-left: none; }
 
 /* 필터 섹션 */
-.filter-section { padding: 32px 24px 24px; border-bottom: 1px solid var(--line); background: var(--bg); display: flex; flex-direction: column; }
-.form-label { display: block; font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
-
-.cat-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
-.cat-tabs::-webkit-scrollbar { height: 0px; }
-.cat-tab {
-    flex: 1; min-width: 72px; padding: 12px 8px; background: #fff; border: 1px solid var(--line); border-radius: 8px;
-    font-size: 13px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s;
-    display: flex; flex-direction: column; align-items: center; gap: 6px;
+.filter-section {
+    padding: 16px 20px 14px;
+    border-bottom: 2px solid var(--line);
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+    max-height: 68vh;
 }
-.cat-tab:hover { background: var(--surface); }
-.cat-tab.active { background: var(--g); color: #fff; border-color: var(--g); }
-.cat-tab svg { width: 20px; height: 20px; fill: currentColor; }
+.filter-section::-webkit-scrollbar { width: 4px; }
+.filter-section::-webkit-scrollbar-thumb { background: var(--g); border-radius: 2px; opacity: 0.5; }
+.filter-section::-webkit-scrollbar-track { background: transparent; }
 
-.sub-grid-wrap { max-height: 180px; overflow-y: auto; margin-bottom: 32px; padding-right: 4px; }
-.sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.form-label { display: block; font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.form-label-row { display: flex; align-items: center; gap: 6px; }
+
+/* 툴팁 */
+.tooltip-wrap { position: relative; display: inline-flex; align-items: center; }
+.tooltip-btn {
+    background: none; border: none; padding: 0; cursor: pointer;
+    color: var(--text3); display: flex; align-items: center;
+    transition: color 0.15s;
+}
+.tooltip-btn:hover { color: var(--g); }
+.tooltip-btn svg { width: 15px; height: 15px; }
+.tooltip-popup {
+    position: fixed;
+    background: var(--text); color: #fff; font-size: 12px; font-weight: 500;
+    padding: 8px 14px; border-radius: 8px; z-index: 9999;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25); line-height: 1.5;
+    white-space: nowrap; text-align: left; letter-spacing: -0.2px;
+    pointer-events: none;
+}
+
+/* advice-summary 헤더 */
+.advice-summary-header {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 12px;
+}
+.advice-summary-title { font-size: 13px; font-weight: 700; color: var(--text2); }
+
+.cat-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+.cat-tab {
+    flex: 1; padding: 8px 4px; background: #fff; border: 1.5px solid var(--line); border-radius: 8px;
+    font-size: 12px; font-weight: 600; color: var(--text2); cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.cat-tab:hover { background: var(--surface); border-color: var(--g); color: var(--g); }
+.cat-tab.active { background: var(--g); color: #fff; border-color: var(--g); box-shadow: 0 3px 8px rgba(0,150,36,0.25); }
+.cat-tab svg { width: 16px; height: 16px; fill: currentColor; }
+
+.sub-grid-wrap {
+    max-height: 42vh; overflow-y: auto; margin-bottom: 14px; padding-right: 4px;
+    position: relative;
+    mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 32px), transparent 100%);
+}
+.sub-grid-wrap::-webkit-scrollbar { width: 3px; }
+.sub-grid-wrap::-webkit-scrollbar-thumb { background: var(--g); border-radius: 2px; }
+.sub-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
 .sub-btn {
-    background: #fff; border: 1px solid var(--line); border-radius: 6px; padding: 10px 8px;
-    font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.2s; text-align: center;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    background: #fff; border: 1px solid var(--line); border-radius: 5px; padding: 6px 4px;
+    font-size: 11px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all 0.15s; text-align: center;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
 }
 .sub-btn:hover { border-color: var(--g); color: var(--g); background: var(--g5); }
 .sub-btn.active { background: var(--g); color: #fff; border-color: var(--g); font-weight: 700; }
 
 /* 자본금 입력 */
-.budget-inputs-wrap { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; }
+.budget-inputs-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .budget-input-group { flex: 1; position: relative; }
 .budget-input {
-    width: 100%; padding: 14px 40px 14px 14px; border-radius: 8px; border: 1px solid var(--line);
-    background: var(--bg2); font-size: 14px; font-weight: 600;
+    width: 100%; padding: 11px 38px 11px 12px; border-radius: 8px; border: 1px solid var(--line);
+    background: var(--bg2); font-size: 13px; font-weight: 600;
     color: var(--text); outline: none; cursor: text; transition: border-color 0.2s;
 }
 .budget-input:focus { border-color: var(--g); background: #fff; }
-.budget-unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; color: var(--text3); font-weight: 500; pointer-events: none; }
-.budget-tilde { font-weight: 700; color: var(--text3); }
+.budget-unit { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 12px; color: var(--text3); font-weight: 500; pointer-events: none; }
+/* 층수 — 가로 pill */
+.floor-pills { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.floor-pill {
+    flex: 1; min-width: 44px; padding: 8px 4px; border-radius: 8px;
+    border: 1.5px solid var(--line); background: var(--bg2);
+    font-size: 12px; font-weight: 700; color: var(--text2);
+    cursor: pointer; transition: all 0.15s; text-align: center;
+}
+.floor-pill:hover { border-color: var(--g); color: var(--g); background: var(--g5); }
+.floor-pill.active { background: var(--g); color: #fff; border-color: var(--g); box-shadow: 0 2px 8px rgba(0,150,36,0.3); }
+.floor-pill.underground { border-style: dashed; color: #607d8b; }
+.floor-pill.underground.active { background: #546e7a; border-color: #546e7a; border-style: solid; box-shadow: 0 2px 8px rgba(84,110,122,0.3); }
+
+/* 면적 — 평면도 아이콘 컴팩트 */
+.area-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 14px; }
+.area-card {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 2px 5px; border-radius: 6px; border: 1.5px solid var(--line);
+    background: var(--bg2); cursor: pointer; transition: all 0.15s;
+}
+.area-card:hover { border-color: var(--g); background: var(--g5); }
+.area-card.active { border-color: var(--g); background: var(--g5); box-shadow: 0 2px 6px rgba(0,150,36,0.2); }
+.area-plan-svg { width: 26px; height: 22px; overflow: visible; }
+.plan-wall { fill: rgba(0,0,0,0.04); stroke: var(--text3); stroke-width: 1.8; transition: all 0.15s; }
+.area-card:hover .plan-wall { stroke: var(--g); fill: rgba(0,150,36,0.07); }
+.area-card.active .plan-wall { stroke: var(--g); fill: rgba(0,150,36,0.12); stroke-width: 2; }
+.plan-door-gap { stroke: var(--bg2); }
+.area-card.active .plan-door-gap { stroke: var(--g5); }
+.plan-door-arc { stroke: var(--text3); }
+.area-card:hover .plan-door-arc, .area-card.active .plan-door-arc { stroke: var(--g); }
+.area-label { font-size: 9px; font-weight: 700; color: var(--text2); letter-spacing: -0.3px; }
+.area-card.active .area-label { color: var(--g); }
+
+.budget-tilde { font-weight: 700; color: var(--text3); font-size: 13px; }
+.budget-summary {
+    font-size: 12px; font-weight: 700; color: var(--g);
+    text-align: center; margin-top: -8px; margin-bottom: 14px;
+    background: var(--g5); border-radius: 6px; padding: 6px 10px;
+    letter-spacing: -0.3px;
+}
 
 /* RightPanel 분기 선택 바 */
 .quarter-bar { display: flex; align-items: center; gap: 10px; padding: 10px 24px; background: var(--bg2); border-bottom: 1px solid var(--border); }
@@ -132,24 +216,60 @@ body.analysis-active {
 .qbar-btn:hover { border-color: var(--g); color: var(--g); }
 .qbar-btn.active { background: var(--g); border-color: var(--g); color: #fff; }
 
-.btn-search { width: 100%; padding: 16px; background: var(--g); color: #fff; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: background 0.2s; }
+.btn-search {
+    width: 100%; padding: 14px; background: var(--g); color: #fff; border: none;
+    border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: background 0.2s; letter-spacing: -0.3px;
+    box-shadow: 0 4px 12px rgba(0,150,36,0.3);
+}
 .btn-search:hover { background: var(--g2); }
 
 /* 추천 리스트 섹션 */
-.list-section { flex: 1; overflow-y: auto; padding: 24px; background: var(--bg2); }
-.list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 13px; font-weight: 600; color: var(--text3); }
-.list-header strong { color: var(--text); }
+.list-section {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 16px 20px 24px;
+    background: var(--bg2);
+    border-top: 3px solid var(--g);
+}
+.list-section::-webkit-scrollbar { width: 4px; }
+.list-section::-webkit-scrollbar-thumb { background: var(--g); border-radius: 2px; }
+.list-section::-webkit-scrollbar-track { background: transparent; }
+.list-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px; font-size: 14px; font-weight: 600; color: var(--text3);
+    position: sticky; top: 0; background: var(--bg2); padding: 4px 0 8px;
+    border-bottom: 1px solid var(--line);
+    z-index: 1;
+}
+.list-header strong { font-size: 15px; font-weight: 800; color: var(--text); }
+.list-count-badge {
+    background: var(--g); color: #fff;
+    font-size: 12px; font-weight: 700;
+    padding: 3px 10px; border-radius: 20px;
+    letter-spacing: -0.3px;
+}
 
-.list-card { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-.list-card:hover { border-color: var(--g); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,200,83,0.1); }
-.list-card.active { border-color: var(--g); background: var(--g5); }
+.list-card {
+    background: #fff; border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.list-card:hover { border-color: var(--g); transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,150,36,0.12); }
+.list-card.active { border-color: var(--g); background: var(--g5); box-shadow: 0 4px 14px rgba(0,150,36,0.15); }
 
-.lc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.lc-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
 .lc-title { font-size: 15px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
 .lc-desc { font-size: 12px; color: var(--text2); line-height: 1.4; margin-bottom: 8px; word-break: keep-all; }
 .lc-meta { display: flex; align-items: center; justify-content: flex-end; }
-.lc-tag { font-size: 11px; font-weight: 700; background: var(--bg2); color: var(--text); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); }
-.list-card.active .lc-tag { background: #fff; border-color: rgba(0,200,83,0.3); color: var(--g); }
+.lc-tag {
+    font-size: 12px; font-weight: 700;
+    background: var(--bg2); color: var(--g);
+    padding: 4px 10px; border-radius: 20px;
+    border: 1.5px solid rgba(0,150,36,0.2);
+}
+.list-card.active .lc-tag { background: #fff; border-color: rgba(0,200,83,0.4); }
 
 /* ── 2. CENTER PANEL (Map) ── */
 .map-panel { flex: 1; position: relative; background: #e5e3df; min-width: 0; }

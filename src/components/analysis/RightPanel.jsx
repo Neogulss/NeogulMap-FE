@@ -10,6 +10,30 @@ const TIME_LABELS = ['00~06시', '06~11시', '11~14시', '14~17시', '17~21시',
 /** null-safe 숫자 포맷 */
 const n = (v, suffix = '') => (v != null ? `${Number(v).toLocaleString()}${suffix}` : '-');
 
+function Tooltip({ text }) {
+    const [pos, setPos] = useState(null);
+    const btnRef = useRef(null);
+
+    const handleClick = () => {
+        if (pos) { setPos(null); return; }
+        const r = btnRef.current.getBoundingClientRect();
+        setPos({ top: r.top - 8, left: r.left + r.width / 2 });
+    };
+
+    return (
+        <span className="tooltip-wrap">
+            <button ref={btnRef} className="tooltip-btn" onClick={handleClick} onBlur={() => setPos(null)} type="button">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 10a3.001 3.001 0 01-2 2.83V13a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>
+            </button>
+            {pos && (
+                <div className="tooltip-popup" style={{ top: pos.top, left: pos.left, transform: 'translate(-50%, -100%)' }}>
+                    {text}
+                </div>
+            )}
+        </span>
+    );
+}
+
 /** 비율 계산 (소수점 1자리) */
 const pct = (part, total) => (total > 0 ? Math.round((part / total) * 1000) / 10 : 0);
 
@@ -500,6 +524,10 @@ export default function RightPanel({
                                     <div className="ts-grade">{selectedData.grade ?? '분석 중'}</div>
                                 </div>
                                 <div className="advice-summary">
+                                    <div className="advice-summary-header">
+                                        <span className="advice-summary-title">상권 분석 요약</span>
+                                        <Tooltip text="상권변화지표 기준: 다이나믹 (급격한 변화) → 상승 (성장세) → 유지 (안정적) → 하강 (쇠퇴세) → 침체 (장기 부진)" />
+                                    </div>
                                     <ul>
                                         {selectedData.summaryComments.map((c, i) => (
                                             <li key={i} dangerouslySetInnerHTML={{ __html: c }} />

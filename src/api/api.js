@@ -3,9 +3,7 @@ import axios from "axios";
 // =====================================================
 // Axios 인스턴스
 // =====================================================
-const baseURL = import.meta.env.DEV
-  ? import.meta.env.VITE_API_URL
-  : '/api';
+const baseURL = import.meta.env.DEV ? import.meta.env.VITE_API_URL : "/api";
 
 const api = axios.create({
   baseURL,
@@ -13,6 +11,18 @@ const api = axios.create({
     "Content-Type": "application/json",
   },
 });
+
+// =====================================================
+// Category API
+// =====================================================
+
+/**
+ * 대분류 코드에 해당하는 업종 목록 조회
+ * @param {string} mainCategoryCode - 대분류 코드 (MC1: 외식업, MC2: 서비스업, MC3: 소매업)
+ * @returns {Promise}
+ */
+export const fetchCategoryList = (mainCategoryCode) =>
+  api.post("/category/list", { mainCategoryCode });
 
 // =====================================================
 // District API
@@ -28,6 +38,34 @@ export const fetchDistrictRecommendList = (
   mainCategoryCode,
   serviceIndustryCodeName,
 ) => api.post("/district", { mainCategoryCode, serviceIndustryCodeName });
+
+// =====================================================
+// FastAPI AI 추천 API
+// =====================================================
+const aiApi = axios.create({
+  baseURL: "http://localhost:8000",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+/**
+ * AI 맞춤 상권 추천
+ * @param {string} serviceType - 서울시 업종명 (예: 한식음식점)
+ * @param {number} floor - 층수
+ * @param {number} area - 면적 (㎡)
+ * @param {number} budget - 초기자본금 (만원)
+ * @param {number} topN - 추천 개수 (기본값 10)
+ * @returns {Promise}
+ */
+export const fetchAIRecommend = (serviceType, floor, area, budget, topN = 10) =>
+  aiApi.post("/recommend", {
+    service_type: serviceType,
+    floor: Number(floor),
+    area: Number(area),
+    budget: Number(budget),
+    top_n: topN,
+  });
 
 // =====================================================
 // Report API
@@ -114,8 +152,20 @@ export const loginUser = (userId, userPwd) =>
   api.post("/user/login", { userId, userPwd }, { withCredentials: true });
 
 /** 회원가입 */
-export const signUpUser = (userId, userPwd, userNickname, userAge, isRegisteredBusiness) =>
-  api.post("/user/sign-up", { userId, userPwd, userNickname, userAge, isRegisteredBusiness });
+export const signUpUser = (
+  userId,
+  userPwd,
+  userNickname,
+  userAge,
+  isRegisteredBusiness,
+) =>
+  api.post("/user/sign-up", {
+    userId,
+    userPwd,
+    userNickname,
+    userAge,
+    isRegisteredBusiness,
+  });
 
 /** 로그아웃 */
 export const logoutUser = () =>
@@ -130,8 +180,19 @@ export const getSessionUser = () =>
 // =====================================================
 
 /** 게시글 목록 조회 - sortType: "LATEST" | "VIEWS" | "LIKES" */
-export const fetchPostList = (page = 1, size = 10, sortType = "LATEST", keyword = null) =>
-  api.post("/community/list", { page, size, sortType, keyword, offset: (page - 1) * size });
+export const fetchPostList = (
+  page = 1,
+  size = 10,
+  sortType = "LATEST",
+  keyword = null,
+) =>
+  api.post("/community/list", {
+    page,
+    size,
+    sortType,
+    keyword,
+    offset: (page - 1) * size,
+  });
 
 /** 게시글 상세 조회 */
 export const fetchPostDetail = (postIdx) =>
@@ -142,16 +203,27 @@ export const createPost = (userIdx, title, contents, attachment = null) =>
   api.post("/community/write", { userIdx, title, contents, attachment });
 
 /** 게시글 수정 */
-export const updatePost = (postIdx, userIdx, title, contents, attachment = null) =>
-  api.post("/community/update", { postIdx, userIdx, title, contents, attachment });
+export const updatePost = (
+  postIdx,
+  userIdx,
+  title,
+  contents,
+  attachment = null,
+) =>
+  api.post("/community/update", {
+    postIdx,
+    userIdx,
+    title,
+    contents,
+    attachment,
+  });
 
 /** 게시글 삭제 */
 export const deletePost = (postIdx, userIdx) =>
   api.post("/community/delete", { postIdx, userIdx });
 
 /** 이번 주 HOT 게시글 */
-export const fetchHotPostList = () =>
-  api.post("/community/hot");
+export const fetchHotPostList = () => api.post("/community/hot");
 
 /** 댓글 작성 */
 export const createComment = (postIdx, userIdx, contents) =>
@@ -179,11 +251,19 @@ export const fetchNoticeDetail = (noticeIdx) =>
 
 /** 공지사항 작성 (어드민) */
 export const createNotice = (title, contents, isFixed = "N") =>
-  api.post("/notice/write", { title, contents, isFixed }, { withCredentials: true });
+  api.post(
+    "/notice/write",
+    { title, contents, isFixed },
+    { withCredentials: true },
+  );
 
 /** 공지사항 수정 (어드민) */
 export const updateNotice = (noticeIdx, title, contents, isFixed = "N") =>
-  api.post("/notice/update", { noticeIdx, title, contents, isFixed }, { withCredentials: true });
+  api.post(
+    "/notice/update",
+    { noticeIdx, title, contents, isFixed },
+    { withCredentials: true },
+  );
 
 /** 공지사항 삭제 (어드민) */
 export const deleteNotice = (noticeIdx) =>
@@ -198,16 +278,42 @@ export const fetchMyProfile = (userIdx) =>
   api.post("/mypage/profile", { userIdx }, { withCredentials: true });
 
 /** 프로필 수정 (닉네임, 나이, 사업자등록여부, 비밀번호 변경) */
-export const updateMyProfile = (userIdx, userNickname, userAge, isRegisteredBusiness, currentPwd = null, newPwd = null) =>
-  api.post("/mypage/profile/update", { userIdx, userNickname, userAge, isRegisteredBusiness, currentPwd, newPwd }, { withCredentials: true });
+export const updateMyProfile = (
+  userIdx,
+  userNickname,
+  userAge,
+  isRegisteredBusiness,
+  currentPwd = null,
+  newPwd = null,
+) =>
+  api.post(
+    "/mypage/profile/update",
+    {
+      userIdx,
+      userNickname,
+      userAge,
+      isRegisteredBusiness,
+      currentPwd,
+      newPwd,
+    },
+    { withCredentials: true },
+  );
 
 /** 내가 쓴 글 목록 조회 */
 export const fetchMyPostList = (userIdx, page = 1, size = 10) =>
-  api.post("/mypage/posts", { userIdx, page, size, offset: (page - 1) * size }, { withCredentials: true });
+  api.post(
+    "/mypage/posts",
+    { userIdx, page, size, offset: (page - 1) * size },
+    { withCredentials: true },
+  );
 
 /** 내가 쓴 댓글 목록 조회 */
 export const fetchMyCommentList = (userIdx, page = 1, size = 10) =>
-  api.post("/mypage/comments", { userIdx, page, size, offset: (page - 1) * size }, { withCredentials: true });
+  api.post(
+    "/mypage/comments",
+    { userIdx, page, size, offset: (page - 1) * size },
+    { withCredentials: true },
+  );
 
 /** 회원 탈퇴 (비밀번호 확인 후 탈퇴) */
 export const withdrawUser = (userIdx, userPwd) =>
@@ -222,14 +328,25 @@ export const fetchMyFavoriteList = (userIdx) =>
 // =====================================================
 
 /** 즐겨찾기 추가 */
-export const addFavorite = (userIdx, adminDongCode, initialCapital, serviceCategoryName) =>
-  api.post("/favorite/add", { userIdx, adminDongCode, initialCapital, serviceCategoryName }, { withCredentials: true });
+export const addFavorite = (
+  userIdx,
+  adminDongCode,
+  initialCapital,
+  serviceCategoryName,
+) =>
+  api.post(
+    "/favorite/add",
+    { userIdx, adminDongCode, initialCapital, serviceCategoryName },
+    { withCredentials: true },
+  );
 
 /** 즐겨찾기 삭제 */
 export const deleteFavorite = (favoriteIdx, userIdx) =>
-  api.post("/favorite/delete", { favoriteIdx, userIdx }, { withCredentials: true });
-
-
+  api.post(
+    "/favorite/delete",
+    { favoriteIdx, userIdx },
+    { withCredentials: true },
+  );
 
 // =====================================================
 // Chatbot API
@@ -259,7 +376,7 @@ export const updateChatSessionTitle = async (sessionIdx, title) => {
   const response = await axios.patch(
     `/api/chatbot/sessions/${sessionIdx}/title`,
     { title },
-    { withCredentials: true }
+    { withCredentials: true },
   );
   return response.data;
 };

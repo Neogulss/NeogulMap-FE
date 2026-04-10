@@ -5,15 +5,17 @@ import {
     fetchDistrictRecommendList,
     fetchStoreReport,
 } from '../../api/api';
-import { categoryData } from '../../data/analysisData';
+import { fetchCategoryList } from '../../api/api';
 
 const YEAR_QUARTER = 20254;
-const CATEGORY_CODES = { '외식업': 'MC1', '서비스업': 'MC2', '소매업': 'MC3' };
+const MC_CODES = ['MC1', 'MC2', 'MC3'];
 
-function findMainCatCode(serviceCategoryName) {
-    for (const [cat, items] of Object.entries(categoryData)) {
-        if (cat !== '전체' && items.includes(serviceCategoryName)) {
-            return CATEGORY_CODES[cat] ?? null;
+async function findMainCatCode(serviceCategoryName) {
+    const results = await Promise.all(MC_CODES.map(mc => fetchCategoryList(mc)));
+    for (let i = 0; i < results.length; i++) {
+        const list = results[i].data.data?.categoryList ?? [];
+        if (list.some(item => item.serviceIndustryCodeName === serviceCategoryName)) {
+            return MC_CODES[i];
         }
     }
     return null;
@@ -101,7 +103,7 @@ export default function DashboardSection() {
             let storeCount = null;
             let districtName = null;
             try {
-                const mainCatCode = findMainCatCode(fav.serviceCategoryName);
+                const mainCatCode = await findMainCatCode(fav.serviceCategoryName);
                 if (mainCatCode) {
                     const distRes = await fetchDistrictRecommendList(mainCatCode, fav.serviceCategoryName);
                     const match = distRes.data.data.districtRecommendLists
