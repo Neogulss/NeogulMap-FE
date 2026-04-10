@@ -11,12 +11,22 @@ export default function ChatbotMessages({
   loading,
   pendingUserQuery,
   sending,
+  recommendedQuestions = [],
+  loadingRecommendations = false,
+  onSelectRecommendedQuestion,
 }) {
+  const hasRecommendedQuestions = recommendedQuestions.length > 0;
+
   if (loading) {
     return <div className="chat-placeholder">대화 내역 불러오는 중...</div>;
   }
 
-  if ((!logs || logs.length === 0) && !pendingUserQuery) {
+  if (
+    (!logs || logs.length === 0) &&
+    !pendingUserQuery &&
+    !hasRecommendedQuestions &&
+    !loadingRecommendations
+  ) {
     return (
       <div className="chat-placeholder">
         아직 대화가 없습니다. 아래 입력창에서 질문을 시작해보세요.
@@ -113,6 +123,36 @@ export default function ChatbotMessages({
           <div className="msg-content">
             <div className="msg-sender">입지너구리 AI</div>
             <div className="msg-bubble">답변을 생성하고 있습니다...</div>
+          </div>
+        </div>
+      )}
+
+      {!sending && loadingRecommendations && (
+        <div className="msg-row user recommendation-row">
+          <div className="msg-content">
+            <div className="msg-sender">추천 질문</div>
+            <div className="recommendation-loading">추천 질문을 불러오는 중...</div>
+          </div>
+        </div>
+      )}
+
+      {!sending && !loadingRecommendations && hasRecommendedQuestions && (
+        <div className="msg-row user recommendation-row">
+          <div className="msg-content">
+            <div className="msg-sender">추천 질문</div>
+            <div className="recommendation-list">
+              {recommendedQuestions.map((item) => (
+                <button
+                  type="button"
+                  key={item.questionIdx ?? item.questionTitle}
+                  className="recommendation-btn"
+                  onClick={() => onSelectRecommendedQuestion?.(item.questionTitle)}
+                  disabled={sending}
+                >
+                  {item.questionTitle}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}

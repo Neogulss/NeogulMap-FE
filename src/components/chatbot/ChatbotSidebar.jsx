@@ -82,61 +82,67 @@ export default function ChatbotSidebar({
                     className="history-item"
                     onClick={() => onSelectSession(session.sessionIdx)}
                   >
-                    {isEditing ? (
-                      <input
-                        className="history-edit-input"
-                        value={editingTitle}
-                        onChange={(e) => setEditingTitle(e.target.value)}
-                        onClick={(e) => e.stopPropagation()}
-                        placeholder="세션 제목 입력"
-                      />
-                    ) : (
-                      <div className="history-title">
-                        {session.title || "제목 없음"}
+                    <div className="history-top-row">
+                      {isEditing ? (
+                        <input
+                          className="history-edit-input"
+                          value={editingTitle}
+                          onChange={(e) => setEditingTitle(e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          placeholder="세션 제목 입력"
+                        />
+                      ) : (
+                        <div className="history-title">
+                          {session.title || "제목 없음"}
+                        </div>
+                      )}
+
+                      <div className="history-actions">
+                        {isEditing ? (
+                          <>
+                            <button
+                              type="button"
+                              className="history-action-btn"
+                              onClick={() => saveEdit(session.sessionIdx)}
+                            >
+                              저장
+                            </button>
+                            <button
+                              type="button"
+                              className="history-action-btn"
+                              onClick={cancelEdit}
+                            >
+                              취소
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              className="history-action-btn"
+                              onClick={() => startEdit(session)}
+                              aria-label="수정"
+                              title="수정"
+                            >
+                              ✎
+                            </button>
+                            <button
+                              type="button"
+                              className="history-action-btn danger"
+                              onClick={() => onDeleteSession(session.sessionIdx)}
+                              aria-label="삭제"
+                              title="삭제"
+                            >
+                              ×
+                            </button>
+                          </>
+                        )}
                       </div>
-                    )}
+                    </div>
 
                     <div className="history-date">
                       {session.createdAt || ""}
                     </div>
-                  </div>
-
-                  <div className="history-actions">
-                    {isEditing ? (
-                      <>
-                        <button
-                          type="button"
-                          className="history-action-btn"
-                          onClick={() => saveEdit(session.sessionIdx)}
-                        >
-                          저장
-                        </button>
-                        <button
-                          type="button"
-                          className="history-action-btn"
-                          onClick={cancelEdit}
-                        >
-                          취소
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          className="history-action-btn"
-                          onClick={() => startEdit(session)}
-                        >
-                          수정
-                        </button>
-                        <button
-                          type="button"
-                          className="history-action-btn danger"
-                          onClick={() => onDeleteSession(session.sessionIdx)}
-                        >
-                          삭제
-                        </button>
-                      </>
-                    )}
                   </div>
                 </div>
               );

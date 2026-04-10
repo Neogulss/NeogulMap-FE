@@ -387,3 +387,11 @@ export const deleteChatSession = async (sessionIdx) => {
   });
   return response.data;
 };
+
+export const getRecommendedQuestions = async (sessionIdx = null) => {
+  const response = await axios.get("/api/chatbot/recommended-questions", {
+    params: sessionIdx ? { sessionIdx } : undefined,
+    withCredentials: true,
+  });
+  return response.data;
+};
