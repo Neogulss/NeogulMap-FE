@@ -6,9 +6,9 @@ import MainNav from '../components/main/MainNav';
 import LeftPanel from '../components/analysis/LeftPanel';
 import MapPanel from '../components/analysis/MapPanel';
 import RightPanel from '../components/analysis/RightPanel';
-import { categoryData } from '../data/analysisData';
 import {
-    fetchDistrictRecommendList,
+    fetchAIRecommend,
+    fetchCategoryList,
     fetchStoreReport,
     fetchFloatingReport,
     fetchCommercialReport,
@@ -18,37 +18,26 @@ import {
     fetchIncomeReport,
 } from '../api/api';
 
-const CATEGORY_CODES = {
-    '외식업': 'MC1',
-    '서비스업': 'MC2',
-    '소매업': 'MC3',
-};
-
 const YEAR_QUARTER = 20254;
 const HISTORY_QUARTERS = [20244, 20251, 20252, 20253, 20254];
 
-function getCategoryCode(selectedCategory, subCategory) {
-    if (selectedCategory !== '전체') return CATEGORY_CODES[selectedCategory] ?? null;
-    for (const [cat, items] of Object.entries(categoryData)) {
-        if (cat !== '전체' && items.includes(subCategory)) return CATEGORY_CODES[cat] ?? null;
-    }
-    return null;
-}
-
-function findCategoryForSub(subCategory) {
-    for (const [cat, items] of Object.entries(categoryData)) {
-        if (cat !== '전체' && items.includes(subCategory)) return cat;
-    }
-    return '전체';
-}
+const CATEGORY_TABS = [
+    { label: '외식업', mc: 'MC1' },
+    { label: '서비스업', mc: 'MC2' },
+    { label: '소매업', mc: 'MC3' },
+];
 
 export default function AnalysisPage() {
     const location = useLocation();
 
-    const [selectedCategory, setSelectedCategory]       = useState('전체');
-    const [selectedSubCategory, setSelectedSubCategory] = useState('');
-    const [budgetMin, setBudgetMin]     = useState(5000);
-    const [budgetMax, setBudgetMax]     = useState(15000);
+    const initState = location.state;
+    const [selectedCategory, setSelectedCategory]       = useState('외식업');
+    const [selectedSubCategory, setSelectedSubCategory] = useState(() => initState?.serviceCategoryName ?? '');
+    const [subCategories, setSubCategories]             = useState([]);
+    const [budgetMin, setBudgetMin]     = useState(() => initState?.budgetMin != null ? Number(initState.budgetMin) : 5000);
+    const [budgetMax, setBudgetMax]     = useState(() => initState?.budgetMax != null ? Number(initState.budgetMax) : 15000);
+    const [floor, setFloor]             = useState(1);
+    const [area, setArea]               = useState(33);
     const [resultList, setResultList]   = useState([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [selectedData, setSelectedData]     = useState(null);
@@ -246,11 +235,9 @@ export default function AnalysisPage() {
 
     const runAnalysis = useCallback(async () => {
         if (!selectedSubCategory) { alert('상세 업종을 선택해주세요.'); return; }
-        if (!budgetMin || !budgetMax) { alert('최소 및 최대 자본금을 입력해주세요.'); return; }
-        if (Number(budgetMin) >= Number(budgetMax)) { alert('최대 자본금이 최소 자본금보다 커야 합니다.'); return; }
-
-        const mainCategoryCode = getCategoryCode(selectedCategory, selectedSubCategory);
-        if (!mainCategoryCode) { alert('해당 업종은 현재 지원되지 않습니다. (외식업·서비스업·소매업만 가능)'); return; }
+        if (!budgetMax) { alert('최대 자본금을 입력해주세요.'); return; }
+        if (!floor) { alert('층수를 입력해주세요.'); return; }
+        if (!area) { alert('면적을 입력해주세요.'); return; }
 
         clusterOverlaysRef.current.forEach(o => o.setMap(null));
         pinOverlaysRef.current.forEach(p => p.setMap(null));
@@ -261,41 +248,37 @@ export default function AnalysisPage() {
         setIsAnalyzing(true);
 
         try {
-            const res = await fetchDistrictRecommendList(mainCategoryCode, selectedSubCategory);
-            const seen = new Set();
-            const items = res.data.data.districtRecommendLists
-                .filter(item => {
-                    if (seen.has(item.adminDongCode)) return false;
-                    seen.add(item.adminDongCode);
-                    return true;
-                })
-                .map((item) => ({
-                    id: item.adminDongCode,
-                    name: item.adminDongName,
-                    districtName: item.districtName,
-                    lat: item.latitude,
-                    lng: item.longitude,
-                    adminDongCode: item.adminDongCode,
-                    serviceIndustryCode: item.serviceIndustryCode,
-                    serviceIndustryCodeName: item.serviceIndustryCodeName,
-                    score: null,
-                    grade: null,
-                    desc: `${item.districtName} 추천 상권`,
-                    count: 0,
-                    summaryComments: [],
-                    statSummary:  null,
-                    historyData:  null,
-                    compareData:  null,
-                    storeRaw:     null,
-                    floatingRaw:  null,
-                    commercialRaw: null,
-                    resident:  null,
-                    household: null,
-                    facility:  null,
-                    income:    null,
-                    swot:   null,
-                    advice: null,
-                }));
+            const res = await fetchAIRecommend(selectedSubCategory, floor, area, budgetMax);
+            const items = (res.data.results ?? []).map((item) => ({
+                id: item.adminDongCode,
+                name: item.adminDongName,
+                districtName: item.districtName,
+                lat: item.latitude,
+                lng: item.longitude,
+                adminDongCode: item.adminDongCode,
+                adminDongName: item.adminDongName,
+                districtCode: item.districtCode,
+                serviceIndustryCode: item.serviceIndustryCode,
+                serviceIndustryCodeName: item.serviceIndustryCodeName,
+                estimatedCost: item.estimatedCost,
+                score: null,
+                grade: null,
+                desc: `${item.districtName} 추천 상권`,
+                count: 0,
+                summaryComments: [],
+                statSummary:  null,
+                historyData:  null,
+                compareData:  null,
+                storeRaw:     null,
+                floatingRaw:  null,
+                commercialRaw: null,
+                resident:  null,
+                household: null,
+                facility:  null,
+                income:    null,
+                swot:   null,
+                advice: null,
+            }));
 
             setResultList(items);
             setIsAnalyzing(false);
@@ -318,26 +301,19 @@ export default function AnalysisPage() {
                 mapRef.current.panTo(new window.kakao.maps.LatLng(37.5665, 126.9780));
             }
         } catch (err) {
-            console.error('분석 API 오류:', err);
-            alert('분석 중 오류가 발생했습니다.');
+            console.error('AI 분석 API 오류:', err);
+            alert('분석 중 오류가 발생했습니다. FastAPI 서버가 실행 중인지 확인해주세요.');
             setIsAnalyzing(false);
         }
-    }, [selectedCategory, selectedSubCategory, budgetMin, budgetMax]);
+    }, [selectedSubCategory, budgetMax, floor, area]);
 
     // runAnalysis ref 동기화 (항상 최신 버전 유지)
     useEffect(() => { runAnalysisRef.current = runAnalysis; }, [runAnalysis]);
 
-    // 즐겨찾기에서 넘어온 경우: 조건 복원 후 자동 분석
+    // 즐겨찾기에서 넘어온 경우: pendingDong 설정 후 자동 분석
     useEffect(() => {
-        const state = location.state;
-        if (!state?.serviceCategoryName) return;
-        const { adminDongCode, serviceCategoryName, budgetMin: min, budgetMax: max } = state;
-        if (min != null) setBudgetMin(Number(min));
-        if (max != null) setBudgetMax(Number(max));
-        setSelectedCategory(findCategoryForSub(serviceCategoryName));
-        setSelectedSubCategory(serviceCategoryName);
-        if (adminDongCode) pendingDongRef.current = Number(adminDongCode);
-        // React 상태 업데이트 후 최신 runAnalysis 호출
+        if (!initState?.serviceCategoryName) return;
+        if (initState.adminDongCode) pendingDongRef.current = Number(initState.adminDongCode);
         setTimeout(() => { runAnalysisRef.current?.(); }, 0);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -374,6 +350,31 @@ export default function AnalysisPage() {
         });
     }, []);
 
+    // 탭 변경 시 해당 MC 코드로 업종 목록 fetch
+    useEffect(() => {
+        const mc = CATEGORY_TABS.find(t => t.label === selectedCategory)?.mc;
+        if (!mc) return;
+        fetchCategoryList(mc)
+            .then(res => setSubCategories(res.data.data.categoryList ?? []))
+            .catch(() => setSubCategories([]));
+    }, [selectedCategory]);
+
+    // 즐겨찾기에서 넘어온 경우: 업종명으로 속한 탭 탐색 후 카테고리 설정
+    useEffect(() => {
+        const name = initState?.serviceCategoryName;
+        if (!name) return;
+        Promise.all(CATEGORY_TABS.map(t => fetchCategoryList(t.mc)))
+            .then(results => {
+                results.forEach((res, i) => {
+                    const list = res.data.data.categoryList ?? [];
+                    if (list.some(item => item.serviceIndustryCodeName === name)) {
+                        setSelectedCategory(CATEGORY_TABS[i].label);
+                    }
+                });
+            })
+            .catch(() => {});
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const handleCategoryChange = useCallback((cat) => {
         setSelectedCategory(cat);
         setSelectedSubCategory('');
@@ -386,14 +387,20 @@ export default function AnalysisPage() {
                 <LeftPanel
                     isCollapsed={isLeftCollapsed}
                     onToggle={handleLeftToggle}
+                    categoryTabs={CATEGORY_TABS}
                     selectedCategory={selectedCategory}
                     onCategoryChange={handleCategoryChange}
+                    subCategories={subCategories}
                     selectedSubCategory={selectedSubCategory}
                     onSubCategoryChange={setSelectedSubCategory}
                     budgetMin={budgetMin}
                     budgetMax={budgetMax}
                     onBudgetMinChange={setBudgetMin}
                     onBudgetMaxChange={setBudgetMax}
+                    floor={floor}
+                    onFloorChange={setFloor}
+                    area={area}
+                    onAreaChange={setArea}
                     onSearch={runAnalysis}
                     resultList={resultList}
                     isAnalyzing={isAnalyzing}
