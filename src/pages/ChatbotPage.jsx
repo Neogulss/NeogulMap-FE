@@ -5,6 +5,7 @@ import {
   sendChatMessage,
   updateChatSessionTitle,
   deleteChatSession,
+  getRecommendedQuestions,
 } from "../api/api";
 import ChatbotSidebar from "../components/chatbot/ChatbotSidebar";
 import ChatbotMessages from "../components/chatbot/ChatbotMessages";
@@ -16,6 +17,8 @@ export default function ChatbotPage() {
   const [selectedSessionIdx, setSelectedSessionIdx] = useState(null);
   const [logs, setLogs] = useState([]);
   const [pendingUserQuery, setPendingUserQuery] = useState("");
+  const [recommendedQuestions, setRecommendedQuestions] = useState([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
   const [loadingSessions, setLoadingSessions] = useState(false);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [sending, setSending] = useState(false);
@@ -76,6 +79,8 @@ export default function ChatbotPage() {
         const firstSessionIdx = data[0].sessionIdx;
         setSelectedSessionIdx(firstSessionIdx);
         await loadLogs(firstSessionIdx);
+      } else if (data.length === 0) {
+        await loadRecommendedQuestions(null);
       }
     } catch (error) {
       console.error(error);
@@ -93,6 +98,7 @@ export default function ChatbotPage() {
       const data = await getChatLogs(sessionIdx);
       setLogs(data);
       setSelectedSessionIdx(sessionIdx);
+      await loadRecommendedQuestions(sessionIdx);
     } catch (error) {
       console.error(error);
       setErrorMessage("대화 내역을 불러오지 못했습니다.");
@@ -106,6 +112,7 @@ export default function ChatbotPage() {
     setLogs([]);
     setPendingUserQuery("");
     setErrorMessage("");
+    loadRecommendedQuestions(null);
 
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
@@ -152,6 +159,8 @@ export default function ChatbotPage() {
 
       if (response?.sessionIdx) {
         await loadLogs(response.sessionIdx);
+      } else {
+        await loadRecommendedQuestions(selectedSessionIdx);
       }
     } catch (error) {
       console.error(error);
@@ -193,6 +202,8 @@ export default function ChatbotPage() {
         const firstSessionIdx = updatedSessions[0].sessionIdx;
         setSelectedSessionIdx(firstSessionIdx);
         await loadLogs(firstSessionIdx);
+      } else if (updatedSessions.length === 0) {
+        await loadRecommendedQuestions(null);
       }
 
       window.scrollTo(0, 0);
@@ -200,6 +211,29 @@ export default function ChatbotPage() {
       console.error(error);
       setErrorMessage("세션 삭제에 실패했습니다.");
     }
+  };
+
+  const loadRecommendedQuestions = async (sessionIdx) => {
+    try {
+      setLoadingRecommendations(true);
+      const data = await getRecommendedQuestions(sessionIdx);
+      setRecommendedQuestions(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+      setRecommendedQuestions([]);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  };
+
+  const handleSelectRecommendedQuestion = async (questionTitle) => {
+    if (!questionTitle || sending) return;
+    await handleSendMessage({
+      userQuery: questionTitle,
+      industry: "",
+      age: "",
+      hasBusinessRegistration: "",
+    });
   };
 
   return (
@@ -241,6 +275,9 @@ export default function ChatbotPage() {
                 loading={loadingLogs}
                 pendingUserQuery={pendingUserQuery}
                 sending={sending}
+                recommendedQuestions={recommendedQuestions}
+                loadingRecommendations={loadingRecommendations}
+                onSelectRecommendedQuestion={handleSelectRecommendedQuestion}
               />
             </div>
 
