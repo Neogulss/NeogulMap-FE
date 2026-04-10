@@ -370,11 +370,14 @@ body {
 
 .msg-row.bot {
   align-self: flex-start;
+  max-width: 65%;
 }
 
 .msg-row.user {
-  align-self: flex-end;
-  align-items: flex-end;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  max-width: 100%;
 }
 
 .msg-content {
@@ -419,6 +422,9 @@ body {
   color: #fff;
   border-radius: 20px 4px 20px 20px;
   border: none;
+
+  max-width: 70%;
+  margin-left: auto;
 }
 
 .message-meta {
