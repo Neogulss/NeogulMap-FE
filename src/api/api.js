@@ -395,3 +395,20 @@ export const getRecommendedQuestions = async (sessionIdx = null) => {
   });
   return response.data;
 };
+
+// 비로그인 전용: 서비스 소개 질문은 AI 서버를 직접 호출
+const policyChatbotGuestApi = axios.create({
+  baseURL: import.meta.env.VITE_POLICY_CHATBOT_URL || "http://localhost:8000",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+export const askPolicyChatbotAsGuest = async (userQuery) => {
+  const response = await policyChatbotGuestApi.post("/api/policy-chatbot/ask", {
+    user_query: userQuery,
+    user_profile: null,
+    session_idx: null,
+  });
+  return response.data;
+};

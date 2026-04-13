@@ -4,6 +4,7 @@ export default function ChatbotInput({
   onSend,
   sending,
   showProfileForm = false,
+  disabled = false,
 }) {
   const [userQuery, setUserQuery] = useState("");
   const [industry, setIndustry] = useState("");
@@ -19,7 +20,7 @@ export default function ChatbotInput({
   }, [userQuery]);
 
   const handleSend = async () => {
-    if (!userQuery.trim() || sending) return;
+    if (disabled || !userQuery.trim() || sending) return;
 
     await onSend({
       userQuery,
@@ -32,6 +33,8 @@ export default function ChatbotInput({
   };
 
   const handleKeyDown = async (e) => {
+    if (disabled) return;
+
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       await handleSend();
@@ -41,7 +44,7 @@ export default function ChatbotInput({
   return (
     <>
       {showProfileForm && (
-        <div className="survey-box">
+        <div className={`survey-box ${disabled ? "disabled" : ""}`}>
           <div className="survey-item">
             <label>업종</label>
             <input
@@ -49,6 +52,7 @@ export default function ChatbotInput({
               placeholder="예: 외식업, 카페, 뷰티"
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
+              disabled={disabled}
             />
           </div>
 
@@ -59,6 +63,7 @@ export default function ChatbotInput({
               placeholder="예: 29"
               value={age}
               onChange={(e) => setAge(e.target.value)}
+              disabled={disabled}
             />
           </div>
 
@@ -67,6 +72,7 @@ export default function ChatbotInput({
             <select
               value={hasBusinessRegistration}
               onChange={(e) => setHasBusinessRegistration(e.target.value)}
+              disabled={disabled}
             >
               <option value="">선택</option>
               <option value="true">있음</option>
@@ -76,12 +82,17 @@ export default function ChatbotInput({
         </div>
       )}
 
-      <div className="chat-input-wrapper">
+      <div className={`chat-input-wrapper ${disabled ? "disabled" : ""}`}>
         <button
           type="button"
           className="btn-attach"
-          title="첨부 기능 준비 중"
-          onClick={() => window.alert("첨부 기능은 아직 연결되지 않았습니다.")}
+          title={disabled ? "로그인 후 사용할 수 있습니다." : "첨부 기능 준비 중"}
+          onClick={() => {
+            if (!disabled) {
+              window.alert("첨부 기능은 아직 연결되지 않았습니다.");
+            }
+          }}
+          disabled={disabled}
         >
           <svg viewBox="0 0 24 24">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
@@ -91,19 +102,24 @@ export default function ChatbotInput({
         <textarea
           ref={textareaRef}
           className="input-field"
-          placeholder="입지너구리에게 정책 정보나 궁금한 창업 대출을 질문해 보세요."
+          placeholder={
+            disabled
+              ? "로그인 후 질문을 입력할 수 있어요."
+              : "입지너구리에게 정책 정보나 궁금한 창업 대출을 질문해 보세요."
+          }
           value={userQuery}
           onChange={(e) => setUserQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           rows={1}
+          disabled={disabled}
         />
 
         <button
           type="button"
           className="btn-send"
           onClick={handleSend}
-          disabled={sending}
-          title="전송"
+          disabled={sending || disabled}
+          title={disabled ? "로그인 후 전송할 수 있습니다." : "전송"}
         >
           {sending ? (
             "..."
