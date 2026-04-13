@@ -6,14 +6,7 @@ export default function AuthFooter() {
           <div className="auth-footer-brand">
             <div className="auth-footer-brand-title">
               <div className="auth-footer-logo-mark">
-                <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
-                  <ellipse cx="11" cy="14" rx="7" ry="6" fill="rgba(0,200,83,.15)" />
-                  <circle cx="7" cy="7.5" r="3" fill="#00B34A" />
-                  <circle cx="15" cy="7.5" r="3" fill="#00B34A" />
-                  <circle cx="11" cy="14" r="5" fill="#fff" />
-                  <circle cx="9" cy="13" r="1" fill="#1a1d20" />
-                  <circle cx="13" cy="13" r="1" fill="#1a1d20" />
-                </svg>
+                <img src="/neoguri.svg" alt="입지너구리 로고" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               입지너구리
             </div>
