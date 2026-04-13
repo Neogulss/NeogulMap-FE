@@ -201,9 +201,11 @@ body.analysis-active {
 .area-card.active .area-label { color: var(--g); }
 
 .budget-tilde { font-weight: 700; color: var(--text3); font-size: 13px; }
+.budget-single-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.budget-single-wrap .budget-input-group { flex: unset; }
 .budget-summary {
     font-size: 12px; font-weight: 700; color: var(--g);
-    text-align: center; margin-top: -8px; margin-bottom: 14px;
+    text-align: center;
     background: var(--g5); border-radius: 6px; padding: 6px 10px;
     letter-spacing: -0.3px;
 }
@@ -521,6 +523,101 @@ body.analysis-active {
 .ct-bar-wrap { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
 .ct-bar { height: 100%; background: #1a73e8; border-radius: 4px; transition: width 0.5s var(--ease); }
 .ct-val { font-size: 12px; font-weight: 700; color: var(--text); font-family: var(--mono); width: 36px; text-align: right; flex-shrink: 0; }
+
+/* ── 추천 리스트 lc-meta (차액 + 비용 양끝 배치) ── */
+.lc-meta { display: flex; align-items: center; gap: 6px; }
+
+.lc-tag-diff {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 8px; border-radius: 20px;
+    border: 1.5px solid;
+    white-space: nowrap; flex-shrink: 0;
+}
+.lc-tag-diff.positive {
+    background: rgba(0,150,36,0.08); color: var(--g);
+    border-color: rgba(0,150,36,0.25);
+}
+.lc-tag-diff.negative {
+    background: rgba(233,30,99,0.07); color: #e91e63;
+    border-color: rgba(233,30,99,0.2);
+}
+.lc-tag-count {
+    font-size: 12px; font-weight: 700;
+    background: var(--bg2); color: var(--text2);
+    padding: 4px 10px; border-radius: 20px;
+    border: 1.5px solid var(--line);
+}
+
+/* ── 챗봇 위젯 ── */
+.chatbot-widget {
+    position: absolute;
+    top: 16px; right: 16px;
+    z-index: 50;
+    display: flex; flex-direction: column; align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s;
+    user-select: none;
+}
+.chatbot-widget:hover { transform: scale(1.06) translateY(-2px); }
+.chatbot-widget:hover .chatbot-bubble {
+    background: var(--g);
+    color: #fff;
+    border-color: var(--g);
+}
+.chatbot-widget:hover .chatbot-bubble::after { border-top-color: var(--g); }
+
+.chatbot-bubble {
+    background: #fff;
+    border: 2px solid var(--g);
+    border-radius: 12px;
+    padding: 8px 14px;
+    font-size: 12px; font-weight: 700; color: var(--text);
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,150,36,0.18);
+    position: relative;
+    margin-bottom: 10px;
+    transition: background 0.2s, color 0.2s;
+    letter-spacing: -0.3px;
+}
+.chatbot-bubble::after {
+    content: '';
+    position: absolute;
+    bottom: -10px; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--g);
+}
+.chatbot-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -7px; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: #fff;
+    z-index: 1;
+}
+
+.chatbot-mascot-img {
+    width: 76px; height: 76px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.18);
+    background: #fff;
+    transition: box-shadow 0.2s;
+}
+.chatbot-widget--active .chatbot-mascot-img {
+    border-color: var(--g);
+    box-shadow: 0 4px 20px rgba(0,150,36,0.35);
+}
+.chatbot-widget:not(.chatbot-widget--active) {
+    opacity: 0.75;
+    filter: grayscale(0.3);
+}
+.chatbot-widget:not(.chatbot-widget--active):hover {
+    opacity: 0.9;
+    filter: grayscale(0);
+}
 
 /* ── RESPONSIVE ────────────────────────────────────────────────────────── */
 @media (max-width: 1280px) {
