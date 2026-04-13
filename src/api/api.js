@@ -43,7 +43,7 @@ export const fetchDistrictRecommendList = (
 // FastAPI AI 추천 API
 // =====================================================
 const aiApi = axios.create({
-  baseURL: "http://localhost:8000",
+  baseURL: "http://localhost:8001",
   headers: {
     "Content-Type": "application/json",
   },

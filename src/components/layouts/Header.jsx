@@ -13,7 +13,7 @@ export default function Header() {
     }`;
 
   return (
-    <header className="flex items-center justify-between px-10 py-4 bg-white border-b border-gray-100">
+    <header className="flex items-center px-10 py-4 bg-white border-b border-gray-100">
         <button onClick={() => navigate("/")} className="focus:outline-none">
       <div className="flex items-center gap-1">
             <img
@@ -24,12 +24,12 @@ export default function Header() {
           <div className="flex flex-col items-start">
           <div className="font-bold text-b-7 text-neutral-9">입지너구리</div>
           <div className="font-medium text-b-5 text-primary-3">AI 상권 분석 서비스</div>
-        </div> 
-        
+        </div>
+
       </div>
         </button>
 
-      <nav className="flex items-center gap-8">
+      <nav className="flex items-center gap-8 ml-auto mr-4">
         <NavLink to="/analysis" className={menuClass}>
           상권분석
         </NavLink>

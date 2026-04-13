@@ -569,3 +569,35 @@
   gap: 12px;
   margin-top: 16px;
 }
+
+/* ── RESPONSIVE ────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .mypage-wrapper { padding: 32px 24px 60px; gap: 32px; }
+  .mp-sidebar { width: 180px; }
+}
+
+@media (max-width: 768px) {
+  .mypage-wrapper { flex-direction: column; padding: 24px 16px 60px; gap: 0; min-height: auto; }
+  .mp-sidebar { width: 100%; position: static; margin-bottom: 24px; }
+  .mp-title { font-size: 22px; margin-bottom: 16px; }
+  .mp-menu { flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .mp-menu-item { flex: 1 1 auto; text-align: center; justify-content: center; font-size: 13px; padding: 10px 8px; min-width: 80px; }
+  .mp-menu-item.danger { margin-top: 0; width: 100%; }
+
+  .box-card { padding: 20px; }
+  .section-title { font-size: 20px; }
+
+  .profile-layout { flex-direction: column; gap: 24px; }
+  .profile-avatar-col { flex-direction: row; gap: 20px; align-items: center; }
+  .form-row { grid-template-columns: 100px 1fr; }
+  .form-input { max-width: 100%; }
+
+  .fav-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .mypage-wrapper { padding: 20px 12px 48px; }
+  .mp-menu-item { font-size: 12px; padding: 8px 6px; }
+  .box-card { padding: 16px; }
+  .form-row { grid-template-columns: 1fr; gap: 4px; }
+}
