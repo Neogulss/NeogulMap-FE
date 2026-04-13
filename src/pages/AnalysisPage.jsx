@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/main.css';
 import '../styles/analysis.css';
 import MainNav from '../components/main/MainNav';
@@ -29,12 +29,12 @@ const CATEGORY_TABS = [
 
 export default function AnalysisPage() {
     const location = useLocation();
+    const navigate = useNavigate();
 
     const initState = location.state;
     const [selectedCategory, setSelectedCategory]       = useState('외식업');
     const [selectedSubCategory, setSelectedSubCategory] = useState(() => initState?.serviceCategoryName ?? '');
     const [subCategories, setSubCategories]             = useState([]);
-    const [budgetMin, setBudgetMin]     = useState(() => initState?.budgetMin != null ? Number(initState.budgetMin) : 5000);
     const [budgetMax, setBudgetMax]     = useState(() => initState?.budgetMax != null ? Number(initState.budgetMax) : 15000);
     const [floor, setFloor]             = useState(1);
     const [area, setArea]               = useState(33);
@@ -261,6 +261,7 @@ export default function AnalysisPage() {
                 serviceIndustryCode: item.serviceIndustryCode,
                 serviceIndustryCodeName: item.serviceIndustryCodeName,
                 estimatedCost: item.estimatedCost,
+                diff: (budgetMax || 0) - (item.estimatedCost || 0),
                 score: null,
                 grade: null,
                 desc: `${item.districtName} 추천 상권`,
@@ -279,6 +280,8 @@ export default function AnalysisPage() {
                 swot:   null,
                 advice: null,
             }));
+
+            items.sort((a, b) => b.diff - a.diff);
 
             setResultList(items);
             setIsAnalyzing(false);
@@ -350,6 +353,21 @@ export default function AnalysisPage() {
         });
     }, []);
 
+    const handleChatbotClick = useCallback(() => {
+        navigate('/chatbot', {
+            state: selectedData ? {
+                fromAnalysis: true,
+                serviceIndustryCodeName: selectedData.serviceIndustryCodeName,
+                districtName: selectedData.districtName,
+                adminDongName: selectedData.adminDongName,
+                floor,
+                area,
+                budgetMax,
+                diff: selectedData.diff,
+            } : { fromAnalysis: false },
+        });
+    }, [navigate, selectedData, floor, area, budgetMax]);
+
     // 탭 변경 시 해당 MC 코드로 업종 목록 fetch
     useEffect(() => {
         const mc = CATEGORY_TABS.find(t => t.label === selectedCategory)?.mc;
@@ -393,9 +411,7 @@ export default function AnalysisPage() {
                     subCategories={subCategories}
                     selectedSubCategory={selectedSubCategory}
                     onSubCategoryChange={setSelectedSubCategory}
-                    budgetMin={budgetMin}
                     budgetMax={budgetMax}
-                    onBudgetMinChange={setBudgetMin}
                     onBudgetMaxChange={setBudgetMax}
                     floor={floor}
                     onFloorChange={setFloor}
@@ -407,7 +423,11 @@ export default function AnalysisPage() {
                     activeCardId={activeCardId}
                     onSelectData={handleSelectData}
                 />
-                <MapPanel onMapInit={handleMapInit} />
+                <MapPanel
+                    onMapInit={handleMapInit}
+                    selectedData={selectedData}
+                    onChatbotClick={handleChatbotClick}
+                />
                 <RightPanel
                     isShow={isRightShow}
                     isCollapsed={isRightCollapsed}
@@ -416,7 +436,7 @@ export default function AnalysisPage() {
                     selectedData={selectedData}
                     selectedSubCategory={selectedSubCategory}
                     isLoggedIn={isLoggedIn}
-                    budgetMin={budgetMin}
+                    budgetMin={0}
                     budgetMax={budgetMax}
                 />
             </div>

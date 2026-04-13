@@ -98,9 +98,7 @@ export default function LeftPanel({
   subCategories,
   selectedSubCategory,
   onSubCategoryChange,
-  budgetMin,
   budgetMax,
-  onBudgetMinChange,
   onBudgetMaxChange,
   floor,
   onFloorChange,
@@ -220,34 +218,24 @@ export default function LeftPanel({
 
         {/* 창업 자본금 */}
         <div className="form-label form-label-row">
-          창업 자본금 범위 설정
+          창업 자본금
           <Tooltip text="창업 자본금은 권리금 + 보증금을 합한 금액입니다." />
         </div>
-        <div className="budget-inputs-wrap">
-          <div className="budget-input-group">
-            <BudgetInput
-              value={budgetMin}
-              onChange={onBudgetMinChange}
-              placeholder="최소 금액"
-            />
-            <span className="budget-unit">만원</span>
-          </div>
-          <span className="budget-tilde">~</span>
+        <div className="budget-single-wrap">
           <div className="budget-input-group">
             <BudgetInput
               value={budgetMax}
               onChange={onBudgetMaxChange}
-              placeholder="최대 금액"
+              placeholder="자본금 입력"
             />
             <span className="budget-unit">만원</span>
           </div>
+          {budgetMax && (
+            <div className="budget-summary">
+              {formatAmount(budgetMax)}
+            </div>
+          )}
         </div>
-        {(budgetMin || budgetMax) && (
-          <div className="budget-summary">
-            {budgetMin ? formatAmount(budgetMin) : "?"} ~{" "}
-            {budgetMax ? formatAmount(budgetMax) : "?"}
-          </div>
-        )}
 
         <button className="btn-search" onClick={onSearch}>
           AI 맞춤 입지 분석하기
@@ -305,6 +293,12 @@ export default function LeftPanel({
                   </strong>
                 </div>
                 <div className="lc-meta">
+                  {data.diff !== undefined && (
+                    <span className={`lc-tag lc-tag-diff${data.diff >= 0 ? ' positive' : ' negative'}`}>
+                      예상 차액 {data.diff >= 0 ? '+' : ''}{data.diff.toLocaleString()}만원
+                    </span>
+                  )}
+                  <span style={{ flex: 1 }} />
                   {data.count > 0 && (
                     <span className="lc-tag lc-tag-count">
                       점포 {data.count}개

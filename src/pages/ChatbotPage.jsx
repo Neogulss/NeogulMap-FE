@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import {
   getChatSessions,
   getChatLogs,
@@ -6,13 +7,29 @@ import {
   updateChatSessionTitle,
   deleteChatSession,
   getRecommendedQuestions,
+  fetchMyProfile,
 } from "../api/api";
 import ChatbotSidebar from "../components/chatbot/ChatbotSidebar";
 import ChatbotMessages from "../components/chatbot/ChatbotMessages";
 import ChatbotInput from "../components/chatbot/ChatbotInput";
 import "../styles/ChatbotPage.css";
 
+function formatAmount(val) {
+  const n = Number(val);
+  if (!n || isNaN(n)) return `${val}만원`;
+  if (n >= 10000) {
+    const uk = Math.floor(n / 10000);
+    const rest = n % 10000;
+    return rest > 0 ? `${uk}억 ${rest.toLocaleString()}만원` : `${uk}억원`;
+  }
+  return `${n.toLocaleString()}만원`;
+}
+
 export default function ChatbotPage() {
+  const location = useLocation();
+  const analysisContext = location.state?.fromAnalysis ? location.state : null;
+  const autoSentRef = useRef(false);
+
   const [sessions, setSessions] = useState([]);
   const [selectedSessionIdx, setSelectedSessionIdx] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -30,8 +47,9 @@ export default function ChatbotPage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    loadSessions();
-  }, []);
+    // 상권분석에서 넘어온 경우 새 채팅으로 시작 → 기존 세션 자동 선택 안 함
+    loadSessions({ autoSelect: !analysisContext });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -63,11 +81,68 @@ export default function ChatbotPage() {
     [logs, pendingUserQuery]
   );
 
+  // 상권분석 페이지에서 넘어온 경우: 세션 로드 완료 후 새 채팅으로 맞춤 메시지 자동 전송
   useEffect(() => {
-    loadSessions();
-  }, []);
+    if (!analysisContext || autoSentRef.current || loadingSessions) return;
+    autoSentRef.current = true;
 
-  const loadSessions = async () => {
+    const run = async () => {
+      // 사용자 프로필 조회 (나이·사업자등록여부)
+      let userAge = '';
+      let isRegistered = '';
+      const userIdx = localStorage.getItem('userIdx');
+      if (userIdx) {
+        try {
+          const profileRes = await fetchMyProfile(Number(userIdx));
+          const p = profileRes?.data?.data ?? profileRes?.data ?? null;
+          if (p) {
+            userAge = p.userAge ?? p.age ?? '';
+            isRegistered = p.isRegisteredBusiness ?? p.hasBusinessRegistration ?? '';
+          }
+        } catch { /* 프로필 조회 실패 시 생략 */ }
+      }
+
+      const floorLabel = analysisContext.floor === -1 ? '지하' : `${analysisContext.floor}층`;
+      const diff = analysisContext.diff;
+      const diffText =
+        diff !== undefined && diff !== null
+          ? diff >= 0
+            ? `+${formatAmount(diff)} 여유`
+            : `${formatAmount(Math.abs(diff))} 부족`
+          : '정보 없음';
+
+      const districtLine =
+        analysisContext.districtName && analysisContext.adminDongName
+          ? `\n자치구·행정동: ${analysisContext.districtName} ${analysisContext.adminDongName}`
+          : '';
+
+      const ageLine = userAge ? `\n나이: ${userAge}세` : '';
+      const bizLine =
+        isRegistered !== ''
+          ? `\n사업자등록: ${isRegistered === true || isRegistered === 'true' ? '있음' : '없음'}`
+          : '';
+
+      const message =
+        `안녕하세요! 저는 ${analysisContext.serviceIndustryCodeName} 창업을 준비하고 있어요.` +
+        districtLine +
+        `\n업종: ${analysisContext.serviceIndustryCodeName} / 층수: ${floorLabel} / 면적: ${analysisContext.area}㎡` +
+        ` / 자본금: ${formatAmount(analysisContext.budgetMax)} / 예상 차액: ${diffText}` +
+        ageLine +
+        bizLine +
+        `\n\n이 조건에 맞는 창업 대출이나 정책 자금을 추천해주세요.`;
+
+      handleSendMessage({
+        userQuery: message,
+        industry: analysisContext.serviceIndustryCodeName,
+        age: userAge,
+        hasBusinessRegistration: isRegistered !== '' ? String(isRegistered) : '',
+      });
+    };
+
+    run();
+  }, [loadingSessions]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const loadSessions = async ({ autoSelect = true } = {}) => {
     try {
       setLoadingSessions(true);
       setErrorMessage("");
@@ -75,7 +150,7 @@ export default function ChatbotPage() {
       const data = await getChatSessions();
       setSessions(data);
 
-      if (data.length > 0 && !selectedSessionIdx) {
+      if (autoSelect && data.length > 0 && !selectedSessionIdx) {
         const firstSessionIdx = data[0].sessionIdx;
         setSelectedSessionIdx(firstSessionIdx);
         await loadLogs(firstSessionIdx);
