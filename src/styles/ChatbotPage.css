@@ -61,14 +61,15 @@ body {
 
 .chatbot-shell {
   width: 100%;
-  min-height: 100vh;
+  height: calc(100dvh - 64px);
+  min-height: calc(100dvh - 64px);
   background: var(--bg);
 }
 
 .chat-page {
   position: relative;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   background: var(--bg);
   display: flex;
 }
@@ -131,7 +132,7 @@ body {
   position: relative;
   z-index: 10;
   width: 100%;
-  height: 100vh;
+  height: 100%;
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   display: flex;
@@ -205,6 +206,11 @@ body {
   background: var(--line);
 }
 
+.icon-btn-transparent:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .icon-btn-circle {
   width: 48px;
   height: 48px;
@@ -225,6 +231,11 @@ body {
   border-color: var(--g);
   background: var(--g5);
   color: var(--g);
+}
+
+.icon-btn-circle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .sidebar-title {
@@ -392,6 +403,35 @@ body {
   font-weight: 500;
   color: var(--text2);
   margin-bottom: 24px;
+}
+
+.guest-login-btn {
+  border: 1px solid var(--g);
+  background: var(--g);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.guest-login-btn:hover {
+  background: var(--g2);
+  transform: translateY(-1px);
+}
+
+.guest-answer-login-btn {
+  margin-top: 10px;
+  align-self: flex-start;
+  width: 50%;
+  min-width: 160px;
+  padding: 16px 20px;
+  font-size: 15px;
+  line-height: 1.6;
+  text-align: center;
+  white-space: normal;
 }
 
 .chat-placeholder {
@@ -602,6 +642,32 @@ body {
   gap: 16px;
 }
 
+.guest-lock-box {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.guest-lock-title {
+  font-size: 14px;
+  color: var(--text2);
+  font-weight: 600;
+}
+
+.survey-box.disabled,
+.chat-input-wrapper.disabled {
+  opacity: 0.65;
+}
+
+.chat-input-wrapper.disabled {
+  background: #f7f8f9;
+}
+
 .survey-box {
   background: #fff;
   border: 1px solid var(--line);
@@ -695,6 +761,11 @@ body {
 
 .btn-attach:hover {
   color: var(--text);
+}
+
+.btn-attach:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .btn-attach svg {
@@ -804,6 +875,15 @@ body {
 
   .welcome-banner h2 {
     font-size: 28px;
+  }
+
+  .guest-lock-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .guest-login-btn {
+    width: 100%;
   }
 }
 

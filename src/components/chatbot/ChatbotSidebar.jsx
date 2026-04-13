@@ -10,6 +10,7 @@ export default function ChatbotSidebar({
   loading,
   collapsed,
   onToggleCollapse,
+  readOnly = false,
 }) {
   const [editingSessionIdx, setEditingSessionIdx] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
@@ -19,6 +20,7 @@ export default function ChatbotSidebar({
   }, [sessions]);
 
   const startEdit = (session) => {
+    if (readOnly) return;
     setEditingSessionIdx(session.sessionIdx);
     setEditingTitle(session.title || "");
   };
@@ -56,6 +58,7 @@ export default function ChatbotSidebar({
             className="icon-btn-transparent"
             onClick={onNewChat}
             title="새 채팅"
+            disabled={readOnly}
           >
             ＋
           </button>
@@ -64,7 +67,9 @@ export default function ChatbotSidebar({
         <div className="sidebar-title">최근 분석 기록</div>
 
         <div className="history-list">
-          {loading ? (
+          {readOnly ? (
+            <div className="sidebar-empty">로그인 후 대화 기록을 이용할 수 있습니다.</div>
+          ) : loading ? (
             <div className="sidebar-empty">세션 불러오는 중...</div>
           ) : sortedSessions.length === 0 ? (
             <div className="sidebar-empty">세션이 없습니다.</div>
@@ -166,6 +171,7 @@ export default function ChatbotSidebar({
           className="icon-btn-circle"
           onClick={onNewChat}
           title="새 채팅"
+          disabled={readOnly}
         >
           ＋
         </button>
