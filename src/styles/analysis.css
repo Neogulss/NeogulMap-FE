@@ -521,3 +521,57 @@ body.analysis-active {
 .ct-bar-wrap { flex: 1; height: 8px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
 .ct-bar { height: 100%; background: #1a73e8; border-radius: 4px; transition: width 0.5s var(--ease); }
 .ct-val { font-size: 12px; font-weight: 700; color: var(--text); font-family: var(--mono); width: 36px; text-align: right; flex-shrink: 0; }
+
+/* ── RESPONSIVE ────────────────────────────────────────────────────────── */
+@media (max-width: 1280px) {
+    .left-panel { width: 400px; }
+    .left-panel.collapsed { margin-left: -400px; }
+    .right-panel { width: 640px; }
+    .right-panel.show.collapsed { margin-right: -640px; }
+}
+
+@media (max-width: 1024px) {
+    .left-panel { width: 320px; }
+    .left-panel.collapsed { margin-left: -320px; }
+    .right-panel { width: 480px; }
+    .right-panel.show.collapsed { margin-right: -480px; }
+    .stat-summary-grid { grid-template-columns: 1fr 1fr; }
+    .grid-2viz { grid-template-columns: 1fr; }
+    .swot-grid { grid-template-columns: 1fr; }
+    .open-close-grid { grid-template-columns: repeat(2, 1fr); }
+    .store-summary-row { grid-template-columns: repeat(2, 1fr); }
+    .facility-grid { grid-template-columns: repeat(2, 1fr); }
+    .income-summary { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+    /* 패널을 전체화면 오버레이로 전환 */
+    .left-panel {
+        width: 100vw;
+        position: absolute; top: 0; left: 0; height: 100%;
+        z-index: 100;
+        transition: transform 0.4s var(--ease);
+        margin-left: 0;
+        transform: translateX(0);
+    }
+    .left-panel.collapsed {
+        margin-left: 0;
+        transform: translateX(-100%);
+    }
+    .left-toggle { right: -24px; }
+
+    .right-panel {
+        width: 100vw;
+        position: absolute; top: 0; right: 0; height: 100%;
+        z-index: 100;
+    }
+    .right-panel.show.collapsed { margin-right: -100vw; }
+
+    /* 내부 그리드 조정 */
+    .stat-summary-grid { grid-template-columns: 1fr; }
+    .open-close-grid { grid-template-columns: repeat(2, 1fr); }
+    .facility-grid { grid-template-columns: repeat(2, 1fr); }
+    .franchise-stats { flex-direction: column; }
+    .report-header { padding: 20px; }
+    .rh-title { font-size: 22px; }
+}
