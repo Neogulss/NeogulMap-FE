@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   getChatSessions,
   getChatLogs,
@@ -27,9 +26,19 @@ function formatAmount(val) {
   return `${n.toLocaleString()}만원`;
 }
 
-export default function ChatbotPage() {
+const GUEST_SERVICE_INTRO_QUESTION = "입지너구리 서비스 소개해줘";
+const GUEST_RECOMMENDED_QUESTIONS = [
+  { questionIdx: "guest-service-intro", questionTitle: GUEST_SERVICE_INTRO_QUESTION },
+];
 
+export default function ChatbotPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const analysisContext = location.state?.fromAnalysis ? location.state : null;
+  const autoSentRef = useRef(false);
+
+  const isLoggedIn = Boolean(localStorage.getItem("userIdx"));
+
   const [sessions, setSessions] = useState([]);
   const [selectedSessionIdx, setSelectedSessionIdx] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -41,8 +50,6 @@ export default function ChatbotPage() {
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  const isLoggedIn = Boolean(localStorage.getItem("userIdx"));
 
   const messagesContainerRef = useRef(null);
   const prevLogLengthRef = useRef(0);
@@ -59,30 +66,15 @@ export default function ChatbotPage() {
     setRecommendedQuestions(GUEST_RECOMMENDED_QUESTIONS);
   };
 
-    const location = useLocation();
-    const analysisContext = location.state?.fromAnalysis ? location.state : null;
-    const autoSentRef = useRef(false);
-
-    const GUEST_SERVICE_INTRO_QUESTION = "입지너구리 서비스 소개해줘";
-    const GUEST_RECOMMENDED_QUESTIONS = [
-  {
-    questionIdx: "guest-service-intro",
-    questionTitle: GUEST_SERVICE_INTRO_QUESTION,
-  },
-];
-
+  // 초기 로드: 상권분석에서 넘어온 경우 새 채팅 시작 (기존 세션 자동 선택 안 함)
   useEffect(() => {
     window.scrollTo(0, 0);
-    // 상권분석에서 넘어온 경우 새 채팅으로 시작 → 기존 세션 자동 선택 안 함
-    loadSessions({ autoSelect: !analysisContext });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
     if (isLoggedIn) {
-      loadSessions();
+      loadSessions({ autoSelect: !analysisContext });
     } else {
       initializeGuestMode();
     }
-  }, [isLoggedIn]);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -91,21 +83,14 @@ export default function ChatbotPage() {
   useEffect(() => {
     const container = messagesContainerRef.current;
     if (!container) return;
-
     if (logs.length > 0) {
-      const hasNewMessage = logs.length !== prevLogLengthRef.current;
-
       container.scrollTo({
         top: container.scrollHeight,
-        behavior: hasNewMessage ? "smooth" : "auto",
+        behavior: logs.length !== prevLogLengthRef.current ? "smooth" : "auto",
       });
     } else {
-      container.scrollTo({
-        top: 0,
-        behavior: "auto",
-      });
+      container.scrollTo({ top: 0, behavior: "auto" });
     }
-
     prevLogLengthRef.current = logs.length;
   }, [logs, sending]);
 
@@ -114,46 +99,47 @@ export default function ChatbotPage() {
     [logs, pendingUserQuery]
   );
 
+  const showGuestAnswerLoginButton = !isLoggedIn && logs.length > 0;
+
   // 상권분석 페이지에서 넘어온 경우: 세션 로드 완료 후 새 채팅으로 맞춤 메시지 자동 전송
   useEffect(() => {
     if (!analysisContext || autoSentRef.current || loadingSessions) return;
     autoSentRef.current = true;
 
     const run = async () => {
-      // 사용자 프로필 조회 (나이·사업자등록여부)
-      let userAge = '';
-      let isRegistered = '';
-      const userIdx = localStorage.getItem('userIdx');
+      let userAge = "";
+      let isRegistered = "";
+      const userIdx = localStorage.getItem("userIdx");
       if (userIdx) {
         try {
           const profileRes = await fetchMyProfile(Number(userIdx));
           const p = profileRes?.data?.data ?? profileRes?.data ?? null;
           if (p) {
-            userAge = p.userAge ?? p.age ?? '';
-            isRegistered = p.isRegisteredBusiness ?? p.hasBusinessRegistration ?? '';
+            userAge = p.userAge ?? p.age ?? "";
+            isRegistered = p.isRegisteredBusiness ?? p.hasBusinessRegistration ?? "";
           }
         } catch { /* 프로필 조회 실패 시 생략 */ }
       }
 
-      const floorLabel = analysisContext.floor === -1 ? '지하' : `${analysisContext.floor}층`;
+      const floorLabel = analysisContext.floor === -1 ? "지하" : `${analysisContext.floor}층`;
       const diff = analysisContext.diff;
       const diffText =
         diff !== undefined && diff !== null
           ? diff >= 0
             ? `+${formatAmount(diff)} 여유`
             : `${formatAmount(Math.abs(diff))} 부족`
-          : '정보 없음';
+          : "정보 없음";
 
       const districtLine =
         analysisContext.districtName && analysisContext.adminDongName
           ? `\n자치구·행정동: ${analysisContext.districtName} ${analysisContext.adminDongName}`
-          : '';
+          : "";
 
-      const ageLine = userAge ? `\n나이: ${userAge}세` : '';
+      const ageLine = userAge ? `\n나이: ${userAge}세` : "";
       const bizLine =
-        isRegistered !== ''
-          ? `\n사업자등록: ${isRegistered === true || isRegistered === 'true' ? '있음' : '없음'}`
-          : '';
+        isRegistered !== ""
+          ? `\n사업자등록: ${isRegistered === true || isRegistered === "true" ? "있음" : "없음"}`
+          : "";
 
       const message =
         `안녕하세요! 저는 ${analysisContext.serviceIndustryCodeName} 창업을 준비하고 있어요.` +
@@ -168,7 +154,7 @@ export default function ChatbotPage() {
         userQuery: message,
         industry: analysisContext.serviceIndustryCodeName,
         age: userAge,
-        hasBusinessRegistration: isRegistered !== '' ? String(isRegistered) : '',
+        hasBusinessRegistration: isRegistered !== "" ? String(isRegistered) : "",
       });
     };
 
@@ -176,21 +162,15 @@ export default function ChatbotPage() {
   }, [loadingSessions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadSessions = async ({ autoSelect = true } = {}) => {
-  const showGuestAnswerLoginButton = !isLoggedIn && logs.length > 0;
-
-  const loadSessions = async () => {
     if (!isLoggedIn) {
       initializeGuestMode();
       return;
     }
-
     try {
       setLoadingSessions(true);
       setErrorMessage("");
-
       const data = await getChatSessions();
       setSessions(data);
-
       if (autoSelect && data.length > 0 && !selectedSessionIdx) {
         const firstSessionIdx = data[0].sessionIdx;
         setSelectedSessionIdx(firstSessionIdx);
@@ -208,11 +188,9 @@ export default function ChatbotPage() {
 
   const loadLogs = async (sessionIdx) => {
     if (!isLoggedIn) return;
-
     try {
       setLoadingLogs(true);
       setErrorMessage("");
-
       const data = await getChatLogs(sessionIdx);
       setLogs(data);
       setSelectedSessionIdx(sessionIdx);
@@ -230,13 +208,11 @@ export default function ChatbotPage() {
       initializeGuestMode();
       return;
     }
-
     setSelectedSessionIdx(null);
     setLogs([]);
     setPendingUserQuery("");
     setErrorMessage("");
     loadRecommendedQuestions(null);
-
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
       if (messagesContainerRef.current) {
@@ -245,19 +221,12 @@ export default function ChatbotPage() {
     });
   };
 
-  const handleSendMessage = async ({
-    userQuery,
-    industry,
-    age,
-    hasBusinessRegistration,
-  }) => {
+  const handleSendMessage = async ({ userQuery, industry, age, hasBusinessRegistration }) => {
     if (!userQuery.trim()) return;
-
     if (!isLoggedIn) {
       setErrorMessage("로그인 후 전체 챗봇 기능을 이용할 수 있습니다.");
       return;
     }
-
     try {
       const trimmedQuery = userQuery.trim();
       setPendingUserQuery(trimmedQuery);
@@ -270,21 +239,17 @@ export default function ChatbotPage() {
         userProfile.age = Number(age);
       }
       if (hasBusinessRegistration !== "") {
-        userProfile.hasBusinessRegistration =
-          hasBusinessRegistration === "true";
+        userProfile.hasBusinessRegistration = hasBusinessRegistration === "true";
       }
 
       const payload = {
         sessionIdx: selectedSessionIdx,
         userQuery: trimmedQuery,
-        userProfile:
-          Object.keys(userProfile).length > 0 ? userProfile : null,
+        userProfile: Object.keys(userProfile).length > 0 ? userProfile : null,
       };
 
       const response = await sendChatMessage(payload);
-
       await loadSessions();
-
       if (response?.sessionIdx) {
         await loadLogs(response.sessionIdx);
       } else {
@@ -301,7 +266,6 @@ export default function ChatbotPage() {
 
   const handleUpdateTitle = async (sessionIdx, title) => {
     if (!isLoggedIn) return;
-
     try {
       setErrorMessage("");
       await updateChatSessionTitle(sessionIdx, title);
@@ -314,22 +278,17 @@ export default function ChatbotPage() {
 
   const handleDeleteSession = async (sessionIdx) => {
     if (!isLoggedIn) return;
-
     const ok = window.confirm("이 세션을 삭제하시겠습니까?");
     if (!ok) return;
-
     try {
       setErrorMessage("");
       await deleteChatSession(sessionIdx);
-
       if (selectedSessionIdx === sessionIdx) {
         setSelectedSessionIdx(null);
         setLogs([]);
       }
-
       const updatedSessions = await getChatSessions();
       setSessions(updatedSessions);
-
       if (updatedSessions.length > 0 && selectedSessionIdx === sessionIdx) {
         const firstSessionIdx = updatedSessions[0].sessionIdx;
         setSelectedSessionIdx(firstSessionIdx);
@@ -337,7 +296,6 @@ export default function ChatbotPage() {
       } else if (updatedSessions.length === 0) {
         await loadRecommendedQuestions(null);
       }
-
       window.scrollTo(0, 0);
     } catch (error) {
       console.error(error);
@@ -350,7 +308,6 @@ export default function ChatbotPage() {
       setRecommendedQuestions(GUEST_RECOMMENDED_QUESTIONS);
       return;
     }
-
     try {
       setLoadingRecommendations(true);
       const data = await getRecommendedQuestions(sessionIdx);
@@ -368,14 +325,11 @@ export default function ChatbotPage() {
 
     if (!isLoggedIn) {
       if (questionTitle !== GUEST_SERVICE_INTRO_QUESTION) return;
-
       setSending(true);
       setPendingUserQuery(questionTitle);
       setErrorMessage("");
-
       try {
         const response = await askPolicyChatbotAsGuest(questionTitle);
-
         setLogs([
           {
             chatLogIdx: "guest-service-intro-log",
@@ -388,8 +342,6 @@ export default function ChatbotPage() {
             createdAt: new Date().toISOString(),
           },
         ]);
-
-        // 비로그인에서는 서비스 소개 1회 답변 후 추천 질문 비노출
         setRecommendedQuestions([]);
       } catch (error) {
         console.error(error);
