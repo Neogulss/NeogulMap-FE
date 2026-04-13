@@ -49,7 +49,6 @@ export default function AnalysisPage() {
 
     const mapRef             = useRef(null);
     const clusterOverlaysRef = useRef([]);
-    const pinOverlaysRef     = useRef([]);
     const handleSelectRef    = useRef(null);
     const activeDataRef      = useRef(null);
     const pendingDongRef     = useRef(null); // 즐겨찾기에서 자동 선택할 adminDongCode
@@ -67,35 +66,6 @@ export default function AnalysisPage() {
         };
     }, []);
 
-    const scatterPins = useCallback((centerLat, centerLng, count) => {
-        if (!mapRef.current) return;
-        pinOverlaysRef.current.forEach(p => p.setMap(null));
-        pinOverlaysRef.current = [];
-
-        const displayCount = Math.min(count, 12);
-        const radius = 0.0025;
-        for (let i = 0; i < displayCount; i++) {
-            const angle = i * (Math.PI * 2 / displayCount);
-            const lat   = centerLat + radius * Math.cos(angle);
-            const lng   = centerLng + radius * Math.sin(angle) * 1.3;
-            const delay = (i * 0.06).toFixed(2);
-
-            const pin = document.createElement('div');
-            pin.className = 'detail-pin';
-            pin.style.animationDelay = `${delay}s`;
-            pin.title = '추천 매물';
-
-            const overlay = new window.kakao.maps.CustomOverlay({
-                position: new window.kakao.maps.LatLng(lat, lng),
-                content: pin,
-                xAnchor: 0.5,
-                yAnchor: 1,
-                zIndex: 2,
-            });
-            overlay.setMap(mapRef.current);
-            pinOverlaysRef.current.push(overlay);
-        }
-    }, []);
 
     const fetchReportData = useCallback(async (data) => {
         try {
@@ -200,12 +170,10 @@ export default function AnalysisPage() {
                 };
             });
 
-            setTimeout(() => scatterPins(data.lat, data.lng, s.storeCount), 700);
         } catch (err) {
             console.error('리포트 API 오류:', err);
-            setTimeout(() => scatterPins(data.lat, data.lng, 0), 700);
         }
-    }, [scatterPins]);
+    }, []);
 
     const handleSelectData = useCallback(async (data) => {
         setActiveCardId(data.id);
@@ -214,8 +182,14 @@ export default function AnalysisPage() {
         setIsRightCollapsed(false);
 
         if (mapRef.current) {
-            mapRef.current.panTo(new window.kakao.maps.LatLng(data.lat, data.lng));
-            setTimeout(() => { mapRef.current.setLevel(5); mapRef.current.relayout(); }, 400);
+            const pos = new window.kakao.maps.LatLng(data.lat, data.lng);
+            mapRef.current.setCenter(pos);
+            mapRef.current.setLevel(5);
+            // 우측 패널 CSS 트랜지션(400ms) 완료 후 relayout + 재중앙 정렬
+            setTimeout(() => {
+                mapRef.current?.relayout();
+                mapRef.current?.setCenter(pos);
+            }, 420);
         }
 
         fetchReportData(data);
@@ -240,9 +214,7 @@ export default function AnalysisPage() {
         if (!area) { alert('면적을 입력해주세요.'); return; }
 
         clusterOverlaysRef.current.forEach(o => o.setMap(null));
-        pinOverlaysRef.current.forEach(p => p.setMap(null));
         clusterOverlaysRef.current = [];
-        pinOverlaysRef.current = [];
 
         setResultList([]);
         setIsAnalyzing(true);
@@ -287,21 +259,24 @@ export default function AnalysisPage() {
             setIsAnalyzing(false);
 
             if (mapRef.current) {
+                const bounds = new window.kakao.maps.LatLngBounds();
                 items.forEach((data) => {
                     const el = document.createElement('div');
                     el.className = 'dong-cluster';
                     el.innerHTML = `<span class="d-name">${data.name}</span>`;
                     el.onclick = () => handleSelectRef.current(data);
 
+                    const pos = new window.kakao.maps.LatLng(data.lat, data.lng);
                     const overlay = new window.kakao.maps.CustomOverlay({
-                        position: new window.kakao.maps.LatLng(data.lat, data.lng),
+                        position: pos,
                         content: el,
                         zIndex: 3,
                     });
                     overlay.setMap(mapRef.current);
                     clusterOverlaysRef.current.push(overlay);
+                    bounds.extend(pos);
                 });
-                mapRef.current.panTo(new window.kakao.maps.LatLng(37.5665, 126.9780));
+                mapRef.current.setBounds(bounds, 80);
             }
         } catch (err) {
             console.error('AI 분석 API 오류:', err);
@@ -326,11 +301,8 @@ export default function AnalysisPage() {
         setActiveCardId(null);
         setSelectedData(null);
 
-        pinOverlaysRef.current.forEach(p => p.setMap(null));
-        pinOverlaysRef.current = [];
-
         if (mapRef.current) {
-            mapRef.current.setLevel(6);
+            mapRef.current.setLevel(7);
             setTimeout(() => mapRef.current.relayout(), 400);
         }
     }, []);

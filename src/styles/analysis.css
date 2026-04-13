@@ -178,7 +178,7 @@ body.analysis-active {
 .floor-pill:hover { border-color: var(--g); color: var(--g); background: var(--g5); }
 .floor-pill.active { background: var(--g); color: #fff; border-color: var(--g); box-shadow: 0 2px 8px rgba(0,150,36,0.3); }
 .floor-pill.underground { border-style: dashed; color: #607d8b; }
-.floor-pill.underground.active { background: #546e7a; border-color: #546e7a; border-style: solid; box-shadow: 0 2px 8px rgba(84,110,122,0.3); }
+.floor-pill.underground.active { background: #546e7a; border-color: #546e7a; border-style: solid; color: #fff; box-shadow: 0 2px 8px rgba(84,110,122,0.3); }
 
 /* 면적 — 평면도 아이콘 컴팩트 */
 .area-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 14px; }
@@ -534,12 +534,12 @@ body.analysis-active {
     white-space: nowrap; flex-shrink: 0;
 }
 .lc-tag-diff.positive {
-    background: rgba(0,150,36,0.08); color: var(--g);
-    border-color: rgba(0,150,36,0.25);
+    background: rgba(26,115,232,0.08); color: #1a73e8;
+    border-color: rgba(26,115,232,0.25);
 }
 .lc-tag-diff.negative {
-    background: rgba(233,30,99,0.07); color: #e91e63;
-    border-color: rgba(233,30,99,0.2);
+    background: rgba(211,47,47,0.07); color: #d32f2f;
+    border-color: rgba(211,47,47,0.2);
 }
 .lc-tag-count {
     font-size: 12px; font-weight: 700;

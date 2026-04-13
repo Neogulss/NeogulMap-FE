@@ -295,7 +295,7 @@ export default function LeftPanel({
                 <div className="lc-meta">
                   {data.diff !== undefined && (
                     <span className={`lc-tag lc-tag-diff${data.diff >= 0 ? ' positive' : ' negative'}`}>
-                      예상 차액 {data.diff >= 0 ? '+' : ''}{data.diff.toLocaleString()}만원
+                      예상 차액 {data.diff >= 0 ? '+' : '-'}{Math.abs(data.diff).toLocaleString()}만원
                     </span>
                   )}
                   <span style={{ flex: 1 }} />
