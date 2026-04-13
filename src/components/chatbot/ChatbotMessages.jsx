@@ -14,6 +14,8 @@ export default function ChatbotMessages({
   recommendedQuestions = [],
   loadingRecommendations = false,
   onSelectRecommendedQuestion,
+  showGuestAnswerLoginButton = false,
+  onGuestAnswerLoginClick,
 }) {
   const hasRecommendedQuestions = recommendedQuestions.length > 0;
 
@@ -36,78 +38,92 @@ export default function ChatbotMessages({
 
   return (
     <>
-      {logs.map((log) => (
-        <div key={log.chatLogIdx ?? `${log.userQuery}-${log.createdAt}`}>
-          <div className="msg-row user">
-            <div className="msg-content">
-              <div className="msg-sender">나</div>
-              <div className="msg-bubble">{log.userQuery}</div>
-            </div>
-          </div>
+      {logs.map((log, index) => {
+        const isLastLog = index === logs.length - 1;
 
-          <div className="msg-row bot">
-            <div className="msg-content">
-              <div className="msg-sender">입지너구리 AI</div>
-              <div className="msg-bubble markdown">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {formatText(log.botResponse)}
-                </ReactMarkdown>
+        return (
+          <div key={log.chatLogIdx ?? `${log.userQuery}-${log.createdAt}`}>
+            <div className="msg-row user">
+              <div className="msg-content">
+                <div className="msg-sender">나</div>
+                <div className="msg-bubble">{log.userQuery}</div>
               </div>
+            </div>
 
-              {(log.model || log.turnLatencyMs) && (
-                <div className="message-meta">
-                  {log.model ? `model: ${log.model}` : ""}
-                  {log.model && log.turnLatencyMs ? " / " : ""}
-                  {log.turnLatencyMs
-                    ? `latency: ${log.turnLatencyMs}ms`
-                    : ""}
+            <div className="msg-row bot">
+              <div className="msg-content">
+                <div className="msg-sender">입지너구리 AI</div>
+                <div className="msg-bubble markdown">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {formatText(log.botResponse)}
+                  </ReactMarkdown>
                 </div>
-              )}
 
-              {log.rag?.retrievedDocuments?.length > 0 && (
-                <div className="chat-rich-card">
-                  <div className="crc-header">
-                    <div className="crc-title">참고 문서</div>
-                    <div className="crc-tag">
-                      {log.rag.retrievedDocuments.length}건
-                    </div>
+                {(log.model || log.turnLatencyMs) && (
+                  <div className="message-meta">
+                    {log.model ? `model: ${log.model}` : ""}
+                    {log.model && log.turnLatencyMs ? " / " : ""}
+                    {log.turnLatencyMs
+                      ? `latency: ${log.turnLatencyMs}ms`
+                      : ""}
                   </div>
+                )}
 
-                  <div className="crc-grid">
-                    {log.rag.retrievedDocuments.map((doc, idx) => (
-                      <div className="crc-item" key={idx}>
-                        <span className="crc-item-label">출처</span>
-                        <span className="crc-item-val">
-                          {doc.source || "-"}
-                        </span>
+                {showGuestAnswerLoginButton && isLastLog && (
+                  <button
+                    type="button"
+                    className="guest-login-btn guest-answer-login-btn"
+                    onClick={onGuestAnswerLoginClick}
+                  >
+                    로그인하고 전체 기능 사용하기
+                  </button>
+                )}
 
-                        <span className="crc-item-label">문서 내용</span>
-                        <span className="crc-item-val crc-chunk">
-                          {doc.chunkText || "-"}
-                        </span>
-
-                        <span className="crc-item-label">점수</span>
-                        <span className="crc-item-val crc-score">
-                          faiss={String(doc.faissScore)} / bm25=
-                          {String(doc.bm25Score)} / rerank=
-                          {String(doc.rerankScore)}
-                        </span>
+                {log.rag?.retrievedDocuments?.length > 0 && (
+                  <div className="chat-rich-card">
+                    <div className="crc-header">
+                      <div className="crc-title">참고 문서</div>
+                      <div className="crc-tag">
+                        {log.rag.retrievedDocuments.length}건
                       </div>
-                    ))}
-                  </div>
-
-                  {log.rag.systemLatency && (
-                    <div className="message-meta">
-                      retrieval: {log.rag.systemLatency.retrievalMs}ms / llm:{" "}
-                      {log.rag.systemLatency.llmGenerationMs}ms
                     </div>
-                  )}
-                </div>
-              )}
+
+                    <div className="crc-grid">
+                      {log.rag.retrievedDocuments.map((doc, idx) => (
+                        <div className="crc-item" key={idx}>
+                          <span className="crc-item-label">출처</span>
+                          <span className="crc-item-val">
+                            {doc.source || "-"}
+                          </span>
+
+                          <span className="crc-item-label">문서 내용</span>
+                          <span className="crc-item-val crc-chunk">
+                            {doc.chunkText || "-"}
+                          </span>
+
+                          <span className="crc-item-label">점수</span>
+                          <span className="crc-item-val crc-score">
+                            faiss={String(doc.faissScore)} / bm25=
+                            {String(doc.bm25Score)} / rerank=
+                            {String(doc.rerankScore)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {log.rag.systemLatency && (
+                      <div className="message-meta">
+                        retrieval: {log.rag.systemLatency.retrievalMs}ms / llm:{" "}
+                        {log.rag.systemLatency.llmGenerationMs}ms
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
 
       {pendingUserQuery && (
         <div className="msg-row user">

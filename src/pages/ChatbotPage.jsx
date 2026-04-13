@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   getChatSessions,
   getChatLogs,
@@ -8,6 +9,7 @@ import {
   deleteChatSession,
   getRecommendedQuestions,
   fetchMyProfile,
+  askPolicyChatbotAsGuest,
 } from "../api/api";
 import ChatbotSidebar from "../components/chatbot/ChatbotSidebar";
 import ChatbotMessages from "../components/chatbot/ChatbotMessages";
@@ -30,6 +32,16 @@ export default function ChatbotPage() {
   const analysisContext = location.state?.fromAnalysis ? location.state : null;
   const autoSentRef = useRef(false);
 
+const GUEST_SERVICE_INTRO_QUESTION = "입지너구리 서비스 소개해줘";
+const GUEST_RECOMMENDED_QUESTIONS = [
+  {
+    questionIdx: "guest-service-intro",
+    questionTitle: GUEST_SERVICE_INTRO_QUESTION,
+  },
+];
+
+export default function ChatbotPage() {
+  const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [selectedSessionIdx, setSelectedSessionIdx] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -42,14 +54,35 @@ export default function ChatbotPage() {
   const [errorMessage, setErrorMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
+  const isLoggedIn = Boolean(localStorage.getItem("userIdx"));
+
   const messagesContainerRef = useRef(null);
   const prevLogLengthRef = useRef(0);
+
+  const initializeGuestMode = () => {
+    setSessions([]);
+    setSelectedSessionIdx(null);
+    setLogs([]);
+    setPendingUserQuery("");
+    setErrorMessage("");
+    setLoadingSessions(false);
+    setLoadingLogs(false);
+    setLoadingRecommendations(false);
+    setRecommendedQuestions(GUEST_RECOMMENDED_QUESTIONS);
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
     // 상권분석에서 넘어온 경우 새 채팅으로 시작 → 기존 세션 자동 선택 안 함
     loadSessions({ autoSelect: !analysisContext });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (isLoggedIn) {
+      loadSessions();
+    } else {
+      initializeGuestMode();
+    }
+  }, [isLoggedIn]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -143,6 +176,14 @@ export default function ChatbotPage() {
   }, [loadingSessions]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const loadSessions = async ({ autoSelect = true } = {}) => {
+  const showGuestAnswerLoginButton = !isLoggedIn && logs.length > 0;
+
+  const loadSessions = async () => {
+    if (!isLoggedIn) {
+      initializeGuestMode();
+      return;
+    }
+
     try {
       setLoadingSessions(true);
       setErrorMessage("");
@@ -166,6 +207,8 @@ export default function ChatbotPage() {
   };
 
   const loadLogs = async (sessionIdx) => {
+    if (!isLoggedIn) return;
+
     try {
       setLoadingLogs(true);
       setErrorMessage("");
@@ -183,6 +226,11 @@ export default function ChatbotPage() {
   };
 
   const handleNewChat = () => {
+    if (!isLoggedIn) {
+      initializeGuestMode();
+      return;
+    }
+
     setSelectedSessionIdx(null);
     setLogs([]);
     setPendingUserQuery("");
@@ -204,6 +252,11 @@ export default function ChatbotPage() {
     hasBusinessRegistration,
   }) => {
     if (!userQuery.trim()) return;
+
+    if (!isLoggedIn) {
+      setErrorMessage("로그인 후 전체 챗봇 기능을 이용할 수 있습니다.");
+      return;
+    }
 
     try {
       const trimmedQuery = userQuery.trim();
@@ -247,6 +300,8 @@ export default function ChatbotPage() {
   };
 
   const handleUpdateTitle = async (sessionIdx, title) => {
+    if (!isLoggedIn) return;
+
     try {
       setErrorMessage("");
       await updateChatSessionTitle(sessionIdx, title);
@@ -258,6 +313,8 @@ export default function ChatbotPage() {
   };
 
   const handleDeleteSession = async (sessionIdx) => {
+    if (!isLoggedIn) return;
+
     const ok = window.confirm("이 세션을 삭제하시겠습니까?");
     if (!ok) return;
 
@@ -289,6 +346,11 @@ export default function ChatbotPage() {
   };
 
   const loadRecommendedQuestions = async (sessionIdx) => {
+    if (!isLoggedIn) {
+      setRecommendedQuestions(GUEST_RECOMMENDED_QUESTIONS);
+      return;
+    }
+
     try {
       setLoadingRecommendations(true);
       const data = await getRecommendedQuestions(sessionIdx);
@@ -303,6 +365,42 @@ export default function ChatbotPage() {
 
   const handleSelectRecommendedQuestion = async (questionTitle) => {
     if (!questionTitle || sending) return;
+
+    if (!isLoggedIn) {
+      if (questionTitle !== GUEST_SERVICE_INTRO_QUESTION) return;
+
+      setSending(true);
+      setPendingUserQuery(questionTitle);
+      setErrorMessage("");
+
+      try {
+        const response = await askPolicyChatbotAsGuest(questionTitle);
+
+        setLogs([
+          {
+            chatLogIdx: "guest-service-intro-log",
+            userQuery: questionTitle,
+            botResponse:
+              response?.answer ||
+              "서비스 소개 정보를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.",
+            model: response?.model || "guest-preview",
+            turnLatencyMs: response?.latency?.turn_latency_ms || 0,
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+
+        // 비로그인에서는 서비스 소개 1회 답변 후 추천 질문 비노출
+        setRecommendedQuestions([]);
+      } catch (error) {
+        console.error(error);
+        setErrorMessage("서비스 소개 답변을 불러오지 못했습니다.");
+      } finally {
+        setPendingUserQuery("");
+        setSending(false);
+      }
+      return;
+    }
+
     await handleSendMessage({
       userQuery: questionTitle,
       industry: "",
@@ -329,6 +427,7 @@ export default function ChatbotPage() {
             loading={loadingSessions}
             collapsed={sidebarCollapsed}
             onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+            readOnly={!isLoggedIn}
           />
 
           <main className="chat-main">
@@ -337,9 +436,19 @@ export default function ChatbotPage() {
                 <section className="welcome-banner">
                   <h2>창업 정책과 대출 정보를 빠르게 찾아보세요</h2>
                   <p>
-                    업종, 나이, 사업자등록 여부를 입력하면 더 정확한 답변을
-                    받을 수 있어요.
+                    {isLoggedIn
+                      ? "업종, 나이, 사업자등록 여부를 입력하면 더 정확한 답변을 받을 수 있어요."
+                      : "로그인시 더 자세한 내용을 질문할 수 있습니다."}
                   </p>
+                  {!isLoggedIn && (
+                    <button
+                      type="button"
+                      className="guest-login-btn"
+                      onClick={() => navigate("/auth/signin")}
+                    >
+                      로그인하고 전체 기능 사용하기
+                    </button>
+                  )}
                 </section>
               )}
 
@@ -353,6 +462,8 @@ export default function ChatbotPage() {
                 recommendedQuestions={recommendedQuestions}
                 loadingRecommendations={loadingRecommendations}
                 onSelectRecommendedQuestion={handleSelectRecommendedQuestion}
+                showGuestAnswerLoginButton={showGuestAnswerLoginButton}
+                onGuestAnswerLoginClick={() => navigate("/auth/signin")}
               />
             </div>
 
@@ -361,11 +472,13 @@ export default function ChatbotPage() {
                 <ChatbotInput
                   onSend={handleSendMessage}
                   sending={sending}
-                  showProfileForm={!hasMessages}
+                  showProfileForm={isLoggedIn && !hasMessages}
+                  disabled={!isLoggedIn}
                 />
                 <div className="input-footer">
-                  입지너구리는 정책·대출 정보를 바탕으로 답변하며, 실제 신청 전
-                  세부 자격 조건을 꼭 확인해 주세요.
+                  {isLoggedIn
+                    ? "입지너구리는 정책·대출 정보를 바탕으로 답변하며, 실제 신청 전 세부 자격 조건을 꼭 확인해 주세요."
+                    : "비로그인 상태에서는 서비스 소개 질문만 이용할 수 있어요. 로그인하면 전체 기능을 사용할 수 있습니다."}
                 </div>
               </div>
             </div>
