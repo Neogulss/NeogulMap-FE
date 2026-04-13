@@ -28,19 +28,7 @@ function formatAmount(val) {
 }
 
 export default function ChatbotPage() {
-  const location = useLocation();
-  const analysisContext = location.state?.fromAnalysis ? location.state : null;
-  const autoSentRef = useRef(false);
 
-const GUEST_SERVICE_INTRO_QUESTION = "입지너구리 서비스 소개해줘";
-const GUEST_RECOMMENDED_QUESTIONS = [
-  {
-    questionIdx: "guest-service-intro",
-    questionTitle: GUEST_SERVICE_INTRO_QUESTION,
-  },
-];
-
-export default function ChatbotPage() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [selectedSessionIdx, setSelectedSessionIdx] = useState(null);
@@ -70,6 +58,18 @@ export default function ChatbotPage() {
     setLoadingRecommendations(false);
     setRecommendedQuestions(GUEST_RECOMMENDED_QUESTIONS);
   };
+
+    const location = useLocation();
+    const analysisContext = location.state?.fromAnalysis ? location.state : null;
+    const autoSentRef = useRef(false);
+
+    const GUEST_SERVICE_INTRO_QUESTION = "입지너구리 서비스 소개해줘";
+    const GUEST_RECOMMENDED_QUESTIONS = [
+  {
+    questionIdx: "guest-service-intro",
+    questionTitle: GUEST_SERVICE_INTRO_QUESTION,
+  },
+];
 
   useEffect(() => {
     window.scrollTo(0, 0);
