@@ -173,22 +173,32 @@ body.main-active { overflow-x: hidden; }
 
 .hero-inner {
     position: relative; z-index: 10; width: 100%; max-width: 1400px; margin: 0 auto;
-    padding: 0 52px; display: flex; align-items: center; justify-content: space-between; gap: 40px;
+    padding: 0 52px; display: flex; align-items: center; justify-content: center; gap: 40px;
     align-self: flex-end; padding-bottom: 100px;
 }
 
 .hero-top { flex: 1 1 auto; position: relative; z-index: 20; display: flex; justify-content: center; }
-.hero-text { width: 500px; padding-top: 78px; }
+.hero-text { width: min(760px, 100%); padding-top: 78px; text-align: center; }
 
 .hero-eyebrow { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; animation: fadeUp .6s .2s var(--ease) both; }
 .eyebrow-line { width: 32px; height: 2px; background: #FFF27F; }
 .eyebrow-text { font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #FFF27F; }
 
-.hero-headline { margin-bottom: 12px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.hero-headline { margin-bottom: 12px; display: flex; align-items: baseline; justify-content: center; gap: 12px; flex-wrap: wrap; }
 .ph-title-light { font-family: var(--sans) !important; font-size: 26px; font-weight: 300; color: #1a1d20; letter-spacing: -0.5px; animation: fadeUp .6s .35s var(--ease) both; display: inline-block; margin-bottom: 0; }
 .ph-title-bold  { font-family: var(--sans) !important; font-size: 38px; font-weight: 700; color: #FFF27F; letter-spacing: -1px; animation: fadeUp .6s .45s var(--ease) both; display: inline-block; }
 
-.hero-desc { font-size: 16px; line-height: 1.7; color: #1a1d20; max-width: 480px; margin-bottom: 20px; animation: fadeUp .6s .5s var(--ease) both; word-break: keep-all; font-weight: 400; }
+.hero-desc { font-size: 16px; line-height: 1.7; color: #1a1d20; max-width: 680px; margin: 0 auto 20px; animation: fadeUp .6s .5s var(--ease) both; word-break: keep-all; font-weight: 400; min-height: 55px; white-space: pre-line; }
+.hero-desc-typing::after {
+    content: "";
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-left: 4px;
+    vertical-align: -0.12em;
+    background: rgba(26,29,32,0.75);
+    animation: blinkCursor 0.9s step-end infinite;
+}
 
 .btn-action {
     display: flex; align-items: center; justify-content: center;
@@ -197,14 +207,11 @@ body.main-active { overflow-x: hidden; }
     margin: 6px auto 0;
     background: transparent;
     color: #1a1d20; border: none; border-radius: 0;
-    font-family: var(--sans); font-size: 17px; font-weight: 900; cursor: pointer; transition: color .2s, transform .2s, text-decoration-color .2s;
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 6px;
-    text-decoration-color: rgba(26,29,32,0.25);
+    font-family: var(--sans); font-size: 17px; font-weight: 900; cursor: pointer; transition: color .2s, transform .2s;
+    text-decoration: none;
     animation: fadeUp .6s .6s var(--ease) both;
 }
-.btn-action:hover { color: var(--g); transform: translateY(-2px); text-decoration-color: rgba(0,150,36,0.5); }
+.btn-action:hover { color: var(--g); transform: translateY(-2px); }
 
 /* 도시 이미지 컨테이너 */
 .hero-map-container {
@@ -247,6 +254,7 @@ body.main-active { overflow-x: hidden; }
 }
 @keyframes scrollBounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
 @keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes blinkCursor { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 
 /* ── BLOCK 2: DASHBOARD SECTION ──────────────────────────────────────── */
 .dashboard-section {
@@ -256,7 +264,7 @@ body.main-active { overflow-x: hidden; }
     overflow: hidden;
     background-image:
         linear-gradient(180deg, rgba(255,255,255,0.995) 0%, rgba(255,255,255,0.96) 12%, rgba(247,250,245,0.9) 24%, rgba(246,249,243,0.68) 40%, rgba(246,249,243,0.24) 60%, rgba(246,249,243,0.1) 100%),
-        url("/seoul-map-bg.svg");
+        url("../assets/images/노선도.png");
     background-size: cover;
     background-position: center 12%;
 }
@@ -316,7 +324,7 @@ body.main-active { overflow-x: hidden; }
 
 /* 기본 카드 스타일 */
 .grid-card {
-    background: rgba(255,255,255,0.92); border: 1px solid rgba(0,0,0,0.04); border-radius: 20px;
+    background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.04); border-radius: 20px;
     padding: 24px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);
     display: flex; flex-direction: column; cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; position: relative; overflow: hidden; min-height: 280px;
@@ -342,7 +350,7 @@ body.main-active { overflow-x: hidden; }
 .gc-val-sub { font-size: 13px; color: var(--text3); font-weight: 400; }
 .gc-val-sub strong { font-weight: 600; color: var(--text2); }
 
-.style-v3 { border: 1px solid rgba(0,0,0,0.04); background: rgba(255,255,255,0.92); }
+.style-v3 { border: 1px solid rgba(0,0,0,0.04); background: rgba(255,255,255,0.9); }
 .style-v3 .gc-title { font-size: 18px; font-weight: 700; color: var(--text); }
 .style-v3 .gc-click svg { stroke: var(--text2); width: 20px; height: 20px; }
 .style-v3:hover .gc-click { color: var(--g); }
