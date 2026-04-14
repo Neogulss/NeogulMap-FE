@@ -134,6 +134,12 @@ export const fetchFacilityReport = (adminDongCode, yearQuarter) =>
 export const fetchIncomeReport = (adminDongCode, yearQuarter) =>
   api.post("/report/income", { adminDongCode, yearQuarter });
 
+export const fetchWorkerReport = (adminDongCode, yearQuarter) =>
+  api.post("/report/worker", { adminDongCode, yearQuarter });
+
+export const fetchSalesReport = (adminDongCode, serviceIndustryCode, yearQuarter) =>
+  api.post("/report/sales", { adminDongCode, serviceIndustryCode, yearQuarter });
+
 /**
  * 상권변화지표 조회
  * @param {number} adminDongCode - 행정동 코드

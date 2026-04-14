@@ -16,6 +16,8 @@ import {
     fetchHouseholdReport,
     fetchFacilityReport,
     fetchIncomeReport,
+    fetchWorkerReport,
+    fetchSalesReport,
 } from '../api/api';
 
 const YEAR_QUARTER = 20254;
@@ -69,7 +71,7 @@ export default function AnalysisPage() {
 
     const fetchReportData = useCallback(async (data) => {
         try {
-            const [storeRes, floatingRes, commercialRes, residentRes, householdRes, facilityRes, incomeRes, ...storeHistoryRes] = await Promise.all([
+            const [storeRes, floatingRes, commercialRes, residentRes, householdRes, facilityRes, incomeRes, workerRes, salesRes, ...storeHistoryRes] = await Promise.all([
                 fetchStoreReport(data.adminDongCode, data.serviceIndustryCode, YEAR_QUARTER),
                 fetchFloatingReport(data.adminDongCode, YEAR_QUARTER),
                 fetchCommercialReport(data.adminDongCode, YEAR_QUARTER),
@@ -77,19 +79,28 @@ export default function AnalysisPage() {
                 fetchHouseholdReport(data.adminDongCode, YEAR_QUARTER).catch(() => null),
                 fetchFacilityReport(data.adminDongCode, YEAR_QUARTER).catch(() => null),
                 fetchIncomeReport(data.adminDongCode, YEAR_QUARTER).catch(() => null),
+                fetchWorkerReport(data.adminDongCode, YEAR_QUARTER).catch(() => null),
+                fetchSalesReport(data.adminDongCode, data.serviceIndustryCode, YEAR_QUARTER).catch(() => null),
                 ...HISTORY_QUARTERS.map(q =>
                     fetchStoreReport(data.adminDongCode, data.serviceIndustryCode, q).catch(() => null)
                 ),
             ]);
 
             const s   = storeRes.data.data;
-            const storeCountHistory = storeHistoryRes.map(r => r?.data?.data?.storeCount ?? null);
+            const storeCountHistory = storeHistoryRes.map(r => r?.data?.data?.storeCount ?? null).slice(1);
+            const industryRatioHistory = storeHistoryRes.map(r => ({
+                food:    r?.data?.data?.foodRatio    || null,
+                service: r?.data?.data?.serviceRatio || null,
+                retail:  r?.data?.data?.retailRatio  || null,
+            }));
             const f   = floatingRes.data.data;
             const com = commercialRes.data.data;
             const res = residentRes?.data?.data ?? null;
             const hh  = householdRes?.data?.data ?? null;
             const fac = facilityRes?.data?.data ?? null;
             const inc = incomeRes?.data?.data ?? null;
+            const wkr = workerRes?.data?.data ?? null;
+            const sal = salesRes?.data?.data ?? null;
 
             const fmt = (v, unit) => `${v >= 0 ? '+' : ''}${v.toLocaleString()}${unit}`;
 
@@ -135,15 +146,20 @@ export default function AnalysisPage() {
                             rank:           f.rank,
                             totalDongCount: f.totalDongCount,
                         },
-                        sales: null,
+                        sales: sal ? {
+                            current:   sal.monthlySalesAmount,
+                            diffLabel: '전분기 대비',
+                            diffVal:   `${(sal.prevQuarterAmountDiff ?? 0) >= 0 ? '+' : ''}${Math.round((sal.prevQuarterAmountDiff ?? 0) / 10000).toLocaleString()}만원`,
+                            diffType:  (sal.prevQuarterAmountDiff ?? 0) >= 0 ? 'up' : 'down',
+                        } : null,
                     },
                     historyData: {
-                        stores:   storeCountHistory,
+                        stores:        storeCountHistory,
+                        industryTrend: industryRatioHistory.slice(1),
                         survival: [],
                         operating: {
                             selected: s.avgOperatingYears,
-                            dong:     null,
-                            district: null,
+                            dong:     Math.round(com.operatingBusinessMonthAvg / 12 * 10) / 10,
                             seoul:    Math.round(com.seoulOperatingBusinessMonthAvg / 12 * 10) / 10,
                         },
                         sales:       [],
@@ -167,6 +183,8 @@ export default function AnalysisPage() {
                     household: hh,
                     facility:  fac,
                     income:    inc,
+                    worker:    wkr,
+                    sales:     sal,
                 };
             });
 
@@ -249,6 +267,8 @@ export default function AnalysisPage() {
                 household: null,
                 facility:  null,
                 income:    null,
+                worker: null,
+                sales:  null,
                 swot:   null,
                 advice: null,
             }));

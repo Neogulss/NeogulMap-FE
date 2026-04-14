@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Chart from "chart.js/auto";
 import { addFavorite } from "../../api/api";
 
-const X_LABELS = ["24년 4Q", "25년 1Q", "25년 2Q", "25년 3Q", "25년 4Q"];
+const TREND_LABELS = ["25년 1Q", "25년 2Q", "25년 3Q", "25년 4Q"];
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 const TIME_LABELS = [
   "00~06시",
@@ -13,6 +13,12 @@ const TIME_LABELS = [
   "17~21시",
   "21~24시",
 ];
+
+// 차트 색상 팔레트
+const AGE_COLORS   = ["#ff6b6b", "#ff9f43", "#ffd43b", "#a9e34b", "#4dabf7", "#cc5de8"];
+const DAY_COLORS   = ["#4dabf7", "#748ffc", "#9775fa", "#f783ac", "#ff6b6b", "#ff9f43", "#a9e34b"];
+const TIME_COLORS  = ["#748ffc", "#4dabf7", "#69db7c", "#ffd43b", "#ff9f43", "#cc5de8"];
+const STORE_HISTORY_COLORS = ["#c5d8f5", "#9dbde8", "#75a3da", "#4d88cd", "#1a73e8"];
 
 /** null-safe 숫자 포맷 */
 const n = (v, suffix = "") =>
@@ -164,6 +170,9 @@ export default function RightPanel({
   const chartFloatingAgeRef = useRef(null);
   const chartResidentAgeRef = useRef(null);
   const chartConsumptionRef = useRef(null);
+  const chartSalesTimeRef = useRef(null);
+  const chartSalesDayRef = useRef(null);
+  const chartWorkerAgeRef = useRef(null);
 
   const chartInstancesRef = useRef({});
 
@@ -197,13 +206,11 @@ export default function RightPanel({
         {
           type: "bar",
           data: {
-            labels: X_LABELS,
+            labels: TREND_LABELS,
             datasets: [
               {
                 data: storeHistory,
-                backgroundColor: storeHistory.map((_, i) =>
-                  i === storeHistory.length - 1 ? "#1a73e8" : "#adb5bd",
-                ),
+                backgroundColor: storeHistory.map((_, i) => STORE_HISTORY_COLORS[i] ?? "#1a73e8"),
                 borderRadius: 4,
               },
             ],
@@ -241,7 +248,7 @@ export default function RightPanel({
                   s.franchiseRatio,
                   s.generalRatio ?? 100 - s.franchiseRatio,
                 ],
-                backgroundColor: ["#1a73e8", "#e9ecef"],
+                backgroundColor: ["#1a73e8", "#ff9f43"],
                 borderWidth: 2,
                 borderColor: "#fff",
               },
@@ -264,16 +271,16 @@ export default function RightPanel({
 
     // ── 평균영업기간 비교 ──
     if (chartOperatingCompareRef.current) {
-      const opData = [dOp.selected, dOp.dong, dOp.district, dOp.seoul].map(
+      const opData = [dOp.selected, dOp.dong, dOp.seoul].map(
         (v) => v ?? 0,
       );
-      const opColors = opData.map((_, i) => (i === 0 ? "#1a73e8" : "#adb5bd"));
+      const opColors = ["#1a73e8", "#00b4d8", "#f4845f"];
       chartInstancesRef.current.operatingCompare = new Chart(
         chartOperatingCompareRef.current.getContext("2d"),
         {
           type: "bar",
           data: {
-            labels: ["선택상권", "행정동", "자치구", "서울시"],
+            labels: ["선택상권", "행정동", "서울시"],
             datasets: [
               { data: opData, backgroundColor: opColors, borderRadius: 6 },
             ],
@@ -331,30 +338,32 @@ export default function RightPanel({
       );
     }
 
-    // ── 업종분포 추이 (placeholder) ──
-    if (chartIndustryTrendRef.current) {
+    // ── 업종분포 추이 ──
+    const industryTrend = d.historyData.industryTrend ?? [];
+    const hasIndustryTrend = industryTrend.some(t => t.food != null);
+    if (chartIndustryTrendRef.current && hasIndustryTrend) {
       chartInstancesRef.current.industryTrend = new Chart(
         chartIndustryTrendRef.current.getContext("2d"),
         {
           type: "bar",
           data: {
-            labels: X_LABELS,
+            labels: TREND_LABELS,
             datasets: [
               {
                 label: "외식업",
-                data: [-2.4, -2.5, 0.0, 0.7, -2.7],
+                data: industryTrend.map(t => t.food),
                 backgroundColor: "#1a73e8",
                 borderRadius: 4,
               },
               {
                 label: "서비스업",
-                data: [-1.4, -7.2, -0.5, 1.1, -2.2],
+                data: industryTrend.map(t => t.service),
                 backgroundColor: "#e91e63",
                 borderRadius: 4,
               },
               {
                 label: "소매업",
-                data: [-2.0, -2.6, 0.0, 0.5, 0.5],
+                data: industryTrend.map(t => t.retail),
                 backgroundColor: "#f5a623",
                 borderRadius: 4,
               },
@@ -438,7 +447,6 @@ export default function RightPanel({
     const dayTotal = dayVals.reduce((a, b) => a + (b ?? 0), 0);
     if (chartFloatingDayRef.current && dayTotal > 0) {
       const dayRatios = dayVals.map((v) => pct(v ?? 0, dayTotal));
-      const maxDay = Math.max(...dayRatios);
       chartInstancesRef.current.floatingDay = new Chart(
         chartFloatingDayRef.current.getContext("2d"),
         {
@@ -448,9 +456,7 @@ export default function RightPanel({
             datasets: [
               {
                 data: dayRatios,
-                backgroundColor: dayRatios.map((v) =>
-                  v === maxDay ? "#1a73e8" : "#adb5bd",
-                ),
+                backgroundColor: DAY_COLORS,
                 borderRadius: 4,
               },
             ],
@@ -496,8 +502,7 @@ export default function RightPanel({
             datasets: [
               {
                 data: ageVals,
-                backgroundColor: "#adb5bd",
-                hoverBackgroundColor: "#1a73e8",
+                backgroundColor: AGE_COLORS,
                 borderRadius: 4,
               },
             ],
@@ -646,6 +651,113 @@ export default function RightPanel({
       );
     }
 
+    // ── 매출 시간대별 ──
+    const sal = d.sales;
+    if (chartSalesTimeRef.current && sal) {
+      const salesTimeVals = [
+        sal.time0006SalesAmount, sal.time0611SalesAmount,
+        sal.time1114SalesAmount, sal.time1417SalesAmount,
+        sal.time1721SalesAmount, sal.time2124SalesAmount,
+      ].map((v) => Math.round((v ?? 0) / 10000));
+      chartInstancesRef.current.salesTime = new Chart(
+        chartSalesTimeRef.current.getContext("2d"),
+        {
+          type: "bar",
+          data: {
+            labels: TIME_LABELS,
+            datasets: [{
+              data: salesTimeVals,
+              backgroundColor: TIME_COLORS,
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y.toLocaleString()}만원` } },
+            },
+            scales: {
+              y: { display: false, beginAtZero: true },
+              x: { grid: { display: false }, ticks: { font: { size: 10 }, color: "#868e96" } },
+            },
+          },
+        },
+      );
+    }
+
+    // ── 매출 요일별 ──
+    if (chartSalesDayRef.current && sal) {
+      const salesDayVals = [
+        sal.mondaySalesAmount, sal.tuesdaySalesAmount, sal.wednesdaySalesAmount,
+        sal.thursdaySalesAmount, sal.fridaySalesAmount, sal.saturdaySalesAmount,
+        sal.sundaySalesAmount,
+      ].map((v) => Math.round((v ?? 0) / 10000));
+      chartInstancesRef.current.salesDay = new Chart(
+        chartSalesDayRef.current.getContext("2d"),
+        {
+          type: "bar",
+          data: {
+            labels: DAY_LABELS,
+            datasets: [{
+              data: salesDayVals,
+              backgroundColor: DAY_COLORS,
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y.toLocaleString()}만원` } },
+            },
+            scales: {
+              y: { display: false, beginAtZero: true },
+              x: { grid: { display: false }, ticks: { font: { size: 11, family: "Pretendard", weight: "600" } } },
+            },
+          },
+        },
+      );
+    }
+
+    // ── 직장인구 연령별 ──
+    const wkr = d.worker;
+    if (chartWorkerAgeRef.current && wkr) {
+      const wkrAgeVals = [
+        wkr.age10WorkerPopulation, wkr.age20WorkerPopulation,
+        wkr.age30WorkerPopulation, wkr.age40WorkerPopulation,
+        wkr.age50WorkerPopulation, wkr.age60AboveWorkerPopulation,
+      ].map((v) => v ?? 0);
+      chartInstancesRef.current.workerAge = new Chart(
+        chartWorkerAgeRef.current.getContext("2d"),
+        {
+          type: "bar",
+          data: {
+            labels: ["10대", "20대", "30대", "40대", "50대", "60대+"],
+            datasets: [{
+              data: wkrAgeVals,
+              backgroundColor: AGE_COLORS,
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y.toLocaleString()}명` } },
+            },
+            scales: {
+              y: { display: false, beginAtZero: true },
+              x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+            },
+          },
+        },
+      );
+    }
+
     if (innerRef.current) innerRef.current.scrollTop = 0;
     return () => {
       destroyCharts();
@@ -679,6 +791,8 @@ export default function RightPanel({
   const hh = selectedData.household;
   const fac = selectedData.facility;
   const inc = selectedData.income;
+  const wkr = selectedData.worker;
+  const sal = selectedData.sales;
 
   // ── 유동인구 파생값 ──
   const fTotal = f?.totalFloatingPopulation ?? 0;
@@ -714,6 +828,11 @@ export default function RightPanel({
     resTotal > 0 ? pct(res.maleResidentPopulation ?? 0, resTotal) : null;
   const resFemPct =
     resTotal > 0 ? pct(res.femaleResidentPopulation ?? 0, resTotal) : null;
+
+  // ── 직장인구 파생값 ──
+  const wkrTotal = wkr?.totalWorkerPopulation ?? 0;
+  const wkrMalePct = wkrTotal > 0 ? pct(wkr.maleWorkerPopulation ?? 0, wkrTotal) : null;
+  const wkrFemPct  = wkrTotal > 0 ? pct(wkr.femaleWorkerPopulation ?? 0, wkrTotal) : null;
 
   // ── 소비트렌드 비율 ──
   const totalExp = inc?.totalExpenditureAmount ?? 0;
@@ -869,18 +988,35 @@ export default function RightPanel({
                       </div>
                     </div>
                   )}
-                  <div className="stat-sum-item null-stat">
-                    <div className="ss-label">매출액 (월평균)</div>
-                    <div className="ss-diff-box neutral">
-                      <div className="ss-diff-label">전분기 대비</div>
-                      <div className="ss-diff-val">-</div>
+                  {ss?.sales ? (
+                    <div className="stat-sum-item">
+                      <div className="ss-label">매출액 (월평균)</div>
+                      <div className={`ss-diff-box ${ss.sales.diffType}`}>
+                        <div className="ss-diff-label">{ss.sales.diffLabel}</div>
+                        <div className="ss-diff-val">{ss.sales.diffVal}</div>
+                      </div>
+                      <div className="ss-main-box">
+                        <div className="ss-main-label">평균 매출액</div>
+                        <div className="ss-main-val">
+                          {Math.round(ss.sales.current / 10000).toLocaleString()}
+                          <em>만원</em>
+                        </div>
+                      </div>
                     </div>
-                    <div className="ss-main-box">
-                      <div className="ss-main-label">평균 매출액</div>
-                      <div className="ss-main-val ss-null">준비 중</div>
+                  ) : (
+                    <div className="stat-sum-item null-stat">
+                      <div className="ss-label">매출액 (월평균)</div>
+                      <div className="ss-diff-box neutral">
+                        <div className="ss-diff-label">전분기 대비</div>
+                        <div className="ss-diff-val">-</div>
+                      </div>
+                      <div className="ss-main-box">
+                        <div className="ss-main-label">평균 매출액</div>
+                        <div className="ss-main-val ss-null">준비 중</div>
+                      </div>
+                      <div className="ss-rank">매출 API 연동 예정</div>
                     </div>
-                    <div className="ss-rank">매출 API 연동 예정</div>
-                  </div>
+                  )}
                   {ss?.pop && (
                     <div className="stat-sum-item">
                       <div className="ss-label">유동인구 (일평균)</div>
@@ -1123,17 +1259,72 @@ export default function RightPanel({
                   <div className="viz-box">
                     <div className="viz-header">
                       <div className="viz-title">업종분포 추이</div>
-                      <div className="viz-meta">단위: % (전분기 대비)</div>
+                      <div className="viz-meta">단위: %</div>
                     </div>
                     <div className="chart-container">
-                      <canvas ref={chartIndustryTrendRef} />
+                      {(selectedData.historyData?.industryTrend ?? []).some(t => t.food != null)
+                        ? <canvas ref={chartIndustryTrendRef} />
+                        : <EmptyChart />}
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* ── 6. 매출액 분석 (NULL) ── */}
-              <NullSection title="매출액 분석" />
+              {/* ── 6. 매출액 분석 ── */}
+              {sal ? (
+                <div className="report-section">
+                  <h3 className="rs-title">매출액 분석</h3>
+                  <div className="store-summary-row">
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">월평균 매출</span>
+                      <span className="ssrow-val">{n(Math.round(sal.monthlySalesAmount / 10000), "만원")}</span>
+                    </div>
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">전분기 대비</span>
+                      <span className={`ssrow-val ${(sal.prevQuarterAmountDiff ?? 0) >= 0 ? "up" : "down"}`}>
+                        {sal.prevQuarterAmountDiff != null
+                          ? `${sal.prevQuarterAmountDiff >= 0 ? "+" : ""}${Math.round(sal.prevQuarterAmountDiff / 10000).toLocaleString()}만원`
+                          : "-"}
+                      </span>
+                    </div>
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">전년동기 대비</span>
+                      <span className={`ssrow-val ${(sal.prevYearAmountDiff ?? 0) >= 0 ? "up" : "down"}`}>
+                        {sal.prevYearAmountDiff != null
+                          ? `${sal.prevYearAmountDiff >= 0 ? "+" : ""}${Math.round(sal.prevYearAmountDiff / 10000).toLocaleString()}만원`
+                          : "-"}
+                      </span>
+                    </div>
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">월 매출건수</span>
+                      <span className="ssrow-val">{n(sal.monthlySalesCount, "건")}</span>
+                    </div>
+                  </div>
+                  <div className="grid-2viz">
+                    <div className="viz-box">
+                      <div className="viz-header">
+                        <div className="viz-title">시간대별 매출</div>
+                        <div className="viz-meta">단위: 만원</div>
+                      </div>
+                      <div className="chart-container">
+                        <canvas ref={chartSalesTimeRef} />
+                      </div>
+                    </div>
+                    <div className="viz-box">
+                      <div className="viz-header">
+                        <div className="viz-title">요일별 매출</div>
+                        <div className="viz-meta">단위: 만원</div>
+                      </div>
+                      <div className="chart-container">
+                        <canvas ref={chartSalesDayRef} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <NullSection title="매출액 분석" />
+              )}
 
               {/* ── 7. 유동인구 분석 ── */}
               <div className="report-section">
@@ -1312,7 +1503,56 @@ export default function RightPanel({
               )}
 
               {/* ── 9. 직장인구 (NULL) ── */}
-              <NullSection title="직장인구" />
+              {wkr ? (
+                <div className="report-section">
+                  <h3 className="rs-title">직장인구</h3>
+                  <div className="store-summary-row">
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">총 직장인구</span>
+                      <span className="ssrow-val">{n(wkr.totalWorkerPopulation, "명")}</span>
+                    </div>
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">전분기 대비</span>
+                      <span className={`ssrow-val ${(wkr.prevQuarterDiff ?? 0) >= 0 ? "up" : "down"}`}>
+                        {wkr.prevQuarterDiff != null
+                          ? `${wkr.prevQuarterDiff >= 0 ? "+" : ""}${wkr.prevQuarterDiff.toLocaleString()}명`
+                          : "-"}
+                      </span>
+                    </div>
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">남성</span>
+                      <span className="ssrow-val">{n(wkr.maleWorkerPopulation, "명")}</span>
+                    </div>
+                    <div className="ssrow-item">
+                      <span className="ssrow-label">여성</span>
+                      <span className="ssrow-val">{n(wkr.femaleWorkerPopulation, "명")}</span>
+                    </div>
+                  </div>
+                  {wkrMalePct != null && (
+                    <div className="gender-bar-wrap">
+                      <div className="gb-label-row">
+                        <span>남성 {wkrMalePct}%</span>
+                        <span>여성 {wkrFemPct}%</span>
+                      </div>
+                      <div className="gender-bar">
+                        <div className="gb-male" style={{ width: `${wkrMalePct}%` }} />
+                        <div className="gb-female" style={{ width: `${wkrFemPct}%` }} />
+                      </div>
+                    </div>
+                  )}
+                  <div className="viz-box">
+                    <div className="viz-header">
+                      <div className="viz-title">연령별 직장인구</div>
+                      <div className="viz-meta">단위: 명</div>
+                    </div>
+                    <div className="chart-container">
+                      <canvas ref={chartWorkerAgeRef} />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <NullSection title="직장인구" />
+              )}
 
               {/* ── 10. 가구세대 수 ── */}
               {hh ? (
@@ -1459,8 +1699,6 @@ export default function RightPanel({
                 <NullSection title="소득수준 & 소비트렌드" />
               )}
 
-              {/* ── 13. 임대시세 (NULL) ── */}
-              <NullSection title="임대시세" />
 
               {/* ── 14. AI SWOT ── */}
               {swot && (
