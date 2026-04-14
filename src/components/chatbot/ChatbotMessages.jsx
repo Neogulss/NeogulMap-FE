@@ -52,7 +52,14 @@ export default function ChatbotMessages({
 
             <div className="msg-row bot">
               <div className="msg-content">
-                <div className="msg-sender">입지너구리 AI</div>
+                <div className="bot-profile">
+                  <img
+                    src="/neoguri-chatbot-head.png"
+                    alt="입지너구리 챗봇"
+                    className="chatbot-bot-avatar"
+                  />
+                  <div className="msg-sender">입지너구리 AI</div>
+                </div>
                 <div className="msg-bubble markdown">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {formatText(log.botResponse)}
@@ -137,7 +144,14 @@ export default function ChatbotMessages({
       {sending && (
         <div className="msg-row bot">
           <div className="msg-content">
-            <div className="msg-sender">입지너구리 AI</div>
+            <div className="bot-profile">
+              <img
+                src="/neoguri-chatbot-head.png"
+                alt="입지너구리 챗봇"
+                className="chatbot-bot-avatar"
+              />
+              <div className="msg-sender">입지너구리 AI</div>
+            </div>
             <div className="msg-bubble">답변을 생성하고 있습니다...</div>
           </div>
         </div>
