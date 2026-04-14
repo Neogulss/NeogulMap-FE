@@ -24,7 +24,7 @@ export default function MainPage() {
     <div className="main-page">
       <MainNav />
       <HeroSection />
-      <DashboardSection />
+<DashboardSection />
       <MarqueeSection />
       <Footer />
     </div>
