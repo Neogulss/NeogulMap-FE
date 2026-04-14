@@ -30,6 +30,33 @@ const GUEST_SERVICE_INTRO_QUESTION = "입지너구리 서비스 소개해줘";
 const GUEST_RECOMMENDED_QUESTIONS = [
   { questionIdx: "guest-service-intro", questionTitle: GUEST_SERVICE_INTRO_QUESTION },
 ];
+const REGION_OPTIONS = [
+  "금천구",
+  "영등포구",
+  "구로구",
+  "관악구",
+  "동작구",
+  "서초구",
+  "강남구",
+  "마포구",
+  "용산구",
+  "성동구",
+  "광진구",
+  "중구",
+  "종로구",
+  "성북구",
+  "강북구",
+  "도봉구",
+  "노원구",
+  "은평구",
+  "강서구",
+  "양천구",
+  "중랑구",
+  "동대문구",
+  "서대문구",
+  "강동구",
+  "송파구",
+];
 
 export default function ChatbotPage() {
   const navigate = useNavigate();
@@ -50,9 +77,18 @@ export default function ChatbotPage() {
   const [sending, setSending] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isProfileFormOpen, setIsProfileFormOpen] = useState(false);
+  const [profileIndustry, setProfileIndustry] = useState("");
+  const [profileAge, setProfileAge] = useState("");
+  const [profileHasBusinessRegistration, setProfileHasBusinessRegistration] = useState("");
+  const [profileRegion, setProfileRegion] = useState("");
+  const [isBusinessDropdownOpen, setIsBusinessDropdownOpen] = useState(false);
+  const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
 
   const messagesContainerRef = useRef(null);
   const prevLogLengthRef = useRef(0);
+  const businessDropdownRef = useRef(null);
+  const regionDropdownRef = useRef(null);
 
   const initializeGuestMode = () => {
     setSessions([]);
@@ -64,6 +100,9 @@ export default function ChatbotPage() {
     setLoadingLogs(false);
     setLoadingRecommendations(false);
     setRecommendedQuestions(GUEST_RECOMMENDED_QUESTIONS);
+    setIsProfileFormOpen(false);
+    setIsBusinessDropdownOpen(false);
+    setIsRegionDropdownOpen(false);
   };
 
   // 초기 로드: 상권분석에서 넘어온 경우 새 채팅 시작 (기존 세션 자동 선택 안 함)
@@ -93,6 +132,26 @@ export default function ChatbotPage() {
     }
     prevLogLengthRef.current = logs.length;
   }, [logs, sending]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        businessDropdownRef.current &&
+        !businessDropdownRef.current.contains(event.target)
+      ) {
+        setIsBusinessDropdownOpen(false);
+      }
+      if (
+        regionDropdownRef.current &&
+        !regionDropdownRef.current.contains(event.target)
+      ) {
+        setIsRegionDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const hasMessages = useMemo(
     () => (logs && logs.length > 0) || Boolean(pendingUserQuery),
@@ -155,6 +214,7 @@ export default function ChatbotPage() {
         industry: analysisContext.serviceIndustryCodeName,
         age: userAge,
         hasBusinessRegistration: isRegistered !== "" ? String(isRegistered) : "",
+        region: analysisContext.districtName || "",
       });
     };
 
@@ -212,6 +272,9 @@ export default function ChatbotPage() {
     setLogs([]);
     setPendingUserQuery("");
     setErrorMessage("");
+    setIsProfileFormOpen(false);
+    setIsBusinessDropdownOpen(false);
+    setIsRegionDropdownOpen(false);
     loadRecommendedQuestions(null);
     requestAnimationFrame(() => {
       window.scrollTo(0, 0);
@@ -221,7 +284,13 @@ export default function ChatbotPage() {
     });
   };
 
-  const handleSendMessage = async ({ userQuery, industry, age, hasBusinessRegistration }) => {
+  const handleSendMessage = async ({
+    userQuery,
+    industry,
+    age,
+    hasBusinessRegistration,
+    region,
+  }) => {
     if (!userQuery.trim()) return;
     if (!isLoggedIn) {
       setErrorMessage("로그인 후 전체 챗봇 기능을 이용할 수 있습니다.");
@@ -229,18 +298,29 @@ export default function ChatbotPage() {
     }
     try {
       const trimmedQuery = userQuery.trim();
+      setIsProfileFormOpen(false);
+      setIsBusinessDropdownOpen(false);
+      setIsRegionDropdownOpen(false);
       setPendingUserQuery(trimmedQuery);
       setSending(true);
       setErrorMessage("");
 
       const userProfile = {};
-      if (industry?.trim()) userProfile.industry = industry.trim();
-      if (age !== "" && age !== null && age !== undefined) {
-        userProfile.age = Number(age);
+      const resolvedIndustry = industry ?? profileIndustry;
+      const resolvedAge = age ?? profileAge;
+      const resolvedBusinessRegistration =
+        hasBusinessRegistration ?? profileHasBusinessRegistration;
+      const resolvedRegion = region ?? profileRegion;
+
+      if (resolvedIndustry?.trim()) userProfile.industry = resolvedIndustry.trim();
+      if (resolvedAge !== "" && resolvedAge !== null && resolvedAge !== undefined) {
+        userProfile.age = Number(resolvedAge);
       }
-      if (hasBusinessRegistration !== "") {
-        userProfile.hasBusinessRegistration = hasBusinessRegistration === "true";
+      if (resolvedBusinessRegistration !== "") {
+        userProfile.hasBusinessRegistration =
+          resolvedBusinessRegistration === "true";
       }
+      if (resolvedRegion?.trim()) userProfile.region = resolvedRegion.trim();
 
       const payload = {
         sessionIdx: selectedSessionIdx,
@@ -358,6 +438,7 @@ export default function ChatbotPage() {
       industry: "",
       age: "",
       hasBusinessRegistration: "",
+      region: "",
     });
   };
 
@@ -383,13 +464,13 @@ export default function ChatbotPage() {
           />
 
           <main className="chat-main">
-            <div className="chat-messages" ref={messagesContainerRef}>
+            <div className="chat-top-area">
               {!hasMessages && !loadingLogs && (
                 <section className="welcome-banner">
                   <h2>창업 정책과 대출 정보를 빠르게 찾아보세요</h2>
                   <p>
                     {isLoggedIn
-                      ? "업종, 나이, 사업자등록 여부를 입력하면 더 정확한 답변을 받을 수 있어요."
+                      ? "업종, 나이, 사업자등록 여부, 지역을 입력하면 더 정확한 답변을 받을 수 있어요."
                       : "로그인시 더 자세한 내용을 질문할 수 있습니다."}
                   </p>
                   {!isLoggedIn && (
@@ -404,6 +485,137 @@ export default function ChatbotPage() {
                 </section>
               )}
 
+              {isLoggedIn && isProfileFormOpen && (
+                <section className="chat-profile-panel">
+                  <div className="chat-profile-panel-inner">
+                    <div className="survey-box">
+                      <div className="survey-item">
+                        <label>관심 업종</label>
+                        <input
+                          type="text"
+                          placeholder="예: 외식업, 카페, 뷰티"
+                          value={profileIndustry}
+                          onChange={(e) => setProfileIndustry(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="survey-item">
+                        <label>나이</label>
+                        <input
+                          type="number"
+                          placeholder="예: 29"
+                          value={profileAge}
+                          onChange={(e) => setProfileAge(e.target.value)}
+                        />
+                      </div>
+
+                      <div className="survey-item">
+                        <label>사업자등록 여부</label>
+                        <div className="region-dropdown" ref={businessDropdownRef}>
+                          <button
+                            type="button"
+                            className={`region-dropdown-trigger ${isBusinessDropdownOpen ? "open" : ""}`}
+                            onClick={() => setIsBusinessDropdownOpen((prev) => !prev)}
+                          >
+                            <span>
+                              {profileHasBusinessRegistration === "true"
+                                ? "있음"
+                                : profileHasBusinessRegistration === "false"
+                                  ? "없음"
+                                  : "선택"}
+                            </span>
+                            <span className="region-dropdown-arrow">
+                              {isBusinessDropdownOpen ? "▴" : "▾"}
+                            </span>
+                          </button>
+
+                          {isBusinessDropdownOpen && (
+                            <div className="region-dropdown-menu">
+                              <button
+                                type="button"
+                                className={`region-dropdown-item ${profileHasBusinessRegistration === "" ? "selected" : ""}`}
+                                onClick={() => {
+                                  setProfileHasBusinessRegistration("");
+                                  setIsBusinessDropdownOpen(false);
+                                }}
+                              >
+                                선택
+                              </button>
+                              <button
+                                type="button"
+                                className={`region-dropdown-item ${profileHasBusinessRegistration === "true" ? "selected" : ""}`}
+                                onClick={() => {
+                                  setProfileHasBusinessRegistration("true");
+                                  setIsBusinessDropdownOpen(false);
+                                }}
+                              >
+                                있음
+                              </button>
+                              <button
+                                type="button"
+                                className={`region-dropdown-item ${profileHasBusinessRegistration === "false" ? "selected" : ""}`}
+                                onClick={() => {
+                                  setProfileHasBusinessRegistration("false");
+                                  setIsBusinessDropdownOpen(false);
+                                }}
+                              >
+                                없음
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="survey-item">
+                        <label>지역</label>
+                        <div className="region-dropdown" ref={regionDropdownRef}>
+                          <button
+                            type="button"
+                            className={`region-dropdown-trigger ${isRegionDropdownOpen ? "open" : ""}`}
+                            onClick={() => setIsRegionDropdownOpen((prev) => !prev)}
+                          >
+                            <span>{profileRegion || "지역 선택"}</span>
+                            <span className="region-dropdown-arrow">
+                              {isRegionDropdownOpen ? "▴" : "▾"}
+                            </span>
+                          </button>
+
+                          {isRegionDropdownOpen && (
+                            <div className="region-dropdown-menu">
+                              <button
+                                type="button"
+                                className={`region-dropdown-item ${profileRegion === "" ? "selected" : ""}`}
+                                onClick={() => {
+                                  setProfileRegion("");
+                                  setIsRegionDropdownOpen(false);
+                                }}
+                              >
+                                선택
+                              </button>
+                              {REGION_OPTIONS.map((region) => (
+                                <button
+                                  key={region}
+                                  type="button"
+                                  className={`region-dropdown-item ${profileRegion === region ? "selected" : ""}`}
+                                  onClick={() => {
+                                    setProfileRegion(region);
+                                    setIsRegionDropdownOpen(false);
+                                  }}
+                                >
+                                  {region}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
+
+            <div className="chat-messages" ref={messagesContainerRef}>
               {errorMessage && <div className="error-box">{errorMessage}</div>}
 
               <ChatbotMessages
@@ -424,8 +636,10 @@ export default function ChatbotPage() {
                 <ChatbotInput
                   onSend={handleSendMessage}
                   sending={sending}
-                  showProfileForm={isLoggedIn && !hasMessages}
                   disabled={!isLoggedIn}
+                  isProfileFormOpen={isProfileFormOpen}
+                  onToggleProfileForm={() => setIsProfileFormOpen((prev) => !prev)}
+                  showProfileHint={isLoggedIn && !hasMessages}
                 />
                 <div className="input-footer">
                   {isLoggedIn

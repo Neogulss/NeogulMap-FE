@@ -3,13 +3,14 @@ import { useEffect, useRef, useState } from "react";
 export default function ChatbotInput({
   onSend,
   sending,
-  showProfileForm = false,
   disabled = false,
+  isProfileFormOpen = false,
+  onToggleProfileForm,
+  showProfileHint = false,
 }) {
   const [userQuery, setUserQuery] = useState("");
-  const [industry, setIndustry] = useState("");
-  const [age, setAge] = useState("");
-  const [hasBusinessRegistration, setHasBusinessRegistration] = useState("");
+  const [isHintDismissed, setIsHintDismissed] = useState(false);
+  const isInputLocked = disabled || sending;
 
   const textareaRef = useRef(null);
 
@@ -20,20 +21,17 @@ export default function ChatbotInput({
   }, [userQuery]);
 
   const handleSend = async () => {
-    if (disabled || !userQuery.trim() || sending) return;
-
-    await onSend({
-      userQuery,
-      industry,
-      age,
-      hasBusinessRegistration,
-    });
+    const trimmedQuery = userQuery.trim();
+    if (isInputLocked || !trimmedQuery) return;
 
     setUserQuery("");
+    await onSend({
+      userQuery: trimmedQuery,
+    });
   };
 
   const handleKeyDown = async (e) => {
-    if (disabled) return;
+    if (isInputLocked) return;
 
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -41,63 +39,41 @@ export default function ChatbotInput({
     }
   };
 
+  const showHintBubble =
+    showProfileHint && !isHintDismissed && !isProfileFormOpen && !isInputLocked;
+
   return (
-    <>
-      {showProfileForm && (
-        <div className={`survey-box ${disabled ? "disabled" : ""}`}>
-          <div className="survey-item">
-            <label>업종</label>
-            <input
-              type="text"
-              placeholder="예: 외식업, 카페, 뷰티"
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
-              disabled={disabled}
-            />
-          </div>
+    <div className="chat-input-wrapper-container">
+      <div className={`chat-input-wrapper ${isInputLocked ? "disabled" : ""}`}>
+        <div className="plus-btn-wrap">
+          {showHintBubble && (
+            <div className="profile-hint-bubble">
+              조건 입력창에서 정보를 입력하면 더 정확한 답변을 받을 수 있어요.
+            </div>
+          )}
 
-          <div className="survey-item">
-            <label>나이</label>
-            <input
-              type="number"
-              placeholder="예: 29"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              disabled={disabled}
-            />
-          </div>
-
-          <div className="survey-item">
-            <label>사업자등록 여부</label>
-            <select
-              value={hasBusinessRegistration}
-              onChange={(e) => setHasBusinessRegistration(e.target.value)}
-              disabled={disabled}
-            >
-              <option value="">선택</option>
-              <option value="true">있음</option>
-              <option value="false">없음</option>
-            </select>
-          </div>
-        </div>
-      )}
-
-      <div className={`chat-input-wrapper ${disabled ? "disabled" : ""}`}>
-        <button
-          type="button"
-          className="btn-attach"
-          title={disabled ? "로그인 후 사용할 수 있습니다." : "첨부 기능 준비 중"}
+          <button
+            type="button"
+            className="btn-attach btn-plus"
+          title={
+            disabled
+              ? "로그인 후 사용할 수 있습니다."
+              : sending
+                ? "답변 생성 중에는 변경할 수 없습니다."
+              : isProfileFormOpen
+                ? "조건 입력창 닫기"
+                : "조건 입력창 열기"
+          }
           onClick={() => {
-            if (!disabled) {
-              window.alert("첨부 기능은 아직 연결되지 않았습니다.");
-            }
+            if (isInputLocked) return;
+            setIsHintDismissed(true);
+            onToggleProfileForm?.();
           }}
-          disabled={disabled}
+          disabled={isInputLocked}
         >
-          <svg viewBox="0 0 24 24">
-            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
-          </svg>
+          {isProfileFormOpen ? "-" : "+"}
         </button>
+        </div>
 
         <textarea
           ref={textareaRef}
@@ -105,20 +81,22 @@ export default function ChatbotInput({
           placeholder={
             disabled
               ? "로그인 후 질문을 입력할 수 있어요."
+              : sending
+                ? "답변 생성 중에는 입력할 수 없어요."
               : "입지너구리에게 정책 정보나 궁금한 창업 대출을 질문해 보세요."
           }
           value={userQuery}
           onChange={(e) => setUserQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           rows={1}
-          disabled={disabled}
+          disabled={isInputLocked}
         />
 
         <button
           type="button"
           className="btn-send"
           onClick={handleSend}
-          disabled={sending || disabled}
+          disabled={isInputLocked}
           title={disabled ? "로그인 후 전송할 수 있습니다." : "전송"}
         >
           {sending ? (
@@ -130,6 +108,6 @@ export default function ChatbotInput({
           )}
         </button>
       </div>
-    </>
+    </div>
   );
 }
