@@ -1,7 +1,23 @@
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function HeroSection() {
     const navigate = useNavigate();
+    const descriptionText = '전국 상권의 유동인구·매출·경쟁 현황을 AI가 실시간으로 분석합니다.\n감에 의존하지 말고 숫자로 먼저 검증하세요.';
+    const [typedDescription, setTypedDescription] = useState('');
+
+    useEffect(() => {
+        let index = 0;
+        const interval = window.setInterval(() => {
+            index += 1;
+            setTypedDescription(descriptionText.slice(0, index));
+            if (index >= descriptionText.length) {
+                window.clearInterval(interval);
+            }
+        }, 38);
+
+        return () => window.clearInterval(interval);
+    }, []);
 
     const handleScrollDown = () => {
         window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
@@ -33,10 +49,7 @@ export default function HeroSection() {
                             <span className="ph-title-light">데이터로 검증한 입지,</span>
                             <span className="ph-title-bold">지금 확인하세요</span>
                         </div>
-                        <p className="hero-desc">
-                            전국 상권의 유동인구·매출·경쟁 현황을 AI가 실시간으로 분석합니다.
-                            감에 의존하지 말고 숫자로 먼저 검증하세요.
-                        </p>
+                        <p className="hero-desc hero-desc-typing">{typedDescription}</p>
                         <button
                             className="btn-action"
                             onClick={() => navigate('/analysis')}
