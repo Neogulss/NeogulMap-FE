@@ -57,6 +57,11 @@ const REGION_OPTIONS = [
   "강동구",
   "송파구",
 ];
+const STARTUP_STATUS_OPTIONS = [
+  "창업 예정",
+  "운영 중",
+  "재창업 예정",
+];
 
 export default function ChatbotPage() {
   const navigate = useNavigate();
@@ -82,11 +87,14 @@ export default function ChatbotPage() {
   const [profileAge, setProfileAge] = useState("");
   const [profileHasBusinessRegistration, setProfileHasBusinessRegistration] = useState("");
   const [profileRegion, setProfileRegion] = useState("");
+  const [profileStartupStatus, setProfileStartupStatus] = useState("");
+  const [isStartupStatusDropdownOpen, setIsStartupStatusDropdownOpen] = useState(false);
   const [isBusinessDropdownOpen, setIsBusinessDropdownOpen] = useState(false);
   const [isRegionDropdownOpen, setIsRegionDropdownOpen] = useState(false);
 
   const messagesContainerRef = useRef(null);
   const prevLogLengthRef = useRef(0);
+  const startupStatusDropdownRef = useRef(null);
   const businessDropdownRef = useRef(null);
   const regionDropdownRef = useRef(null);
 
@@ -101,6 +109,7 @@ export default function ChatbotPage() {
     setLoadingRecommendations(false);
     setRecommendedQuestions(GUEST_RECOMMENDED_QUESTIONS);
     setIsProfileFormOpen(false);
+    setIsStartupStatusDropdownOpen(false);
     setIsBusinessDropdownOpen(false);
     setIsRegionDropdownOpen(false);
   };
@@ -135,6 +144,12 @@ export default function ChatbotPage() {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      if (
+        startupStatusDropdownRef.current &&
+        !startupStatusDropdownRef.current.contains(event.target)
+      ) {
+        setIsStartupStatusDropdownOpen(false);
+      }
       if (
         businessDropdownRef.current &&
         !businessDropdownRef.current.contains(event.target)
@@ -273,6 +288,7 @@ export default function ChatbotPage() {
     setPendingUserQuery("");
     setErrorMessage("");
     setIsProfileFormOpen(false);
+    setIsStartupStatusDropdownOpen(false);
     setIsBusinessDropdownOpen(false);
     setIsRegionDropdownOpen(false);
     loadRecommendedQuestions(null);
@@ -290,6 +306,7 @@ export default function ChatbotPage() {
     age,
     hasBusinessRegistration,
     region,
+    startupStatus,
   }) => {
     if (!userQuery.trim()) return;
     if (!isLoggedIn) {
@@ -299,6 +316,7 @@ export default function ChatbotPage() {
     try {
       const trimmedQuery = userQuery.trim();
       setIsProfileFormOpen(false);
+      setIsStartupStatusDropdownOpen(false);
       setIsBusinessDropdownOpen(false);
       setIsRegionDropdownOpen(false);
       setPendingUserQuery(trimmedQuery);
@@ -311,16 +329,21 @@ export default function ChatbotPage() {
       const resolvedBusinessRegistration =
         hasBusinessRegistration ?? profileHasBusinessRegistration;
       const resolvedRegion = region ?? profileRegion;
+      const resolvedStartupStatus = startupStatus ?? profileStartupStatus;
 
       if (resolvedIndustry?.trim()) userProfile.industry = resolvedIndustry.trim();
       if (resolvedAge !== "" && resolvedAge !== null && resolvedAge !== undefined) {
-        userProfile.age = Number(resolvedAge);
+        const parsedAge = Number(resolvedAge);
+        if (!Number.isNaN(parsedAge) && parsedAge >= 0) {
+          userProfile.age = parsedAge;
+        }
       }
       if (resolvedBusinessRegistration !== "") {
         userProfile.hasBusinessRegistration =
           resolvedBusinessRegistration === "true";
       }
       if (resolvedRegion?.trim()) userProfile.region = resolvedRegion.trim();
+      if (resolvedStartupStatus?.trim()) userProfile.startupStatus = resolvedStartupStatus.trim();
 
       const payload = {
         sessionIdx: selectedSessionIdx,
@@ -439,6 +462,7 @@ export default function ChatbotPage() {
       age: "",
       hasBusinessRegistration: "",
       region: "",
+      startupStatus: "",
     });
   };
 
@@ -470,7 +494,7 @@ export default function ChatbotPage() {
                   <h2>창업 정책과 대출 정보를 빠르게 찾아보세요</h2>
                   <p>
                     {isLoggedIn
-                      ? "업종, 나이, 사업자등록 여부, 지역을 입력하면 더 정확한 답변을 받을 수 있어요."
+                      ? "업종, 나이, 사업자등록 여부, 지역, 창업 상태를 입력하면 더 정확한 답변을 받을 수 있어요."
                       : "로그인시 더 자세한 내용을 질문할 수 있습니다."}
                   </p>
                   {!isLoggedIn && (
@@ -504,9 +528,64 @@ export default function ChatbotPage() {
                         <input
                           type="number"
                           placeholder="예: 29"
+                          min="0"
                           value={profileAge}
-                          onChange={(e) => setProfileAge(e.target.value)}
+                          onChange={(e) => {
+                            const next = e.target.value;
+                            if (next === "") {
+                              setProfileAge("");
+                              return;
+                            }
+                            const parsed = Number(next);
+                            if (!Number.isNaN(parsed) && parsed >= 0) {
+                              setProfileAge(next);
+                            }
+                          }}
                         />
+                      </div>
+
+                      <div className="survey-item">
+                        <label>창업 상태</label>
+                        <div className="region-dropdown" ref={startupStatusDropdownRef}>
+                          <button
+                            type="button"
+                            className={`region-dropdown-trigger ${isStartupStatusDropdownOpen ? "open" : ""}`}
+                            onClick={() => setIsStartupStatusDropdownOpen((prev) => !prev)}
+                          >
+                            <span>{profileStartupStatus || "선택"}</span>
+                            <span className="region-dropdown-arrow">
+                              {isStartupStatusDropdownOpen ? "▴" : "▾"}
+                            </span>
+                          </button>
+
+                          {isStartupStatusDropdownOpen && (
+                            <div className="region-dropdown-menu">
+                              <button
+                                type="button"
+                                className={`region-dropdown-item ${profileStartupStatus === "" ? "selected" : ""}`}
+                                onClick={() => {
+                                  setProfileStartupStatus("");
+                                  setIsStartupStatusDropdownOpen(false);
+                                }}
+                              >
+                                선택
+                              </button>
+                              {STARTUP_STATUS_OPTIONS.map((status) => (
+                                <button
+                                  key={status}
+                                  type="button"
+                                  className={`region-dropdown-item ${profileStartupStatus === status ? "selected" : ""}`}
+                                  onClick={() => {
+                                    setProfileStartupStatus(status);
+                                    setIsStartupStatusDropdownOpen(false);
+                                  }}
+                                >
+                                  {status}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
 
                       <div className="survey-item">
