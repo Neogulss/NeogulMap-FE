@@ -639,6 +639,31 @@ body.analysis-active {
   letter-spacing: -0.3px;
 }
 
+.analysis-loading {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-top: 18px;
+}
+
+.analysis-loading-gif {
+    width: 76px;
+    height: auto;
+    object-fit: contain;
+}
+
+.analysis-loading-text {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+    letter-spacing: -0.3px;
+}
+
 .list-card {
   background: #fff;
   border: 1.5px solid var(--line);

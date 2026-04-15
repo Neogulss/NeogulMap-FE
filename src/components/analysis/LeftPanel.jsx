@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
+import loadingDots from "../../assets/images/Loading Dots.gif";
 
 function Tooltip({ text }) {
   const [pos, setPos] = useState(null);
@@ -251,6 +253,38 @@ export default function LeftPanel({
           <div className="form-label">면적</div>
           <div className="area-grid">
             {AREA_OPTIONS.map((opt) => (
+      <div className="list-section">
+        <div className="list-header">
+          <strong>추천 지역 리스트</strong>
+          {resultList.length > 0 && (
+            <span className="list-count-badge">{resultList.length}곳</span>
+          )}
+        </div>
+        <div id="result-list">
+          {isAnalyzing ? (
+            <div className="analysis-loading">
+              <img
+                src={loadingDots}
+                alt="AI 분석 로딩 중"
+                className="analysis-loading-gif"
+              />
+              <p className="analysis-loading-text">AI가 분석중입니다...</p>
+            </div>
+          ) : resultList.length === 0 ? (
+            <p
+              style={{
+                fontSize: "14px",
+                color: "var(--text3)",
+                textAlign: "center",
+                marginTop: "40px",
+              }}
+            >
+              조건을 입력하고
+              <br />
+              분석 버튼을 눌러주세요.
+            </p>
+          ) : (
+            resultList.map((data, idx) => (
               <div
                 key={opt.value}
                 className={`area-card${Number(area) === opt.value ? " active" : ""}`}
