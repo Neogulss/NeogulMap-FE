@@ -52,7 +52,7 @@ export default function MapPanel({ onMapInit, selectedData, onChatbotClick }) {
       >
         <div className="chatbot-bubble">필요한 대출 정보를 확인해보세요!</div>
         <img
-          src="/image.png"
+          src="/image.jpg"
           alt="입지너구리 챗봇"
           className="chatbot-mascot-img"
         />
