@@ -11,7 +11,20 @@ function Tooltip({ text }) {
       return;
     }
     const r = btnRef.current.getBoundingClientRect();
-    setPos({ top: r.top - 8, left: r.left + r.width / 2 });
+    const maxW = 300;
+    const margin = 12;
+    let left = r.left + r.width / 2;
+    let transformX = "-50%";
+
+    if (left - maxW / 2 < margin) {
+      left = Math.max(margin, r.left);
+      transformX = "0%";
+    } else if (left + maxW / 2 > window.innerWidth - margin) {
+      left = Math.min(window.innerWidth - margin, r.right);
+      transformX = "-100%";
+    }
+
+    setPos({ top: r.top - 8, left, transformX });
   };
 
   return (
@@ -37,7 +50,7 @@ function Tooltip({ text }) {
           style={{
             top: pos.top,
             left: pos.left,
-            transform: "translate(-50%, -100%)",
+            transform: `translate(${pos.transformX}, -100%)`,
           }}
         >
           {text}
