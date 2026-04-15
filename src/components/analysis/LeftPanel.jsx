@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import loadingDots from "../../assets/images/Loading Dots.gif";
 
 function Tooltip({ text }) {
   const [pos, setPos] = useState(null);
@@ -251,17 +252,14 @@ export default function LeftPanel({
         </div>
         <div id="result-list">
           {isAnalyzing ? (
-            <p
-              style={{
-                fontSize: "14px",
-                color: "var(--g)",
-                fontWeight: "700",
-                textAlign: "center",
-                marginTop: "40px",
-              }}
-            >
-              조건에 맞는 상권을 찾고 있습니다... 🐾
-            </p>
+            <div className="analysis-loading">
+              <img
+                src={loadingDots}
+                alt="AI 분석 로딩 중"
+                className="analysis-loading-gif"
+              />
+              <p className="analysis-loading-text">AI가 분석중입니다...</p>
+            </div>
           ) : resultList.length === 0 ? (
             <p
               style={{
