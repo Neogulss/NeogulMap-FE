@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import { useState, useRef } from "react";
 import loadingDots from "../../assets/images/Loading Dots.gif";
 
@@ -111,6 +112,17 @@ export default function LeftPanel({
   activeCardId,
   onSelectData,
 }) {
+  const [showResults, setShowResults] = useState(false);
+
+  // 분석 시작되거나 결과가 오면 자동으로 결과 뷰로 전환 (즐겨찾기 자동분석 포함)
+  useEffect(() => {
+    if (isAnalyzing || resultList.length > 0) setShowResults(true);
+  }, [isAnalyzing, resultList.length]);
+
+  const handleSearch = () => {
+    onSearch();
+  };
+
   return (
     <aside
       className={`left-panel${isCollapsed ? " collapsed" : ""}`}
@@ -124,125 +136,123 @@ export default function LeftPanel({
         {isCollapsed ? "❯" : "❮"}
       </button>
 
-      <div className="filter-section">
-        <div className="form-label">창업 희망 업종</div>
-        <div className="cat-tabs" id="cat-tabs">
-          {categoryTabs.map((cat) => (
-            <div
-              key={cat.label}
-              className={`cat-tab${selectedCategory === cat.label ? " active" : ""}`}
-              onClick={() => onCategoryChange(cat.label)}
-            >
-              <svg viewBox="0 0 24 24">
-                <path d={CAT_ICONS[cat.label]} />
-              </svg>
-              {cat.label}
+      {showResults ? (
+        /* ── 결과 뷰 ── */
+        <>
+          <div className="results-topbar">
+            <div className="results-topbar-left">
+              <span>추천 지역 리스트</span>
+              {resultList.length > 0 && (
+                <span className="list-count-badge">{resultList.length}곳</span>
+              )}
             </div>
-          ))}
-        </div>
+            <button className="btn-back" onClick={() => setShowResults(false)}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              다시 선택
+            </button>
+          </div>
 
-        <div className="sub-grid-wrap">
-          <div className="sub-grid" id="sub-grid">
-            {subCategories.map((item, idx) => (
+          <div className="list-section">
+            <div id="result-list">
+              {isAnalyzing ? (
+                <p style={{ fontSize: "14px", color: "var(--g)", fontWeight: "700", textAlign: "center", marginTop: "40px" }}>
+                  조건에 맞는 상권을 찾고 있습니다... 🐾
+                </p>
+              ) : resultList.length === 0 ? (
+                <p style={{ fontSize: "14px", color: "var(--text3)", textAlign: "center", marginTop: "40px" }}>
+                  결과가 없습니다.<br />조건을 변경해보세요.
+                </p>
+              ) : (
+                resultList.map((data, idx) => (
+                  <div
+                    key={data.adminDongCode}
+                    className={`list-card${activeCardId === data.adminDongCode ? " active" : ""}`}
+                    onClick={() => onSelectData(data, idx)}
+                  >
+                    <div className="lc-head">
+                      <div className="lc-title">
+                        {data.districtName} {data.adminDongName}
+                      </div>
+                    </div>
+                    <div className="lc-desc">
+                      <strong style={{ color: "var(--g)" }}>
+                        [{data.serviceIndustryCodeName}]
+                      </strong>
+                    </div>
+                    <div className="lc-meta">
+                      {data.diff !== undefined && (
+                        <span className={`lc-tag lc-tag-diff${data.diff >= 0 ? ' positive' : ' negative'}`}>
+                          예상 차액 {data.diff >= 0 ? '+' : '-'}{Math.abs(data.diff).toLocaleString()}만원
+                        </span>
+                      )}
+                      <span style={{ flex: 1 }} />
+                      {data.count > 0 && (
+                        <span className="lc-tag lc-tag-count">점포 {data.count}개</span>
+                      )}
+                      <span className="lc-tag">
+                        예상 초기비용{" "}
+                        {data.estimatedCost ? `${data.estimatedCost.toLocaleString()}만원` : "-"}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </>
+      ) : (
+        /* ── 필터 뷰 ── */
+        <div className="filter-section">
+          <div className="form-label">창업 희망 업종</div>
+          <div className="cat-tabs" id="cat-tabs">
+            {categoryTabs.map((cat) => (
               <div
-                key={
-                  item.serviceIndustryCode ??
-                  item.serviceIndustryCodeName ??
-                  idx
-                }
-                className={`sub-btn${selectedSubCategory === item.serviceIndustryCodeName ? " active" : ""}`}
-                onClick={() =>
-                  onSubCategoryChange(item.serviceIndustryCodeName)
-                }
+                key={cat.label}
+                className={`cat-tab${selectedCategory === cat.label ? " active" : ""}`}
+                onClick={() => onCategoryChange(cat.label)}
               >
-                {item.serviceIndustryCodeName}
+                <svg viewBox="0 0 24 24">
+                  <path d={CAT_ICONS[cat.label]} />
+                </svg>
+                {cat.label}
               </div>
             ))}
           </div>
-        </div>
 
-        {/* 층수 */}
-        <div className="form-label">층수</div>
-        <div className="floor-pills">
-          {FLOOR_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              className={`floor-pill${Number(floor) === opt.value ? " active" : ""}${opt.underground ? " underground" : ""}`}
-              onClick={() => onFloorChange(opt.value)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {/* 면적 */}
-        <div className="form-label">면적</div>
-        <div className="area-grid">
-          {AREA_OPTIONS.map((opt) => (
-            <div
-              key={opt.value}
-              className={`area-card${Number(area) === opt.value ? " active" : ""}`}
-              onClick={() => onAreaChange(opt.value)}
-            >
-              <svg
-                viewBox="0 0 40 34"
-                className="area-plan-svg"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect
-                  x={(40 - opt.w * 0.78) / 2}
-                  y={(34 - opt.h * 0.72) / 2}
-                  width={opt.w * 0.78}
-                  height={opt.h * 0.72}
-                  className="plan-wall"
-                  rx="1"
-                />
-                <line
-                  x1={(40 - opt.w * 0.78) / 2 + opt.w * 0.18}
-                  y1={(34 + opt.h * 0.72) / 2}
-                  x2={(40 - opt.w * 0.78) / 2 + opt.w * 0.42}
-                  y2={(34 + opt.h * 0.72) / 2}
-                  className="plan-door-gap"
-                  strokeWidth="2"
-                />
-                <path
-                  d={`M ${(40 - opt.w * 0.78) / 2 + opt.w * 0.42} ${(34 + opt.h * 0.72) / 2} a ${opt.w * 0.24} ${opt.w * 0.24} 0 0 0 ${-(opt.w * 0.24)} ${-(opt.w * 0.24)}`}
-                  className="plan-door-arc"
-                  fill="none"
-                  strokeWidth="0.8"
-                />
-              </svg>
-              <span className="area-label">{opt.label}</span>
+          <div className="sub-grid-wrap">
+            <div className="sub-grid" id="sub-grid">
+              {subCategories.map((item, idx) => (
+                <div
+                  key={item.serviceIndustryCode ?? item.serviceIndustryCodeName ?? idx}
+                  className={`sub-btn${selectedSubCategory === item.serviceIndustryCodeName ? " active" : ""}`}
+                  onClick={() => onSubCategoryChange(item.serviceIndustryCodeName)}
+                >
+                  {item.serviceIndustryCodeName}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-
-        {/* 창업 자본금 */}
-        <div className="form-label form-label-row">
-          창업 자본금
-          <Tooltip text="창업 자본금은 권리금 + 보증금을 합한 금액입니다." />
-        </div>
-        <div className="budget-single-wrap">
-          <div className="budget-input-group">
-            <BudgetInput
-              value={budgetMax}
-              onChange={onBudgetMaxChange}
-              placeholder="자본금 입력"
-            />
-            <span className="budget-unit">만원</span>
           </div>
-          {budgetMax && (
-            <div className="budget-summary">
-              {formatAmount(budgetMax)}
-            </div>
-          )}
-        </div>
 
-        <button className="btn-search" onClick={onSearch}>
-          AI 맞춤 입지 분석하기
-        </button>
-      </div>
+          {/* 층수 */}
+          <div className="form-label">층수</div>
+          <div className="floor-pills">
+            {FLOOR_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                className={`floor-pill${Number(floor) === opt.value ? " active" : ""}${opt.underground ? " underground" : ""}`}
+                onClick={() => onFloorChange(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
 
+          {/* 면적 */}
+          <div className="form-label">면적</div>
+          <div className="area-grid">
+            {AREA_OPTIONS.map((opt) => (
       <div className="list-section">
         <div className="list-header">
           <strong>추천 지역 리스트</strong>
@@ -276,44 +286,51 @@ export default function LeftPanel({
           ) : (
             resultList.map((data, idx) => (
               <div
-                key={data.adminDongCode}
-                className={`list-card${activeCardId === data.adminDongCode ? " active" : ""}`}
-                onClick={() => onSelectData(data, idx)}
+                key={opt.value}
+                className={`area-card${Number(area) === opt.value ? " active" : ""}`}
+                onClick={() => onAreaChange(opt.value)}
               >
-                <div className="lc-head">
-                  <div className="lc-title">
-                    {data.districtName} {data.adminDongName}
-                  </div>
-                </div>
-                <div className="lc-desc">
-                  <strong style={{ color: "var(--g)" }}>
-                    [{data.serviceIndustryCodeName}]
-                  </strong>
-                </div>
-                <div className="lc-meta">
-                  {data.diff !== undefined && (
-                    <span className={`lc-tag lc-tag-diff${data.diff >= 0 ? ' positive' : ' negative'}`}>
-                      예상 차액 {data.diff >= 0 ? '+' : '-'}{Math.abs(data.diff).toLocaleString()}만원
-                    </span>
-                  )}
-                  <span style={{ flex: 1 }} />
-                  {data.count > 0 && (
-                    <span className="lc-tag lc-tag-count">
-                      점포 {data.count}개
-                    </span>
-                  )}
-                  <span className="lc-tag">
-                    예상 초기비용{" "}
-                    {data.estimatedCost
-                      ? `${data.estimatedCost.toLocaleString()}만원`
-                      : "-"}
-                  </span>
-                </div>
+                <svg viewBox="0 0 40 34" className="area-plan-svg" xmlns="http://www.w3.org/2000/svg">
+                  <rect
+                    x={(40 - opt.w * 0.78) / 2} y={(34 - opt.h * 0.72) / 2}
+                    width={opt.w * 0.78} height={opt.h * 0.72}
+                    className="plan-wall" rx="1"
+                  />
+                  <line
+                    x1={(40 - opt.w * 0.78) / 2 + opt.w * 0.18} y1={(34 + opt.h * 0.72) / 2}
+                    x2={(40 - opt.w * 0.78) / 2 + opt.w * 0.42} y2={(34 + opt.h * 0.72) / 2}
+                    className="plan-door-gap" strokeWidth="2"
+                  />
+                  <path
+                    d={`M ${(40 - opt.w * 0.78) / 2 + opt.w * 0.42} ${(34 + opt.h * 0.72) / 2} a ${opt.w * 0.24} ${opt.w * 0.24} 0 0 0 ${-(opt.w * 0.24)} ${-(opt.w * 0.24)}`}
+                    className="plan-door-arc" fill="none" strokeWidth="0.8"
+                  />
+                </svg>
+                <span className="area-label">{opt.label}</span>
               </div>
-            ))
-          )}
+            ))}
+          </div>
+
+          {/* 창업 자본금 */}
+          <div className="form-label form-label-row">
+            창업 자본금
+            <Tooltip text="창업 자본금은 권리금 + 보증금을 합한 금액입니다." />
+          </div>
+          <div className="budget-single-wrap">
+            <div className="budget-input-group">
+              <BudgetInput value={budgetMax} onChange={onBudgetMaxChange} placeholder="자본금 입력" />
+              <span className="budget-unit">만원</span>
+            </div>
+            {budgetMax && (
+              <div className="budget-summary">{formatAmount(budgetMax)}</div>
+            )}
+          </div>
+
+          <button className="btn-search" onClick={handleSearch}>
+            AI 맞춤 입지 분석하기
+          </button>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

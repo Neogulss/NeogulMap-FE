@@ -11,13 +11,6 @@ import {
 } from '../api/api';
 import '../styles/mypage.css';
 
-// initialCapital = budgetMin * 100000 + budgetMax (둘 다 만원 단위)
-function decodeCapital(initialCapital) {
-  const min = Math.floor(initialCapital / 100000);
-  const max = initialCapital % 100000;
-  return { budgetMin: min, budgetMax: max };
-}
-
 function formatMan(v) {
   if (!v) return '0만원';
   if (v >= 10000) {
@@ -26,12 +19,6 @@ function formatMan(v) {
     return rem > 0 ? `${uk}억 ${rem.toLocaleString()}만원` : `${uk}억원`;
   }
   return `${v.toLocaleString()}만원`;
-}
-
-function formatCapitalRange(initialCapital) {
-  if (!initialCapital) return '-';
-  const { budgetMin, budgetMax } = decodeCapital(initialCapital);
-  return `${formatMan(budgetMin)} ~ ${formatMan(budgetMax)}`;
 }
 
 function formatDate(dateStr) {
@@ -64,6 +51,7 @@ export default function MyPage() {
   // ── 즐겨찾기 ──
   const [favData, setFavData] = useState(null);
   const [favLoading, setFavLoading] = useState(false);
+  const [favMeta, setFavMeta] = useState({});
 
   // ── 내가 쓴 글 ──
   const [postsData, setPostsData] = useState(null);
@@ -109,6 +97,7 @@ export default function MyPage() {
     try {
       const res = await fetchMyFavoriteList(userIdx);
       setFavData(res.data.data);
+      setFavMeta(JSON.parse(localStorage.getItem('favMeta') || '{}'));
     } catch (err) {
       console.error(err);
     } finally {
@@ -403,27 +392,42 @@ export default function MyPage() {
               <div className="mp-empty">저장된 즐겨찾기 상권이 없습니다.</div>
             ) : (
               <div className="fav-grid">
-                {favData.favorites.map(fav => (
+                {favData.favorites.map(fav => {
+                  const meta = favMeta[fav.adminDongCode] || {};
+                  const floor = fav.floor ?? meta.floor;
+                  const area = fav.area ?? meta.area;
+                  const majorCategoryName = fav.majorCategoryName || meta.majorCategoryName;
+                  return (
                   <div key={fav.favoriteIdx} className="fav-card">
                     <div className="fc-head">
                       <h4 className="fc-title">{fav.districtName} {fav.adminDongName}</h4>
                       <button className="fc-del" title="삭제" onClick={() => handleDeleteFavorite(fav.favoriteIdx)}>×</button>
                     </div>
                     <div className="fc-tags">
+                      {majorCategoryName && (
+                        <span className="fc-tag">{majorCategoryName}</span>
+                      )}
                       <span className="fc-tag accent">{fav.serviceCategoryName}</span>
-                      <span className="fc-tag">자본금 {formatCapitalRange(fav.initialCapital)}</span>
+                      {floor != null && (
+                        <span className="fc-tag">{floor}층</span>
+                      )}
+                      {area != null && (
+                        <span className="fc-tag">{area}㎡</span>
+                      )}
+                      <span className="fc-tag">자본금 {formatMan(fav.initialCapital)}</span>
                     </div>
                     <div className="fc-foot">
                       <button
                         className="btn-view-report"
                         onClick={() => {
-                          const { budgetMin, budgetMax } = decodeCapital(fav.initialCapital);
                           navigate('/analysis', {
                             state: {
                               adminDongCode: fav.adminDongCode,
+                              majorCategoryName,
                               serviceCategoryName: fav.serviceCategoryName,
-                              budgetMin,
-                              budgetMax,
+                              budgetMax: fav.initialCapital,
+                              floor,
+                              area,
                             },
                           });
                         }}
@@ -435,7 +439,8 @@ export default function MyPage() {
                       </button>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>

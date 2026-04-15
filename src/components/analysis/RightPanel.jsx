@@ -103,10 +103,13 @@ export default function RightPanel({
   onToggle,
   onClose,
   selectedData,
+  selectedCategory,
   selectedSubCategory,
   isLoggedIn,
   budgetMin,
   budgetMax,
+  floor,
+  area,
 }) {
   const navigate = useNavigate();
   const innerRef = useRef(null);
@@ -128,9 +131,8 @@ export default function RightPanel({
     if (isFavorited || favLoading) return;
 
     const userIdx = Number(localStorage.getItem("userIdx"));
-    // budgetMin과 budgetMax를 하나의 Integer에 인코딩 (둘 다 만원 단위)
-    const initialCap =
-      Math.floor(budgetMin ?? 0) * 100000 + Math.floor(budgetMax ?? 0);
+    // 유저가 입력한 최대 자본금을 그대로 저장 (만원 단위)
+    const initialCap = Math.floor(budgetMax ?? 0);
     const catName =
       selectedSubCategory || selectedData?.serviceIndustryCodeName || "";
 
@@ -141,7 +143,18 @@ export default function RightPanel({
         selectedData.adminDongCode,
         initialCap,
         catName,
+        selectedCategory || '',
+        floor ?? 1,
+        area ?? 33,
       );
+      // 백엔드가 반환하지 않는 추가 조건을 로컬에 보관
+      const favMeta = JSON.parse(localStorage.getItem('favMeta') || '{}');
+      favMeta[selectedData.adminDongCode] = {
+        floor: floor ?? 1,
+        area: area ?? 33,
+        majorCategoryName: selectedCategory || '',
+      };
+      localStorage.setItem('favMeta', JSON.stringify(favMeta));
       setIsFavorited(true);
     } catch (err) {
       const msg = err.response?.data?.message;
