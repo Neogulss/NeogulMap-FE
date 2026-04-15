@@ -34,7 +34,20 @@ function Tooltip({ text }) {
       return;
     }
     const r = btnRef.current.getBoundingClientRect();
-    setPos({ top: r.top - 8, left: r.left + r.width / 2 });
+    const maxW = 300;
+    const margin = 12;
+    let left = r.left + r.width / 2;
+    let transformX = "-50%";
+
+    if (left - maxW / 2 < margin) {
+      left = Math.max(margin, r.left);
+      transformX = "0%";
+    } else if (left + maxW / 2 > window.innerWidth - margin) {
+      left = Math.min(window.innerWidth - margin, r.right);
+      transformX = "-100%";
+    }
+
+    setPos({ top: r.top - 8, left, transformX });
   };
 
   return (
@@ -60,7 +73,7 @@ function Tooltip({ text }) {
           style={{
             top: pos.top,
             left: pos.left,
-            transform: "translate(-50%, -100%)",
+            transform: `translate(${pos.transformX}, -100%)`,
           }}
         >
           {text}
@@ -70,9 +83,242 @@ function Tooltip({ text }) {
   );
 }
 
+const EVAL_CRITERIA = [
+  {
+    num: "①",
+    label: "매출 트렌드",
+    max: 30,
+    reason: "전분기 대비 월매출 성장률을 기준으로 측정합니다. 매출 흐름은 상권의 실질적인 활성화 정도를 가장 직접적으로 반영하는 지표입니다.",
+  },
+  {
+    num: "②",
+    label: "유동인구",
+    max: 25,
+    reason: "일평균 유동인구 수와 전분기 대비 증감 추세를 반영합니다. 잠재 고객 수가 창업 후 매출 가능성에 가장 큰 영향을 미칩니다.",
+  },
+  {
+    num: "③",
+    label: "점포 안정성",
+    max: 20,
+    reason: "평균 영업기간, 폐업률, 개폐업 순증감률을 종합합니다. 가게들이 얼마나 오래 살아남는지, 폐업이 개업보다 많지 않은지를 봅니다.",
+  },
+  {
+    num: "④",
+    label: "지역 소비력",
+    max: 15,
+    reason: "지역 주민의 소득 분위로 측정합니다. 소비 여력이 높을수록 외식·소매업 매출에 유리한 환경이 형성됩니다.",
+  },
+  {
+    num: "⑤",
+    label: "입지 인프라",
+    max: 10,
+    reason: "지하철역 수와 주변 집객시설 수를 반영합니다. 교통 편의성과 주변 시설이 유동인구를 끌어들이는 기반이 됩니다.",
+  },
+];
+
+function EvalCriteriaPanel() {
+  const [open, setOpen] = useState(false);
+  const btnRef = useRef(null);
+  const panelRef = useRef(null);
+
+  const handleClick = () => setOpen((v) => !v);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e) => {
+      if (
+        !btnRef.current?.contains(e.target) &&
+        !panelRef.current?.contains(e.target)
+      ) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
+
+  return (
+    <span className="eval-criteria-wrap">
+      <button
+        ref={btnRef}
+        className="tooltip-btn"
+        onClick={handleClick}
+        type="button"
+        aria-label="평가 기준 보기"
+      >
+        <svg viewBox="0 0 20 20" fill="currentColor">
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 10a3.001 3.001 0 01-2 2.83V13a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+            clipRule="evenodd"
+          />
+        </svg>
+      </button>
+      {open && (
+        <div ref={panelRef} className="eval-criteria-panel">
+          <div className="ecp-header">종합평가 산정 기준 · 100점 만점</div>
+          {EVAL_CRITERIA.map((c) => (
+            <div key={c.num} className="ecp-item">
+              <div className="ecp-item-top">
+                <span className="ecp-num">{c.num}</span>
+                <span className="ecp-label">{c.label}</span>
+                <span className="ecp-max">{c.max}점</span>
+              </div>
+              <p className="ecp-reason">{c.reason}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </span>
+  );
+}
+
 /** 비율 계산 (소수점 1자리) */
 const pct = (part, total) =>
   total > 0 ? Math.round((part / total) * 1000) / 10 : 0;
+
+/**
+ * 5개 지표 가중 합산으로 종합평가점수 계산 (100점 만점)
+ * ① 매출 트렌드  30점
+ * ② 유동인구     25점
+ * ③ 점포 안정성 20점
+ * ④ 지역 소비력 15점
+ * ⑤ 입지 인프라 10점
+ */
+function calcComprehensiveEvaluation(selectedData) {
+  if (!selectedData) return null;
+
+  const s   = selectedData.storeRaw;
+  const f   = selectedData.floatingRaw;
+  const sal = selectedData.sales;
+  const inc = selectedData.income;
+  const fac = selectedData.facility;
+
+  const items = [];
+
+  // ① 매출 트렌드 (30점)
+  let salesScore = 15;
+  let salesDetail = "데이터 없음";
+  if (sal?.monthlySalesAmount) {
+    const monthly = sal.monthlySalesAmount;
+    const diff    = sal.prevQuarterAmountDiff ?? 0;
+    const rate    = diff / monthly;
+    if      (rate >  0.10) { salesScore = 28; salesDetail = "강한 성장세"; }
+    else if (rate >  0.02) { salesScore = 22; salesDetail = "성장세"; }
+    else if (rate >= -0.02){ salesScore = 16; salesDetail = "안정적"; }
+    else if (rate >= -0.10){ salesScore =  9; salesDetail = "소폭 감소"; }
+    else                    { salesScore =  3; salesDetail = "하락세"; }
+  }
+  items.push({ key: "sales", label: "매출 트렌드", score: salesScore, max: 30, detail: salesDetail });
+
+  // ② 유동인구 (25점)
+  let popScore = 12;
+  let popDetail = "데이터 없음";
+  if (f) {
+    const daily = Math.round((f.totalFloatingPopulation ?? 0) / 91);
+    const diff  = f.prevQuarterDiff ?? 0;
+    const base  = daily >= 30000 ? 18 : daily >= 15000 ? 14 : daily >= 7000 ? 10 : daily >= 3000 ? 6 : 3;
+    const trend = diff > 3000 ? 7 : diff > 0 ? 4 : diff >= -3000 ? 2 : 0;
+    popScore  = Math.min(25, base + trend);
+    popDetail = popScore >= 20 ? "매우 활발" : popScore >= 14 ? "활발" : popScore >= 8 ? "보통" : "적음";
+  }
+  items.push({ key: "pop", label: "유동인구", score: popScore, max: 25, detail: popDetail });
+
+  // ③ 점포 안정성 (20점)
+  // - 평균 영업기간 (0~7점): 가게들이 오래 버티냐
+  // - 폐업률 (0~7점)       : 영업 중 점포 대비 이번 분기 폐업 규모
+  // - 순증감률 (0~6점)     : (개업-폐업)/storeCount — 시장 성장/수축 방향
+  let storeScore = 10;
+  let storeDetail = "데이터 없음";
+  if (s) {
+    const avgYears   = s.avgOperatingYears ?? 0;
+    const storeCount = Math.max(s.storeCount ?? 1, 1);
+    const closeCount = s.closureStoreCount ?? 0;
+    const openCount  = s.openingStoreCount  ?? 0;
+
+    // 평균 영업기간 점수 (0~7점)
+    const yearsScore =
+      avgYears >= 5 ? 7 : avgYears >= 3 ? 5 : avgYears >= 2 ? 3 : avgYears >= 1 ? 2 : 1;
+
+    // 폐업률 점수 (0~7점): 폐업 수 / 영업 중 점포 수
+    const closureRate = closeCount / storeCount;
+    const closeScore =
+      closureRate < 0.03 ? 7 : closureRate < 0.07 ? 5 : closureRate < 0.12 ? 3 : closureRate < 0.20 ? 1 : 0;
+
+    // 순증감률 점수 (0~6점): (개업 - 폐업) / 영업 중 점포 수
+    const netRate = (openCount - closeCount) / storeCount;
+    const netScore =
+      netRate >  0.05 ? 6 : netRate > 0 ? 4 : netRate === 0 ? 3 : netRate > -0.05 ? 1 : 0;
+
+    storeScore  = Math.min(20, yearsScore + closeScore + netScore);
+    storeDetail = storeScore >= 16 ? "매우 안정적" : storeScore >= 12 ? "안정적" : storeScore >= 8 ? "보통" : "불안정";
+  }
+  items.push({ key: "store", label: "점포 안정성", score: storeScore, max: 20, detail: storeDetail });
+
+  // ④ 지역 소비력 (15점)
+  let incScore = 7;
+  let incDetail = "데이터 없음";
+  if (inc) {
+    const code = Number(inc.incomeRangeCode ?? 5);
+    incScore  = Math.round((code / 10) * 15);
+    incDetail = incScore >= 12 ? "높음" : incScore >= 8 ? "보통" : "낮음";
+  }
+  items.push({ key: "income", label: "지역 소비력", score: incScore, max: 15, detail: incDetail });
+
+  // ⑤ 입지 인프라 (10점)
+  let facScore = 5;
+  let facDetail = "데이터 없음";
+  if (fac) {
+    const subway    = fac.subwayStationCount ?? 0;
+    const totalFac  = fac.totalVisitorFacilityCount ?? 0;
+    const subwaySc  = subway >= 3 ? 5 : subway >= 1 ? 3 : 0;
+    const facBaseSc = totalFac >= 50 ? 5 : totalFac >= 20 ? 3 : totalFac >= 5 ? 2 : 1;
+    facScore  = Math.min(10, subwaySc + facBaseSc);
+    facDetail = facScore >= 8 ? "우수" : facScore >= 5 ? "보통" : "취약";
+  }
+  items.push({ key: "fac", label: "입지 인프라", score: facScore, max: 10, detail: facDetail });
+
+  const total = items.reduce((sum, i) => sum + i.score, 0);
+
+  let grade, gradeColor;
+  if      (total >= 85) { grade = "최우수 상권"; gradeColor = "#1a73e8"; }
+  else if (total >= 70) { grade = "우수 상권";   gradeColor = "#2ecc71"; }
+  else if (total >= 55) { grade = "양호 상권";   gradeColor = "#f39c12"; }
+  else if (total >= 40) { grade = "보통 상권";   gradeColor = "#e67e22"; }
+  else                   { grade = "주의 상권";   gradeColor = "#e74c3c"; }
+
+  // ── 종합의견 생성 ──
+  const opinions = [];
+
+  // 매출 의견
+  if (sal?.monthlySalesAmount) {
+    if      (salesScore >= 22) opinions.push("월평균 매출이 성장세를 유지하고 있어 영업 환경이 우호적입니다.");
+    else if (salesScore >= 9)  opinions.push("매출은 안정적이나 성장 모멘텀은 다소 미약합니다.");
+    else                       opinions.push("매출이 감소 추세에 있어 업종 경쟁력 재검토가 필요합니다.");
+  }
+
+  // 유동인구 의견
+  if (f) {
+    const daily = Math.round((f.totalFloatingPopulation ?? 0) / 91);
+    if      (popScore >= 18) opinions.push(`일평균 ${daily.toLocaleString()}명의 풍부한 유동인구로 잠재 고객 확보에 유리합니다.`);
+    else if (popScore >= 10) opinions.push(`유동인구는 보통 수준으로 적극적인 마케팅 전략이 도움이 됩니다.`);
+    else                     opinions.push(`유동인구가 상대적으로 적어 고정 고객 확보 전략이 중요합니다.`);
+  }
+
+  // 점포 안정성 의견
+  if (s?.avgOperatingYears) {
+    if      (storeScore >= 14) opinions.push(`평균 영업기간 ${s.avgOperatingYears}년으로 점포 생존율이 높은 안정된 상권입니다.`);
+    else if (storeScore >= 8)  opinions.push(`점포 교체율이 보통 수준으로 업종 선택 시 경쟁력 분석이 권장됩니다.`);
+    else                       opinions.push(`폐업률이 높아 창업 전 철저한 현장 조사와 차별화 전략이 필요합니다.`);
+  }
+
+  // 종합 결론
+  if      (total >= 70) opinions.push("전반적으로 창업 입지로서 긍정적인 조건을 갖추고 있습니다.");
+  else if (total >= 50) opinions.push("창업 가능한 수준이나 취약 지표를 면밀히 검토 후 결정하시길 권장합니다.");
+  else                  opinions.push("여러 지표가 낮아 신중한 검토와 충분한 현장 조사가 필요합니다.");
+
+  return { total, grade, gradeColor, items, opinions };
+}
 
 function NullSection({ title }) {
   return (
@@ -847,6 +1093,9 @@ export default function RightPanel({
   const wkrMalePct = wkrTotal > 0 ? pct(wkr.maleWorkerPopulation ?? 0, wkrTotal) : null;
   const wkrFemPct  = wkrTotal > 0 ? pct(wkr.femaleWorkerPopulation ?? 0, wkrTotal) : null;
 
+  // ── 종합평가 계산 ──
+  const compEval = calcComprehensiveEvaluation(selectedData);
+
   // ── 소비트렌드 비율 ──
   const totalExp = inc?.totalExpenditureAmount ?? 0;
   const consumptionRows = inc
@@ -946,22 +1195,63 @@ export default function RightPanel({
             >
               {/* ── 1. 종합 평가 ── */}
               <div className="report-section">
-                <div className="total-score-box">
-                  <div className="ts-label">AI 상권 종합 평가</div>
-                  <div className="ts-score">
-                    {selectedData.score != null ? (
-                      <>
-                        {selectedData.score}
-                        <span>점</span>
-                      </>
-                    ) : (
-                      "-"
-                    )}
+                {/* 종합평가점수 박스 */}
+                {compEval && (
+                  <div className="comp-eval-box">
+                    <div className="comp-eval-top">
+                      {/* 왼쪽: 점수 + 등급 */}
+                      <div className="comp-eval-score-wrap">
+                        <div className="comp-eval-label">
+                          종합평가점수
+                          <EvalCriteriaPanel />
+                        </div>
+                        <div className="comp-eval-score">
+                          {compEval.total}
+                          <span>/ 100</span>
+                        </div>
+                        <div
+                          className="comp-eval-grade"
+                          style={{ color: compEval.gradeColor, borderColor: compEval.gradeColor + "33" }}
+                        >
+                          {compEval.grade}
+                        </div>
+                      </div>
+
+                      {/* 오른쪽: 지표별 점수 바 */}
+                      <div className="comp-eval-bars">
+                        {compEval.items.map((item) => (
+                          <div key={item.key} className="ceb-row">
+                            <span className="ceb-label">{item.label}</span>
+                            <div className="ceb-bar-wrap">
+                              <div
+                                className="ceb-bar"
+                                style={{ width: `${(item.score / item.max) * 100}%` }}
+                              />
+                            </div>
+                            <span className="ceb-score">
+                              {item.score}<em>/{item.max}</em>
+                            </span>
+                            <span className="ceb-detail">{item.detail}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div className="ts-grade">
-                    {selectedData.grade ?? "분석 중"}
+                )}
+
+                {/* 종합의견 */}
+                {compEval && compEval.opinions.length > 0 && (
+                  <div className="comp-opinion-card">
+                    <div className="co-title">💡 종합의견</div>
+                    <ul className="co-list">
+                      {compEval.opinions.map((op, i) => (
+                        <li key={i}>{op}</li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
+                )}
+
+                {/* 상권 분석 요약 (서버 제공 코멘트) */}
                 <div className="advice-summary">
                   <div className="advice-summary-header">
                     <span className="advice-summary-title">상권 분석 요약</span>
@@ -1174,11 +1464,6 @@ export default function RightPanel({
                         : "-"}
                     </div>
                   </div>
-                  <div className="oc-card oc-survival">
-                    <div className="oc-label">신생기업 생존율</div>
-                    <div className="oc-val">-</div>
-                    <div className="oc-diff">API 준비 중</div>
-                  </div>
                   <div className="oc-card oc-operating">
                     <div className="oc-label">평균 영업기간</div>
                     <div className="oc-val">
@@ -1192,26 +1477,13 @@ export default function RightPanel({
                     </div>
                   </div>
                 </div>
-                <div className="grid-2viz">
-                  <div className="viz-box">
-                    <div className="viz-header">
-                      <div className="viz-title">
-                        신생기업 생존율 추이 (3년)
-                      </div>
-                      <div className="viz-meta">단위: %</div>
-                    </div>
-                    <div className="chart-container">
-                      <EmptyChart />
-                    </div>
+                <div className="viz-box">
+                  <div className="viz-header">
+                    <div className="viz-title">평균 영업기간 비교</div>
+                    <div className="viz-meta">단위: 년</div>
                   </div>
-                  <div className="viz-box">
-                    <div className="viz-header">
-                      <div className="viz-title">평균 영업기간 비교</div>
-                      <div className="viz-meta">단위: 년</div>
-                    </div>
-                    <div className="chart-container">
-                      <canvas ref={chartOperatingCompareRef} />
-                    </div>
+                  <div className="chart-container">
+                    <canvas ref={chartOperatingCompareRef} />
                   </div>
                 </div>
               </div>

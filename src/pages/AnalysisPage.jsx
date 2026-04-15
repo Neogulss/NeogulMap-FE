@@ -163,7 +163,6 @@ export default function AnalysisPage() {
                     historyData: {
                         stores:        storeCountHistory,
                         industryTrend: industryRatioHistory.slice(1),
-                        survival: [],
                         operating: {
                             selected: s.avgOperatingYears,
                             dong:     Math.round(com.operatingBusinessMonthAvg / 12 * 10) / 10,
