@@ -342,10 +342,13 @@ export const addFavorite = (
   adminDongCode,
   initialCapital,
   serviceCategoryName,
+  majorCategoryName,
+  floor,
+  area,
 ) =>
   api.post(
     "/favorite/add",
-    { userIdx, adminDongCode, initialCapital, serviceCategoryName },
+    { userIdx, adminDongCode, initialCapital, serviceCategoryName, majorCategoryName, floor, area },
     { withCredentials: true },
   );
 

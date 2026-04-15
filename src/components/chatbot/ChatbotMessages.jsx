@@ -54,7 +54,7 @@ export default function ChatbotMessages({
               <div className="msg-content">
                 <div className="bot-profile">
                   <img
-                    src="/neoguri-chatbot-head.png"
+                    src="/image.jpg"
                     alt="입지너구리 챗봇"
                     className="chatbot-bot-avatar"
                   />
@@ -70,9 +70,7 @@ export default function ChatbotMessages({
                   <div className="message-meta">
                     {log.model ? `model: ${log.model}` : ""}
                     {log.model && log.turnLatencyMs ? " / " : ""}
-                    {log.turnLatencyMs
-                      ? `latency: ${log.turnLatencyMs}ms`
-                      : ""}
+                    {log.turnLatencyMs ? `latency: ${log.turnLatencyMs}ms` : ""}
                   </div>
                 )}
 
@@ -146,7 +144,7 @@ export default function ChatbotMessages({
           <div className="msg-content">
             <div className="bot-profile">
               <img
-                src="/neoguri-chatbot-head.png"
+                src="/image.jpg"
                 alt="입지너구리 챗봇"
                 className="chatbot-bot-avatar"
               />
@@ -161,7 +159,9 @@ export default function ChatbotMessages({
         <div className="msg-row user recommendation-row">
           <div className="msg-content">
             <div className="msg-sender">추천 질문</div>
-            <div className="recommendation-loading">추천 질문을 불러오는 중...</div>
+            <div className="recommendation-loading">
+              추천 질문을 불러오는 중...
+            </div>
           </div>
         </div>
       )}
@@ -176,7 +176,9 @@ export default function ChatbotMessages({
                   type="button"
                   key={item.questionIdx ?? item.questionTitle}
                   className="recommendation-btn"
-                  onClick={() => onSelectRecommendedQuestion?.(item.questionTitle)}
+                  onClick={() =>
+                    onSelectRecommendedQuestion?.(item.questionTitle)
+                  }
                   disabled={sending}
                 >
                   {item.questionTitle}

@@ -34,12 +34,12 @@ export default function AnalysisPage() {
     const navigate = useNavigate();
 
     const initState = location.state;
-    const [selectedCategory, setSelectedCategory]       = useState('외식업');
+    const [selectedCategory, setSelectedCategory]       = useState(() => initState?.majorCategoryName ?? '외식업');
     const [selectedSubCategory, setSelectedSubCategory] = useState(() => initState?.serviceCategoryName ?? '');
     const [subCategories, setSubCategories]             = useState([]);
-    const [budgetMax, setBudgetMax]     = useState(() => initState?.budgetMax != null ? Number(initState.budgetMax) : 15000);
-    const [floor, setFloor]             = useState(1);
-    const [area, setArea]               = useState(33);
+    const [budgetMax, setBudgetMax]     = useState(() => initState?.budgetMax != null ? Number(initState.budgetMax) : '');
+    const [floor, setFloor]             = useState(() => initState?.floor != null ? Number(initState.floor) : '');
+    const [area, setArea]               = useState(() => initState?.area != null ? Number(initState.area) : '');
     const [resultList, setResultList]   = useState([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [selectedData, setSelectedData]     = useState(null);
@@ -67,6 +67,13 @@ export default function AnalysisPage() {
             if (root) root.classList.remove('analysis-fullwidth');
         };
     }, []);
+
+    // 마운트 후 히스토리 state를 제거 → 새로고침 시 항상 기본값으로 시작
+    useEffect(() => {
+        if (location.state) {
+            window.history.replaceState(null, '');
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     const fetchReportData = useCallback(async (data) => {
@@ -282,7 +289,7 @@ export default function AnalysisPage() {
                 const bounds = new window.kakao.maps.LatLngBounds();
                 items.forEach((data) => {
                     const el = document.createElement('div');
-                    el.className = 'dong-cluster';
+                    el.className = `dong-cluster ${data.diff >= 0 ? 'dong-cluster--pos' : 'dong-cluster--neg'}`;
                     el.innerHTML = `<span class="d-name">${data.name}</span>`;
                     el.onclick = () => handleSelectRef.current(data);
 
@@ -426,10 +433,13 @@ export default function AnalysisPage() {
                     onToggle={handleRightToggle}
                     onClose={handleCloseDetail}
                     selectedData={selectedData}
+                    selectedCategory={selectedCategory}
                     selectedSubCategory={selectedSubCategory}
                     isLoggedIn={isLoggedIn}
                     budgetMin={0}
                     budgetMax={budgetMax}
+                    floor={floor}
+                    area={area}
                 />
             </div>
         </div>
