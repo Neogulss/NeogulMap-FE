@@ -6,20 +6,40 @@ function Tooltip({ text }) {
   const btnRef = useRef(null);
 
   const handleClick = () => {
-    if (pos) { setPos(null); return; }
+    if (pos) {
+      setPos(null);
+      return;
+    }
     const r = btnRef.current.getBoundingClientRect();
     setPos({ top: r.top - 8, left: r.left + r.width / 2 });
   };
 
   return (
     <span className="tooltip-wrap">
-      <button ref={btnRef} className="tooltip-btn" onClick={handleClick} onBlur={() => setPos(null)} type="button">
+      <button
+        ref={btnRef}
+        className="tooltip-btn"
+        onClick={handleClick}
+        onBlur={() => setPos(null)}
+        type="button"
+      >
         <svg viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 10a3.001 3.001 0 01-2 2.83V13a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+          <path
+            fillRule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 10a3.001 3.001 0 01-2 2.83V13a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"
+            clipRule="evenodd"
+          />
         </svg>
       </button>
       {pos && (
-        <div className="tooltip-popup" style={{ top: pos.top, left: pos.left, transform: 'translate(-50%, -100%)' }}>
+        <div
+          className="tooltip-popup"
+          style={{
+            top: pos.top,
+            left: pos.left,
+            transform: "translate(-50%, -100%)",
+          }}
+        >
           {text}
         </div>
       )}
@@ -146,7 +166,14 @@ export default function LeftPanel({
               )}
             </div>
             <button className="btn-back" onClick={() => setShowResults(false)}>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M15 18l-6-6 6-6" />
               </svg>
               다시 선택
@@ -158,14 +185,33 @@ export default function LeftPanel({
               {isAnalyzing ? (
                 <div className="analysis-loading">
                   <div className="analysis-loading-raccoon">
-                    <img src="/neoguri2.png" alt="너구리" className="analysis-loading-raccoon-img" />
-                    <img src={loadingDots} alt="로딩" className="analysis-loading-gif" />
+                    <img
+                      src="/neoguri2.png"
+                      alt="너구리"
+                      className="analysis-loading-raccoon-img"
+                    />
+                    <img
+                      src={loadingDots}
+                      alt="로딩"
+                      className="analysis-loading-gif"
+                    />
                   </div>
-                  <p className="analysis-loading-text">AI가 맞춤 상권을 찾고 있습니다...</p>
+                  <p className="analysis-loading-text">
+                    입지너구리AI가 맞춤 상권을 찾고 있습니다...
+                  </p>
                 </div>
               ) : resultList.length === 0 ? (
-                <p style={{ fontSize: "14px", color: "var(--text3)", textAlign: "center", marginTop: "40px" }}>
-                  결과가 없습니다.<br />조건을 변경해보세요.
+                <p
+                  style={{
+                    fontSize: "14px",
+                    color: "var(--text3)",
+                    textAlign: "center",
+                    marginTop: "40px",
+                  }}
+                >
+                  결과가 없습니다.
+                  <br />
+                  조건을 변경해보세요.
                 </p>
               ) : (
                 resultList.map((data, idx) => (
@@ -186,17 +232,24 @@ export default function LeftPanel({
                     </div>
                     <div className="lc-meta">
                       {data.diff !== undefined && (
-                        <span className={`lc-tag lc-tag-diff${data.diff >= 0 ? ' positive' : ' negative'}`}>
-                          예상 차액 {data.diff >= 0 ? '+' : '-'}{Math.abs(data.diff).toLocaleString()}만원
+                        <span
+                          className={`lc-tag lc-tag-diff${data.diff >= 0 ? " positive" : " negative"}`}
+                        >
+                          예상 차액 {data.diff >= 0 ? "+" : "-"}
+                          {Math.abs(data.diff).toLocaleString()}만원
                         </span>
                       )}
                       <span style={{ flex: 1 }} />
                       {data.count > 0 && (
-                        <span className="lc-tag lc-tag-count">점포 {data.count}개</span>
+                        <span className="lc-tag lc-tag-count">
+                          점포 {data.count}개
+                        </span>
                       )}
                       <span className="lc-tag">
                         예상 초기비용{" "}
-                        {data.estimatedCost ? `${data.estimatedCost.toLocaleString()}만원` : "-"}
+                        {data.estimatedCost
+                          ? `${data.estimatedCost.toLocaleString()}만원`
+                          : "-"}
                       </span>
                     </div>
                   </div>
@@ -228,9 +281,15 @@ export default function LeftPanel({
             <div className="sub-grid" id="sub-grid">
               {subCategories.map((item, idx) => (
                 <div
-                  key={item.serviceIndustryCode ?? item.serviceIndustryCodeName ?? idx}
+                  key={
+                    item.serviceIndustryCode ??
+                    item.serviceIndustryCodeName ??
+                    idx
+                  }
                   className={`sub-btn${selectedSubCategory === item.serviceIndustryCodeName ? " active" : ""}`}
-                  onClick={() => onSubCategoryChange(item.serviceIndustryCodeName)}
+                  onClick={() =>
+                    onSubCategoryChange(item.serviceIndustryCodeName)
+                  }
                 >
                   {item.serviceIndustryCodeName}
                 </div>
@@ -261,20 +320,32 @@ export default function LeftPanel({
                 className={`area-card${Number(area) === opt.value ? " active" : ""}`}
                 onClick={() => onAreaChange(opt.value)}
               >
-                <svg viewBox="0 0 40 34" className="area-plan-svg" xmlns="http://www.w3.org/2000/svg">
+                <svg
+                  viewBox="0 0 40 34"
+                  className="area-plan-svg"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
                   <rect
-                    x={(40 - opt.w * 0.78) / 2} y={(34 - opt.h * 0.72) / 2}
-                    width={opt.w * 0.78} height={opt.h * 0.72}
-                    className="plan-wall" rx="1"
+                    x={(40 - opt.w * 0.78) / 2}
+                    y={(34 - opt.h * 0.72) / 2}
+                    width={opt.w * 0.78}
+                    height={opt.h * 0.72}
+                    className="plan-wall"
+                    rx="1"
                   />
                   <line
-                    x1={(40 - opt.w * 0.78) / 2 + opt.w * 0.18} y1={(34 + opt.h * 0.72) / 2}
-                    x2={(40 - opt.w * 0.78) / 2 + opt.w * 0.42} y2={(34 + opt.h * 0.72) / 2}
-                    className="plan-door-gap" strokeWidth="2"
+                    x1={(40 - opt.w * 0.78) / 2 + opt.w * 0.18}
+                    y1={(34 + opt.h * 0.72) / 2}
+                    x2={(40 - opt.w * 0.78) / 2 + opt.w * 0.42}
+                    y2={(34 + opt.h * 0.72) / 2}
+                    className="plan-door-gap"
+                    strokeWidth="2"
                   />
                   <path
                     d={`M ${(40 - opt.w * 0.78) / 2 + opt.w * 0.42} ${(34 + opt.h * 0.72) / 2} a ${opt.w * 0.24} ${opt.w * 0.24} 0 0 0 ${-(opt.w * 0.24)} ${-(opt.w * 0.24)}`}
-                    className="plan-door-arc" fill="none" strokeWidth="0.8"
+                    className="plan-door-arc"
+                    fill="none"
+                    strokeWidth="0.8"
                   />
                 </svg>
                 <span className="area-label">{opt.label}</span>
@@ -289,7 +360,11 @@ export default function LeftPanel({
           </div>
           <div className="budget-single-wrap">
             <div className="budget-input-group">
-              <BudgetInput value={budgetMax} onChange={onBudgetMaxChange} placeholder="자본금 입력" />
+              <BudgetInput
+                value={budgetMax}
+                onChange={onBudgetMaxChange}
+                placeholder="자본금 입력"
+              />
               <span className="budget-unit">만원</span>
             </div>
             {budgetMax && (
