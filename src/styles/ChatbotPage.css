@@ -555,6 +555,10 @@ body {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
 }
 
+.msg-bubble > p {
+  color: #1a1d20;
+}
+
 .msg-row.bot .msg-bubble {
   background: var(--bg2);
   color: var(--text);
