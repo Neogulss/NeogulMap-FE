@@ -1216,128 +1216,141 @@ body.analysis-active {
 
 /* ── 종합평가점수 박스 ── */
 .comp-eval-box {
-  background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
-  border: 1px solid rgba(0, 200, 83, 0.2);
-  border-radius: 16px;
-  padding: 24px;
+  position: relative;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 20px 18px;
+  padding-top: 28px;
+  overflow: visible;
 }
-.comp-eval-top {
+
+/* 원형 게이지 영역 */
+.comp-eval-circle-area {
   display: flex;
-  gap: 24px;
+  flex-direction: column;
   align-items: center;
+  margin-bottom: 18px;
 }
-.comp-eval-score-wrap {
+.comp-eval-circle-wrap {
+  position: relative;
+  width: 220px;
+  height: 220px;
   flex-shrink: 0;
-  text-align: center;
-  min-width: 108px;
 }
-.comp-eval-label {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--g);
-  letter-spacing: 0.4px;
+.comp-eval-svg {
+  width: 220px;
+  height: 220px;
+  display: block;
+}
+.comp-eval-circle-inner {
+  position: absolute;
+  inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 4px;
   justify-content: center;
-  margin-bottom: 8px;
-  text-transform: uppercase;
+  gap: 6px;
 }
-.comp-eval-score {
-  font-family: "DM Mono", monospace;
+.comp-eval-circle-grade {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+.comp-eval-circle-score {
   font-size: 52px;
   font-weight: 900;
-  color: var(--text);
+  color: #111827;
   line-height: 1;
   letter-spacing: -2px;
-  margin-bottom: 10px;
 }
-.comp-eval-score span {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text2);
+.comp-eval-circle-score span {
+  font-size: 16px;
+  font-weight: 400;
+  color: #9ca3af;
   margin-left: 2px;
   letter-spacing: 0;
 }
-.comp-eval-grade {
-  font-size: 13px;
-  font-weight: 700;
-  background: #fff;
-  display: inline-block;
-  padding: 5px 14px;
-  border-radius: 20px;
-  border: 1.5px solid;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+.comp-eval-label {
+  margin-top: 10px;
+  font-size: 15px;
+  color: #010203;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* 지표별 점수 바 */
+/* 지표별 게이지 바 */
 .comp-eval-bars {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  gap: 11px;
+  margin-top: 4px;
 }
 .ceb-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 .ceb-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text2);
-  width: 64px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1f2937;
+  width: 72px;
   flex-shrink: 0;
   white-space: nowrap;
 }
 .ceb-bar-wrap {
   flex: 1;
-  height: 7px;
-  background: rgba(0, 0, 0, 0.07);
-  border-radius: 4px;
+  height: 9px;
+  background: #f0f1f5;
+  border-radius: 6px;
   overflow: hidden;
 }
 .ceb-bar {
   height: 100%;
-  background: var(--g);
-  border-radius: 4px;
+  background: linear-gradient(90deg, #818cf8, #a78bfa);
+  border-radius: 6px;
   transition: width 0.6s ease;
 }
 .ceb-score {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--text);
-  min-width: 34px;
+  color: #374151;
+  min-width: 38px;
   text-align: right;
   flex-shrink: 0;
 }
 .ceb-score em {
   font-style: normal;
-  color: var(--text3);
+  color: #c7cadc;
   font-weight: 400;
 }
 .ceb-detail {
-  font-size: 10px;
-  font-weight: 600;
-  color: var(--text3);
-  min-width: 44px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #818cf8;
+  min-width: 48px;
   text-align: right;
   flex-shrink: 0;
 }
 
 /* 종합의견 카드 */
 .comp-opinion-card {
-  background: var(--bg2);
-  border: 1px solid var(--line);
-  border-left: 3px solid var(--g);
-  border-radius: 12px;
-  padding: 18px 20px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 14px 16px;
 }
 .co-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--text);
-  margin-bottom: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #9ca3af;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
 }
 .co-list {
   list-style: none;
@@ -1345,21 +1358,21 @@ body.analysis-active {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 6px;
 }
 .co-list li {
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--text);
-  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.65;
+  color: #374151;
+  font-weight: 400;
   display: flex;
-  gap: 7px;
+  gap: 6px;
   word-break: keep-all;
 }
 .co-list li::before {
-  content: "•";
-  color: var(--g);
-  font-weight: 900;
+  content: "–";
+  color: #9ca3af;
+  font-weight: 400;
   flex-shrink: 0;
 }
 
