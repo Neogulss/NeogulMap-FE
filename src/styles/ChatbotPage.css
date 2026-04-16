@@ -463,6 +463,29 @@ body {
   padding: 32px 12px;
 }
 
+.typing-loading-text {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  font-weight: 600;
+  word-break: keep-all;
+}
+
+.typing-loading-cursor {
+  width: 2px;
+  height: 18px;
+  margin-left: 3px;
+  border-radius: 1px;
+  background: currentColor;
+  animation: typingCursorBlink 0.8s steps(1, end) infinite;
+}
+
+@keyframes typingCursorBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
 .msg-row {
   display: flex;
   gap: 16px;
@@ -530,6 +553,10 @@ body {
   word-break: keep-all;
   font-weight: 500;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.msg-bubble > p {
+  color: #1a1d20;
 }
 
 .msg-row.bot .msg-bubble {

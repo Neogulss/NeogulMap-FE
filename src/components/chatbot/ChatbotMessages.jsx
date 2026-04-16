@@ -1,9 +1,34 @@
+import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+const LOADING_MESSAGE = "너구리가 딱 맞는 정보를 찾고 있어요 🔎🐾";
+const LOADING_MESSAGE_CHARS = Array.from(LOADING_MESSAGE);
 
 function formatText(text) {
   if (!text) return "";
   return text;
+}
+
+function TypingLoadingText() {
+  const [visibleCount, setVisibleCount] = useState(0);
+
+  useEffect(() => {
+    const isComplete = visibleCount >= LOADING_MESSAGE_CHARS.length;
+    const timeoutId = window.setTimeout(
+      () => setVisibleCount(isComplete ? 0 : visibleCount + 1),
+      isComplete ? 900 : 80
+    );
+
+    return () => window.clearTimeout(timeoutId);
+  }, [visibleCount]);
+
+  return (
+    <span className="typing-loading-text" aria-live="polite">
+      {LOADING_MESSAGE_CHARS.slice(0, visibleCount).join("")}
+      <span className="typing-loading-cursor" aria-hidden="true" />
+    </span>
+  );
 }
 
 export default function ChatbotMessages({
@@ -66,13 +91,14 @@ export default function ChatbotMessages({
                   </ReactMarkdown>
                 </div>
 
-                {(log.model || log.turnLatencyMs) && (
-                  <div className="message-meta">
-                    {log.model ? `model: ${log.model}` : ""}
-                    {log.model && log.turnLatencyMs ? " / " : ""}
-                    {log.turnLatencyMs ? `latency: ${log.turnLatencyMs}ms` : ""}
-                  </div>
-                )}
+                {/* 모델 / 응답시간 테스트용 */}
+                {/*{(log.model || log.turnLatencyMs) && (*/}
+                {/*  <div className="message-meta">*/}
+                {/*    {log.model ? `model: ${log.model}` : ""}*/}
+                {/*    {log.model && log.turnLatencyMs ? " / " : ""}*/}
+                {/*    {log.turnLatencyMs ? `latency: ${log.turnLatencyMs}ms` : ""}*/}
+                {/*  </div>*/}
+                {/*)}*/}
 
                 {showGuestAnswerLoginButton && isLastLog && (
                   <button
@@ -150,7 +176,9 @@ export default function ChatbotMessages({
               />
               <div className="msg-sender">입지너구리 AI</div>
             </div>
-            <div className="msg-bubble">답변을 생성하고 있습니다...</div>
+            <div className="msg-bubble">
+              <TypingLoadingText />
+            </div>
           </div>
         </div>
       )}
