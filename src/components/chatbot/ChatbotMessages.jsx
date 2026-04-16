@@ -91,13 +91,14 @@ export default function ChatbotMessages({
                   </ReactMarkdown>
                 </div>
 
-                {(log.model || log.turnLatencyMs) && (
-                  <div className="message-meta">
-                    {log.model ? `model: ${log.model}` : ""}
-                    {log.model && log.turnLatencyMs ? " / " : ""}
-                    {log.turnLatencyMs ? `latency: ${log.turnLatencyMs}ms` : ""}
-                  </div>
-                )}
+                {/* 모델 / 응답시간 테스트용 */}
+                {/*{(log.model || log.turnLatencyMs) && (*/}
+                {/*  <div className="message-meta">*/}
+                {/*    {log.model ? `model: ${log.model}` : ""}*/}
+                {/*    {log.model && log.turnLatencyMs ? " / " : ""}*/}
+                {/*    {log.turnLatencyMs ? `latency: ${log.turnLatencyMs}ms` : ""}*/}
+                {/*  </div>*/}
+                {/*)}*/}
 
                 {showGuestAnswerLoginButton && isLastLog && (
                   <button
