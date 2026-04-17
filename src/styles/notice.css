@@ -22,21 +22,27 @@
 }
 
 .notice-search-btn {
-  padding: 8px 20px;
-  background: var(--text);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
+  min-height: var(--control-height);
+  padding: 0 24px;
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  letter-spacing: -0.3px;
-  transition: background 0.2s;
+  letter-spacing: -0.2px;
+  transition: all 0.2s;
   white-space: nowrap;
+  box-shadow: var(--control-shadow);
 }
 
 .notice-search-btn:hover {
-  background: var(--g);
+  background: #fff;
+  color: var(--g);
+  border-color: var(--g);
+  transform: translateY(-1px);
+  box-shadow: var(--control-shadow-hover);
 }
 
 /* 고정 공지 영역 */
@@ -162,21 +168,25 @@
 /* 작성 버튼 */
 .notice-write-btn {
   flex-shrink: 0;
-  padding: 8px 20px;
+  min-height: var(--control-height);
+  padding: 0 24px;
   background: var(--g);
   color: #fff;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid var(--g);
+  border-radius: var(--control-radius);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  letter-spacing: -0.3px;
-  transition: background 0.2s;
+  letter-spacing: -0.2px;
+  transition: all 0.2s;
   white-space: nowrap;
+  box-shadow: 0 12px 24px rgba(77, 171, 247, 0.2);
 }
 
 .notice-write-btn:hover {
   background: var(--g2);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(77, 171, 247, 0.24);
 }
 
 /* 삭제 버튼 */
@@ -221,15 +231,15 @@
 }
 
 .notice-fixed-toggle-btn:hover {
-  border-color: #ff3b30;
-  color: #ff3b30;
-  background: rgba(255, 59, 48, 0.04);
+  border-color: var(--g);
+  color: var(--g);
+  background: var(--g5);
 }
 
 .notice-fixed-toggle-btn.active {
-  border-color: #ff3b30;
-  background: linear-gradient(135deg, rgba(255, 59, 48, 0.10) 0%, rgba(255, 149, 0, 0.07) 100%);
-  color: #c92a2a;
+  border-color: var(--g);
+  background: var(--g5);
+  color: var(--g);
 }
 
 .notice-fixed-toggle-icon {
@@ -260,7 +270,7 @@
 }
 
 .notice-fixed-toggle-btn.active .notice-fixed-toggle-status {
-  background: #ff3b30;
+  background: var(--g);
   color: #fff;
 }
 

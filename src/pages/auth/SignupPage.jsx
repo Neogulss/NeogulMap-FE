@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
+import '../../styles/main.css';
 import '../../styles/auth.css';
-import MainNav from '../../components/main/MainNav';
+import Header from '../../components/layouts/Header';
 import AuthHero from '../../components/auth/AuthHero';
-import AuthFooter from '../../components/auth/AuthFooter';
 import SignupForm from '../../components/auth/SignupForm';
+import Footer from '../../components/layouts/Footer';
 
 export default function SignupPage() {
   useEffect(() => {
@@ -17,8 +18,8 @@ export default function SignupPage() {
 
   return (
     <div className="auth-page">
-      <MainNav />
-      <div style={{ paddingTop: '64px' }}>
+      <Header />
+      <div className="auth-content" style={{ paddingTop: '64px' }}>
         <AuthHero />
         <div className="auth-wrap">
           <div className="auth-container">
@@ -26,7 +27,7 @@ export default function SignupPage() {
           </div>
         </div>
       </div>
-      <AuthFooter />
+      <Footer />
     </div>
   );
 }

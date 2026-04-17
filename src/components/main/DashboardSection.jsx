@@ -27,25 +27,6 @@ function CardHeader({ title, accent, date, flipped }) {
     );
 }
 
-/* ── 카드 공통 헤더 (v3 화살표) ──────────────── */
-function CardHeaderV3({ title, date, flipped }) {
-    return (
-        <div className="gc-header">
-            <div className="gc-title-wrap">
-                <span className="gc-title">{title}</span>
-                <span className="gc-date">기준년월 {date}</span>
-            </div>
-            <div className="gc-click">
-                <svg viewBox="0 0 24 24" fill="none" strokeLinecap="round" strokeLinejoin="round">
-                    {flipped
-                        ? <path d="M19 12H5M12 19l-7-7 7-7" />
-                        : <path d="M7 17L17 7M17 7H7M17 7V17" />}
-                </svg>
-                <span>{flipped ? '돌아가기' : '클릭'}</span>
-            </div>
-        </div>
-    );
-}
 
 /* ── 로딩 스켈레톤 ─── */
 function ValSkeleton() {
@@ -234,8 +215,6 @@ export default function DashboardSection() {
         <section className="dashboard-section">
             <div className="dashboard-inner">
 
-                <h2 className="dh-title">{areaTitle}</h2>
-
                 <div className="hero-dashboard-grid">
                     <div className="dashboard-header dashboard-sidekick">
                         <div className="fav-section">
@@ -243,6 +222,7 @@ export default function DashboardSection() {
                                 <div className="fav-speech">{speechText()}</div>
                                 <img src="/neoguri2.png" className="fav-neoguri" alt="AI 상권 분석 너구리 마스코트" />
                             </div>
+                            <p className="dh-title">{areaTitle}</p>
                             <select
                                 className="addr-dropdown"
                                 value={selectedFav?.favoriteIdx ?? ''}
@@ -277,7 +257,7 @@ export default function DashboardSection() {
                                         <rect x="55" y="45" width="14" height="50" fill="#00C853" stroke="#1a1d20" strokeWidth="2.5" rx="2" />
                                         <rect x="75" y="25" width="14" height="70" fill="#D4AF37" stroke="#1a1d20" strokeWidth="2.5" rx="2" />
                                         <path d="M 25 55 L 50 35 L 70 45 L 95 15" fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M 80 15 H 95 V 30"               fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M 80 15 H 95 V 30" fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>
                                 </div>
                                 <div className="gc-val-wrap">
@@ -371,31 +351,31 @@ export default function DashboardSection() {
 
                     {/* 카드 4 — 주요 업종 매출 */}
                     <div
-                        className={`grid-card style-v3 card-category-sales${flippedCards.catSales ? ' is-flipped' : ''}`}
+                        className={`grid-card card-category-sales${flippedCards.catSales ? ' is-flipped' : ''}`}
                         onClick={() => toggleFlip('catSales')}
                     >
                         <div className={`card-flip-inner${flippedCards.catSales ? ' flipped' : ''}`}>
                             <div className="card-front">
-                                <CardHeaderV3 title="주요 업종 매출은?" date="2025년 12월" flipped={false} />
+                                <CardHeader title="주요 업종 매출은?" date="2025년 12월" flipped={false} />
                                 <div className="gc-illus">
-                                    <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M 60 50 V 35 C 60 20 100 20 100 35 V 50" fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
-                                        <path d="M 40 50 L 52 95 H 108 L 120 50 Z" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
-                                        <line x1="45" y1="65" x2="115" y2="65" stroke="#1a1d20" strokeWidth="2" strokeLinecap="round" opacity="0.15" />
-                                        <line x1="49" y1="80" x2="111" y2="80" stroke="#1a1d20" strokeWidth="2" strokeLinecap="round" opacity="0.15" />
-                                        <rect x="68" y="65" width="24" height="16" fill="#D4AF37" rx="2" stroke="#1a1d20" strokeWidth="2.5" />
-                                        <circle cx="80" cy="73" r="2.5" fill="#ffffff" />
+                                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M 45 50 V 38 C 45 25 75 25 75 38 V 50" fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
+                                        <path d="M 28 50 L 38 95 H 82 L 92 50 Z" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
+                                        <line x1="33" y1="65" x2="87" y2="65" stroke="#1a1d20" strokeWidth="2" strokeLinecap="round" opacity="0.15" />
+                                        <line x1="36" y1="80" x2="84" y2="80" stroke="#1a1d20" strokeWidth="2" strokeLinecap="round" opacity="0.15" />
+                                        <rect x="50" y="65" width="20" height="14" fill="#D4AF37" rx="2" stroke="#1a1d20" strokeWidth="2.5" />
+                                        <circle cx="60" cy="72" r="2.5" fill="#ffffff" />
                                     </svg>
                                 </div>
-                                <div className="gc-footer-right">
-                                    <div className="gc-category">
-                                        {topIndustryName ?? (reportLoading ? <ValSkeleton /> : '—')}
-                                    </div>
-                                    <div className="gc-val-right">
+                                <div className="gc-val-wrap">
+                                    <div className="gc-val-main">
                                         월&nbsp;
                                         {topIndustrySalesVal != null
                                             ? <><strong>{topIndustrySalesVal.toLocaleString()}</strong>만원</>
                                             : (reportLoading ? <ValSkeleton /> : '—')}
+                                    </div>
+                                    <div className="gc-val-sub">
+                                        {topIndustryName ?? (reportLoading ? <ValSkeleton /> : '즐겨찾기를 선택하세요')}
                                     </div>
                                 </div>
                             </div>
@@ -409,36 +389,31 @@ export default function DashboardSection() {
 
                     {/* 카드 5 — 피크 시간대 */}
                     <div
-                        className={`grid-card style-v3 card-delivery${flippedCards.peak ? ' is-flipped' : ''}`}
+                        className={`grid-card card-delivery${flippedCards.peak ? ' is-flipped' : ''}`}
                         onClick={() => toggleFlip('peak')}
                     >
                         <div className={`card-flip-inner${flippedCards.peak ? ' flipped' : ''}`}>
                             <div className="card-front">
-                                <CardHeaderV3 title="피크 시간대는?" date="2025년 12월" flipped={false} />
+                                <CardHeader title="피크 시간대는?" date="2025년 12월" flipped={false} />
                                 <div className="gc-illus">
-                                    <svg viewBox="0 0 160 120" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="80" cy="60" r="40" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" />
-                                        <line x1="80" y1="60" x2="80" y2="28" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
-                                        <line x1="80" y1="60" x2="104" y2="72" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
-                                        <circle cx="80" cy="60" r="4" fill="#1a1d20" />
-                                        <line x1="80" y1="22" x2="80" y2="18" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
-                                        <line x1="115" y1="60" x2="119" y2="60" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
-                                        <line x1="45" y1="60" x2="41" y2="60" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
-                                        <line x1="80" y1="98" x2="80" y2="102" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
+                                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="60" cy="60" r="38" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" />
+                                        <line x1="60" y1="60" x2="60" y2="30" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
+                                        <line x1="60" y1="60" x2="82" y2="72" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
+                                        <circle cx="60" cy="60" r="4" fill="#1a1d20" />
+                                        <line x1="60" y1="24" x2="60" y2="20" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
+                                        <line x1="96" y1="60" x2="100" y2="60" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
+                                        <line x1="24" y1="60" x2="20" y2="60" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
+                                        <line x1="60" y1="96" x2="60" y2="100" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
                                     </svg>
                                 </div>
-                                <div className="gc-footer-right">
-                                    {peakSlot != null ? (
-                                        <>
-                                            <div className="gc-category">{peakSlot.label} ({peakSlot.range})</div>
-                                            <div className="gc-val-right">가장 <strong>붐비는 시간</strong></div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="gc-category"><ValSkeleton /></div>
-                                            <div className="gc-val-right" />
-                                        </>
-                                    )}
+                                <div className="gc-val-wrap">
+                                    <div className="gc-val-main">
+                                        {peakSlot != null
+                                            ? <><strong>{peakSlot.label}</strong>&nbsp;({peakSlot.range})</>
+                                            : (reportLoading ? <ValSkeleton /> : '—')}
+                                    </div>
+                                    <div className="gc-val-sub">가장 붐비는 시간대</div>
                                 </div>
                             </div>
                             <CardBack

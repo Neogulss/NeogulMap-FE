@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/main.css";
 import "../styles/community.css";
-import MainNav from "../components/main/MainNav";
+import Header from "../components/layouts/Header";
 import { fetchPostDetail, createComment } from "../api/api";
 
 function formatTime(createdAt) {
@@ -63,7 +63,7 @@ const PostDetailPage = () => {
 
   return (
     <>
-      <MainNav />
+      <Header />
 
       <div className="comm-hero" style={{ padding: "120px 0 40px" }}>
         <div className="hero-grid" />

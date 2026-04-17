@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @theme {
-  --font-sans: "Pretendard", system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: "Pretendard Variable", "Pretendard", system-ui, 'Segoe UI', Roboto, sans-serif;
   --font-mono: ui-monospace, Consolas, monospace;
 
   --text-h-1: 4.25rem; --text-h-1--line-height: 6.375rem; --text-h-1--font-weight: 700;
@@ -17,11 +17,11 @@
   --text-b-4: 0.75rem;  --text-b-4--line-height: 1.125rem;  --text-b-4--font-weight: 500;
   --text-b-5: 0.625rem; --text-b-5--line-height: 0.9375rem; --text-b-5--font-weight: 500;
 
-  --color-primary-1: #9BE2A2;
-  --color-primary-2: #69D373;
-  --color-primary-3: #138A2B;
-  --color-primary-4: #0E7122;
-  --color-primary-5: #18521E;
+  --color-primary-1: #d0ebff;
+  --color-primary-2: #a5d8ff;
+  --color-primary-3: #4dabf7;
+  --color-primary-4: #339af0;
+  --color-primary-5: #1c7ed6;
 
   --color-secondary-1: #FFC300;
   --color-secondary-2: #FFB700;
@@ -46,7 +46,7 @@
   --color-red-1: #FF7676;
   --color-red-2: #EE4251;
 
-  --color-green-light: #EDFAF1;
+  --color-green-light: #edf7ff;
   --color-red-light: #FEF3F6;
   --color-blue-light: #F3F7FD;
 
@@ -136,11 +136,25 @@
     --text-h: #08060d;
     --bg: #fff;
     --border: #e5e4e7;
+    --g: #4dabf7;
+    --g2: #339af0;
+    --g3: #74c0fc;
+    --g4: #a5d8ff;
+    --g5: rgba(77, 171, 247, 0.12);
     --code-bg: #f4f3ec;
     --accent: #aa3bff;
     --accent-bg: rgba(170, 59, 255, 0.1);
     --accent-border: rgba(170, 59, 255, 0.5);
     --social-bg: rgba(244, 243, 236, 0.5);
+    --control-height: 56px;
+    --control-radius: 6px;
+    --control-radius-lg: 8px;
+    --control-padding-x: 18px;
+    --control-border: rgba(8, 6, 13, 0.12);
+    --control-border-strong: rgba(8, 6, 13, 0.18);
+    --control-shadow: 0 10px 24px rgba(8, 6, 13, 0.04);
+    --control-shadow-hover: 0 14px 32px rgba(8, 6, 13, 0.08);
+    --control-focus: 0 0 0 4px rgba(77, 171, 247, 0.14);
     
     font-size: 18px; 
     font-family: var(--font-sans);
