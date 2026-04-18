@@ -137,8 +137,16 @@ export const fetchIncomeReport = (adminDongCode, yearQuarter) =>
 export const fetchWorkerReport = (adminDongCode, yearQuarter) =>
   api.post("/report/worker", { adminDongCode, yearQuarter });
 
-export const fetchSalesReport = (adminDongCode, serviceIndustryCode, yearQuarter) =>
-  api.post("/report/sales", { adminDongCode, serviceIndustryCode, yearQuarter });
+export const fetchSalesReport = (
+  adminDongCode,
+  serviceIndustryCode,
+  yearQuarter,
+) =>
+  api.post("/report/sales", {
+    adminDongCode,
+    serviceIndustryCode,
+    yearQuarter,
+  });
 
 export const fetchTopIndustries = (adminDongCode, yearQuarter) =>
   api.post("/report/top-industries", { adminDongCode, yearQuarter });
@@ -151,6 +159,24 @@ export const fetchTopIndustries = (adminDongCode, yearQuarter) =>
  */
 export const fetchCommercialReport = (adminDongCode, yearQuarter) =>
   api.post("/report/commercial", { adminDongCode, yearQuarter });
+
+/**
+ * 월 매출 예측 조회
+ * @param {number} adminDongCode - 행정동 코드
+ * @param {string} serviceIndustryCode - 서비스 업종 코드
+ * @returns {Promise}
+ */
+export const fetchSalesPred = (adminDongCode, serviceIndustryCode) =>
+  api.post("/pred/sales", { adminDongCode, serviceIndustryCode });
+
+/**
+ * 폐업률 예측 조회
+ * @param {number} adminDongCode - 행정동 코드
+ * @param {string} serviceIndustryCode - 서비스 업종 코드
+ * @returns {Promise}
+ */
+export const fetchRiskPred = (adminDongCode, serviceIndustryCode) =>
+  api.post("/pred/risk", { adminDongCode, serviceIndustryCode });
 
 // =====================================================
 // Auth API
@@ -348,7 +374,15 @@ export const addFavorite = (
 ) =>
   api.post(
     "/favorite/add",
-    { userIdx, adminDongCode, initialCapital, serviceCategoryName, majorCategoryName, floor, area },
+    {
+      userIdx,
+      adminDongCode,
+      initialCapital,
+      serviceCategoryName,
+      majorCategoryName,
+      floor,
+      area,
+    },
     { withCredentials: true },
   );
 

@@ -52,6 +52,18 @@ const STORE_HISTORY_COLORS = [
 const n = (v, suffix = "") =>
   v != null ? `${Number(v).toLocaleString()}${suffix}` : "-";
 
+const formatQuarterLabel = (code) => {
+  if (code == null) return null;
+  const value = String(code);
+  if (value.length !== 5) return null;
+
+  const year = value.slice(0, 4);
+  const quarter = value.slice(4);
+
+  if (!["1", "2", "3", "4"].includes(quarter)) return null;
+  return `${year}년 ${quarter}분기`;
+};
+
 function Tooltip({ text }) {
   const [pos, setPos] = useState(null);
   const btnRef = useRef(null);
@@ -515,7 +527,6 @@ export default function RightPanel({
   selectedCategory,
   selectedSubCategory,
   isLoggedIn,
-  budgetMin,
   budgetMax,
   floor,
   area,
@@ -592,6 +603,7 @@ export default function RightPanel({
   const chartFloatingAgeRef = useRef(null);
   const chartResidentAgeRef = useRef(null);
   const chartConsumptionRef = useRef(null);
+  const chartSalesForecastRef = useRef(null);
   const chartSalesTimeRef = useRef(null);
   const chartSalesDayRef = useRef(null);
   const chartWorkerAgeRef = useRef(null);
@@ -1075,6 +1087,144 @@ export default function RightPanel({
 
     // ── 매출 시간대별 ──
     const sal = d.sales;
+
+    const salesPred = d.salesPred;
+    const currentQuarterLabel =
+      formatQuarterLabel(salesPred?.baseYearQuarterCode) ?? "2025년 4분기";
+    const predictedQuarterLabel =
+      formatQuarterLabel(salesPred?.predYearQuarterCode) ?? "2026년 1분기";
+
+    const salesRequestStatus = d.salesRequestStatus ?? "NO_DATA";
+    const preQuarterDataStatus =
+      salesRequestStatus === "ERROR"
+        ? "ERROR"
+        : (sal?.preQuarterDataStatus ?? "NO_DATA");
+
+    // sales pred
+    const actualPerStoreMonthly =
+      preQuarterDataStatus === "OK" ? (sal?.salesPerStore ?? null) : null;
+
+    const salesForecastRows =
+      salesPred?.predSalesPerStore != null
+        ? [
+            {
+              label: currentQuarterLabel,
+              value: actualPerStoreMonthly ?? 0,
+              isPlaceholder: actualPerStoreMonthly == null,
+            },
+            {
+              label: predictedQuarterLabel,
+              value: salesPred.predSalesPerStore,
+              isPlaceholder: false,
+            },
+          ]
+        : [];
+    const salesForecastValues = salesForecastRows.map((row) =>
+      Math.round(row.value / 10000),
+    );
+    const salesForecastMin = salesForecastValues.length
+      ? Math.min(...salesForecastValues)
+      : 0;
+    const salesForecastMax = salesForecastValues.length
+      ? Math.max(...salesForecastValues)
+      : 0;
+    const salesForecastStep =
+      salesForecastMax - salesForecastMin <= 60
+        ? 10
+        : salesForecastMax - salesForecastMin <= 160
+          ? 20
+          : 50;
+    const salesForecastPadding = Math.max(
+      salesForecastStep,
+      Math.ceil(
+        ((salesForecastMax - salesForecastMin || salesForecastStep) * 0.6) /
+          salesForecastStep,
+      ) * salesForecastStep,
+    );
+    const salesForecastAxisMin = Math.max(
+      0,
+      Math.floor(
+        (salesForecastMin - salesForecastPadding) / salesForecastStep,
+      ) * salesForecastStep,
+    );
+    const salesForecastAxisMax =
+      Math.ceil((salesForecastMax + salesForecastPadding) / salesForecastStep) *
+      salesForecastStep;
+
+    if (chartSalesForecastRef.current && salesForecastRows.length > 0) {
+      chartInstancesRef.current.salesForecast = new Chart(
+        chartSalesForecastRef.current.getContext("2d"),
+        {
+          type: "line",
+          data: {
+            labels: salesForecastRows.map((row) => row.label),
+            datasets: [
+              {
+                data: salesForecastRows.map((row) =>
+                  Math.round(row.value / 10000),
+                ),
+                borderColor: "#8b5cf6",
+                backgroundColor: "rgba(139, 92, 246, 0.08)",
+                borderWidth: 3,
+                borderDash: [8, 6],
+                fill: true,
+                tension: 0,
+                pointRadius: 7,
+                pointHoverRadius: 8,
+                pointBackgroundColor: salesForecastRows.map((row) =>
+                  row.isPlaceholder ? "#cbd5e1" : "#8b5cf6",
+                ),
+                pointBorderColor: "#ffffff",
+                pointBorderWidth: 3,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) => {
+                    const row = salesForecastRows[ctx.dataIndex];
+                    if (row?.isPlaceholder)
+                      return preQuarterDataStatus === "ERROR"
+                        ? "불러오기 실패"
+                        : "데이터 없음";
+                    return `${ctx.parsed.y.toLocaleString()}만원`;
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: false,
+                min: salesForecastAxisMin,
+                max: salesForecastAxisMax,
+                grid: { color: "rgba(148, 163, 184, 0.18)" },
+                border: { display: false },
+                ticks: {
+                  stepSize: salesForecastStep,
+                  color: "#94a3b8",
+                  font: { size: 10, family: "Pretendard", weight: "600" },
+                  callback: (value) => `${value.toLocaleString()}만원`,
+                },
+              },
+              x: {
+                grid: { display: false },
+                border: { display: false },
+                ticks: {
+                  font: { size: 11, family: "Pretendard", weight: "700" },
+                  color: "#6b7280",
+                },
+              },
+            },
+          },
+        },
+      );
+    }
+
     if (chartSalesTimeRef.current && sal) {
       const salesTimeVals = [
         sal.time0006SalesAmount,
@@ -1110,7 +1260,19 @@ export default function RightPanel({
               },
             },
             scales: {
-              y: { display: false, beginAtZero: true },
+              y: {
+                beginAtZero: false,
+                min: Math.max(0, salesForecastMin - salesForecastPadding),
+                max: salesForecastMax + salesForecastPadding,
+                grid: { color: "rgba(148, 163, 184, 0.18)" },
+                border: { display: false },
+                ticks: {
+                  color: "#94a3b8",
+                  font: { size: 10, family: "Pretendard", weight: "600" },
+                  callback: (value) => `${value.toLocaleString()}만원`,
+                },
+              },
+
               x: {
                 grid: { display: false },
                 ticks: { font: { size: 10 }, color: "#868e96" },
@@ -1251,6 +1413,124 @@ export default function RightPanel({
   const inc = selectedData.income;
   const wkr = selectedData.worker;
   const sal = selectedData.sales;
+  const salesRequestStatus = selectedData.salesRequestStatus ?? "NO_DATA";
+  // 예상 매출
+  const salesPred = selectedData.salesPred;
+  const preQuarterDataStatus =
+    salesRequestStatus === "ERROR"
+      ? "ERROR"
+      : (sal?.preQuarterDataStatus ?? "NO_DATA");
+
+  const actualPerStoreMonthly =
+    preQuarterDataStatus === "OK" ? (sal?.salesPerStore ?? null) : null;
+  const predictedPerStoreMonthly = salesPred?.predSalesPerStore ?? null;
+
+  const predSalesText =
+    predictedPerStoreMonthly != null
+      ? `${Math.round(predictedPerStoreMonthly / 10000).toLocaleString()}만원`
+      : "데이터 없음";
+
+  const actualSalesText =
+    preQuarterDataStatus === "ERROR"
+      ? "불러오기 실패"
+      : actualPerStoreMonthly != null
+        ? `${Math.round(actualPerStoreMonthly / 10000).toLocaleString()}만원`
+        : "데이터 없음";
+
+  const hasSalesForecastCompare = predictedPerStoreMonthly != null;
+
+  const confidenceLabel =
+    salesPred?.confidence === "HIGH"
+      ? "신뢰도 높음"
+      : salesPred?.confidence === "LOW"
+        ? "신뢰도 낮음"
+        : null;
+
+  const confidenceTone =
+    salesPred?.confidence === "HIGH"
+      ? "high"
+      : salesPred?.confidence === "LOW"
+        ? "low"
+        : "";
+
+  const lowReasonText =
+    salesPred?.confidence === "LOW" ? salesPred?.message : null;
+
+  const currentQuarterLabel =
+    formatQuarterLabel(salesPred?.baseYearQuarterCode) ?? "2025년 4분기";
+  const predictedQuarterLabel =
+    formatQuarterLabel(salesPred?.predYearQuarterCode) ?? "2026년 1분기";
+
+  // sales pred
+  const forecastChangeRate =
+    actualPerStoreMonthly != null &&
+    predictedPerStoreMonthly != null &&
+    actualPerStoreMonthly > 0
+      ? ((predictedPerStoreMonthly - actualPerStoreMonthly) /
+          actualPerStoreMonthly) *
+        100
+      : null;
+
+  const salesTrendState =
+    preQuarterDataStatus === "ERROR"
+      ? "neutral"
+      : forecastChangeRate == null
+        ? "neutral"
+        : forecastChangeRate > 0
+          ? "up"
+          : forecastChangeRate < 0
+            ? "down"
+            : "neutral";
+
+  const salesTrendText =
+    preQuarterDataStatus === "ERROR"
+      ? "불러오기 실패"
+      : actualPerStoreMonthly === 0
+        ? "산정 불가"
+        : forecastChangeRate == null
+          ? "데이터 없음"
+          : `${forecastChangeRate >= 0 ? "+" : ""}${forecastChangeRate.toFixed(1)}%`;
+
+  const seoulAverageRatio =
+    preQuarterDataStatus === "OK"
+      ? (sal?.salesToIndustryAvgRatio ?? null)
+      : null;
+
+  const seoulAverageRatioText =
+    preQuarterDataStatus === "ERROR"
+      ? "-"
+      : seoulAverageRatio != null
+        ? `${seoulAverageRatio.toFixed(2)}배`
+        : "데이터 없음";
+
+  const seoulAverageTone =
+    preQuarterDataStatus === "ERROR" || seoulAverageRatio == null
+      ? "neutral"
+      : seoulAverageRatio >= 1.05
+        ? "above"
+        : seoulAverageRatio < 0.95
+          ? "below"
+          : "neutral";
+
+  const seoulAverageStatusText =
+    preQuarterDataStatus === "ERROR"
+      ? "불러오기 실패"
+      : seoulAverageRatio == null
+        ? "데이터 없음"
+        : seoulAverageRatio >= 1.05
+          ? "평균 이상"
+          : seoulAverageRatio < 0.95
+            ? "평균 이하"
+            : "평균 수준";
+
+  const aiCommentLines = salesPred?.aiComment
+    ? salesPred.aiComment
+        .replace(/\r/g, "")
+        .split(/\n+/)
+        .flatMap((line) => line.split(/(?<=[.!?])\s+/))
+        .map((line) => line.replace(/^[-•]\s*/, "").trim())
+        .filter(Boolean)
+    : [];
 
   // ── 유동인구 파생값 ──
   const fTotal = f?.totalFloatingPopulation ?? 0;
@@ -1462,7 +1742,6 @@ export default function RightPanel({
                               </div>
                             </div>
                           </div>
-
                           <div className="comp-eval-label">
                             종합평가점수 <EvalCriteriaPanel />
                           </div>
@@ -1601,7 +1880,128 @@ export default function RightPanel({
                 </div>
               </div>
 
-              {/* ── 3. 점포수 현황 ── */}
+              {/* sales pred */}
+              {/* ── 3. 예상 월 매출액 ── */}
+              <div className="report-section">
+                <h3 className="rs-title">예상 점포당 월 매출</h3>
+                <div className="grid-2viz sales-forecast-grid">
+                  <div className="sales-forecast-chart-area">
+                    <div className="sales-forecast-head">
+                      <div className="sales-forecast-chart-title">
+                        분기별 매출 비교
+                      </div>
+                      <div className="sales-forecast-chart-meta">
+                        단위: 만원 / 점포당
+                      </div>
+                    </div>
+                    <div className="chart-container sales-forecast-chart">
+                      {hasSalesForecastCompare ? (
+                        <canvas ref={chartSalesForecastRef} />
+                      ) : (
+                        <EmptyChart />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="sales-forecast-summary">
+                    <div className="sales-forecast-metrics">
+                      <div className="sales-forecast-metric">
+                        <div className="sales-forecast-metric-main">
+                          <span className="sales-forecast-metric-label">
+                            직전 실제 매출
+                          </span>
+                          <strong
+                            className={`sales-forecast-metric-value ${actualPerStoreMonthly == null ? "placeholder" : ""}`}
+                          >
+                            {actualSalesText}
+                          </strong>
+                          <span className="sales-forecast-metric-sub">
+                            ({currentQuarterLabel})
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="sales-forecast-metric">
+                        <div className="sales-forecast-metric-main">
+                          <span className="sales-forecast-metric-label">
+                            예측 매출
+                          </span>
+                          <strong className="sales-forecast-metric-value">
+                            {predSalesText ?? "-"}
+                          </strong>
+                          <span className="sales-forecast-metric-sub">
+                            ({predictedQuarterLabel})
+                          </span>
+                        </div>
+                        <div className="sales-forecast-metric-extra">
+                          <div className="sales-forecast-metric-tags">
+                            <span
+                              className={`pred-confidence-badge ${salesTrendState}`}
+                            >
+                              증감률 {salesTrendText}
+                            </span>
+                            {confidenceLabel && (
+                              <span
+                                className={`pred-confidence-badge ${confidenceTone}`}
+                              >
+                                {confidenceLabel}
+                              </span>
+                            )}
+                          </div>
+                          {lowReasonText && (
+                            <div className="pred-reason-text">
+                              {lowReasonText}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="sales-forecast-metric">
+                        <div className="sales-forecast-metric-main">
+                          <span className="sales-forecast-metric-label">
+                            동일 업종 평균 대비
+                          </span>
+                          <strong className={`sales-forecast-metric-value`}>
+                            {seoulAverageRatioText}
+                          </strong>
+                        </div>
+                        <div className="sales-forecast-metric-extra">
+                          <span
+                            className={`sales-forecast-metric-sub sales-forecast-status-badge ${seoulAverageTone}`}
+                          >
+                            {seoulAverageStatusText}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="sales-forecast-comment-card sales-forecast-comment-card--wide">
+                  <div className="sales-forecast-comments-title">
+                    AI 분석 코멘트
+                  </div>
+                  {aiCommentLines.length > 0 ? (
+                    <ul className="sales-forecast-comments-list">
+                      {aiCommentLines.map((line, i) => (
+                        <li key={`ai-${i}`}>{line}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="sales-forecast-comments-empty">
+                      코멘트가 아직 없습니다.
+                    </p>
+                  )}
+                </div>
+
+                <p className="sales-forecast-note">
+                  실제 매출, 최근 매출 추세, 서울 평균 대비 값은 서울 열린데이터
+                  광장 기준입니다. 해당 값이 없으면 데이터 없음, 조회 실패 시
+                  불러오기 실패로 표시합니다.
+                </p>
+              </div>
+
+              {/* ── 4. 점포수 현황 ── */}
               <div className="report-section">
                 <h3 className="rs-title">점포수 현황</h3>
                 {s && (

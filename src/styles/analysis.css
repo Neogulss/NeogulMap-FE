@@ -1405,6 +1405,340 @@ body.analysis-active {
   font-weight: 900;
 }
 
+/* sales pred */
+/* 예상 월 매출액 */
+.sales-forecast-grid {
+  align-items: stretch;
+}
+
+.sales-forecast-chart-area {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.sales-forecast-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.sales-forecast-chart-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.sales-forecast-chart-meta {
+  font-size: 11px;
+  color: var(--text3);
+  font-weight: 500;
+}
+
+.sales-forecast-chart {
+  height: 300px;
+}
+
+/* sales pred */
+.sales-forecast-summary {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+}
+
+.sales-forecast-summary-card {
+  display: none;
+}
+
+.sales-forecast-top-tags {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.sales-forecast-metrics {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.sales-forecast-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 8px 0 14px;
+}
+
+.sales-forecast-metric-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+}
+
+.sales-forecast-metric-extra {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 2px;
+  width: 100%;
+}
+
+.sales-forecast-metric:not(:last-child) {
+  border-bottom: 1px solid var(--line);
+}
+
+.sales-forecast-metric-label {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #6b7280;
+  word-break: keep-all;
+}
+
+.sales-forecast-metric-value {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+  color: #111827;
+  letter-spacing: -0.8px;
+  font-family: var(--mono);
+  word-break: keep-all;
+}
+
+.sales-forecast-metric-value.placeholder {
+  color: #94a3b8;
+}
+
+.sales-forecast-metric-value.neutral {
+  color: #64748b;
+}
+
+.sales-forecast-metric-value.above {
+  color: #2563eb;
+}
+
+.sales-forecast-metric-value.below {
+  color: #dc2626;
+}
+
+.sales-forecast-metric-sub {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: #94a3b8;
+  word-break: keep-all;
+}
+
+.sales-forecast-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.sales-forecast-status-badge.above {
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+}
+
+.sales-forecast-status-badge.below {
+  background: rgba(220, 38, 38, 0.12);
+  color: #dc2626;
+}
+
+.sales-forecast-status-badge.neutral {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.sales-forecast-metric-sub.above {
+  color: #2563eb;
+}
+
+.sales-forecast-metric-sub.below {
+  color: #dc2626;
+}
+
+.sales-forecast-metric-tags {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-top: 2px;
+  align-items: flex-start;
+}
+
+.sales-forecast-trend-row {
+  padding: 16px 20px;
+  border-top: 1px solid var(--line);
+  background: rgba(248, 250, 255, 0.9);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: var(--text2);
+  word-break: keep-all;
+}
+
+.sales-forecast-trend-row strong {
+  font-weight: 800;
+}
+
+.sales-forecast-trend-row.up strong {
+  color: #059669;
+}
+
+.sales-forecast-trend-row.down strong {
+  color: #dc2626;
+}
+
+.sales-forecast-trend-row.neutral strong {
+  color: #475569;
+}
+
+.sales-forecast-summary-foot {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 18px 20px 20px;
+  border-top: 1px solid var(--line);
+}
+
+.sales-forecast-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pred-confidence-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pred-confidence-badge.high {
+  background: #ffee7d;
+  color: #047857;
+}
+
+.pred-confidence-badge.up {
+  background: #ecfdf3;
+  color: #047857;
+}
+
+.pred-confidence-badge.low {
+  background: #9ca3af;
+  color: #c2410c;
+}
+
+.pred-confidence-badge.down {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.pred-confidence-badge.neutral {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.pred-reason-text {
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.sales-forecast-metric .pred-reason-text {
+  margin-top: 2px;
+}
+
+.sales-forecast-comment-card {
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, #ffffff 0%, #f8faff 100%);
+}
+
+.sales-forecast-comment-card--wide {
+  margin-top: 18px;
+}
+
+.sales-forecast-comments-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 10px;
+}
+
+.sales-forecast-comments-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.sales-forecast-comments-list li {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  font-weight: 500;
+  display: flex;
+  gap: 8px;
+  word-break: keep-all;
+}
+
+.sales-forecast-comments-list li::before {
+  content: "•";
+  color: var(--g);
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.sales-forecast-comments-empty {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text3);
+}
+
+.sales-forecast-note {
+  margin: 0;
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text3);
+  word-break: keep-all;
+}
+
 /* 핵심 지표 3칸 */
 .stat-summary-grid {
   display: grid;
@@ -2108,6 +2442,21 @@ body.analysis-active {
   .right-panel.show.collapsed {
     margin-right: -640px;
   }
+  .report-header {
+    padding: 28px 28px 18px;
+  }
+  .report-content {
+    padding: 28px;
+    padding-bottom: 80px;
+  }
+  .sales-forecast-grid {
+    grid-template-columns: 1fr;
+  }
+  .sales-forecast-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -2143,6 +2492,12 @@ body.analysis-active {
   }
   .income-summary {
     grid-template-columns: 1fr;
+  }
+  .sales-forecast-chart {
+    height: 260px;
+  }
+  .sales-forecast-metric-value {
+    font-size: 22px;
   }
 }
 
@@ -2197,5 +2552,31 @@ body.analysis-active {
   }
   .rh-title {
     font-size: 22px;
+  }
+  .sales-forecast-chart {
+    height: 220px;
+  }
+  .sales-forecast-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .sales-forecast-metrics {
+    grid-template-columns: 1fr;
+  }
+  .sales-forecast-metric {
+    padding: 16px 18px;
+  }
+  .sales-forecast-metric-main {
+  }
+  .sales-forecast-metric-extra {
+    margin-top: 10px;
+  }
+  .sales-forecast-metric:not(:last-child) {
+    border-right: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .sales-forecast-metric-value {
+    font-size: 20px;
   }
 }
