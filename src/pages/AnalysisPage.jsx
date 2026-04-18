@@ -20,6 +20,7 @@ import {
   fetchSalesReport,
   fetchSalesPred,
 } from "../api/api";
+import { fetchRiskResult } from '../utils/riskApi';
 
 const YEAR_QUARTER = 20254;
 const HISTORY_QUARTERS = [20244, 20251, 20252, 20253, 20254];
@@ -59,6 +60,9 @@ export default function AnalysisPage() {
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [isRightShow, setIsRightShow] = useState(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
+  const [riskSummary, setRiskSummary] = useState('');
+  const [riskClosureRate, setRiskClosureRate] = useState(null);
+  const [riskLoading, setRiskLoading] = useState(false);
 
   const mapRef = useRef(null);
   const clusterOverlaysRef = useRef([]);
@@ -272,6 +276,7 @@ export default function AnalysisPage() {
       setSelectedData(data);
       setIsRightShow(true);
       setIsRightCollapsed(false);
+      setRiskLoading(true);
 
       if (mapRef.current) {
         const pos = new window.kakao.maps.LatLng(data.lat, data.lng);
@@ -283,11 +288,22 @@ export default function AnalysisPage() {
           mapRef.current?.setCenter(pos);
         }, 420);
       }
+      try {
+        fetchReportData(data);
 
-      fetchReportData(data);
-    },
-    [fetchReportData],
-  );
+        const riskData = await fetchRiskResult({
+            adminDongCode: data.adminDongCode,
+            serviceIndustryCode: data.serviceIndustryCode,
+        });
+
+        setRiskClosureRate(riskData.riskClosureRate);
+        setRiskSummary(riskData.riskSummary);
+    } catch (e) {
+        console.error(e);
+    } finally {
+        setRiskLoading(false);
+    }
+    }, [fetchReportData]);
 
   useEffect(() => {
     handleSelectRef.current = handleSelectData;
@@ -541,6 +557,10 @@ export default function AnalysisPage() {
           budgetMax={budgetMax}
           floor={floor}
           area={area}
+          riskClosureRate={riskClosureRate}
+          riskSummary={riskSummary}
+          riskLoading={riskLoading}
+
         />
       </div>
     </div>
