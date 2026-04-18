@@ -43,7 +43,10 @@ export default function MainNav() {
           <img src="/neoguri.svg" alt="입지너구리 로고 아이콘" />
         </div>
         <div className="logo-text-wrap">
-          <span className="logo-ko">입지너구리</span>
+          <span className="logo-ko">
+            <span className="logo-ko-light">입지</span>
+            <span className="logo-ko-bold">너구리</span>
+          </span>
           <span className="logo-en">AI 상권분석 서비스</span>
         </div>
       </a>

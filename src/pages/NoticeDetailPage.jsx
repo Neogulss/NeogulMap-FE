@@ -60,8 +60,6 @@ const NoticeDetailPage = () => {
   return (
     <>
       <div className="comm-hero" style={{ padding: "140px 0 60px" }}>
-        <div className="hero-grid" />
-        <div className="hero-glow" />
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Notice</div>
           {loading ? (

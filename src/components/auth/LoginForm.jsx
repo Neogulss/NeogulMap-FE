@@ -38,24 +38,24 @@ export default function LoginForm() {
 
   return (
     <div className="auth-form-view active">
-      <h2 className="form-title">로그인</h2>
+      <h2 className="auth-form-title">로그인</h2>
       <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label className="form-label">아이디</label>
+        <div className="auth-form-group">
+          <label className="auth-form-label">아이디</label>
           <input
             type="text"
-            className="form-input"
+            className="auth-form-input"
             placeholder="아이디를 입력해주세요"
             value={userId}
             onChange={(e) => setUserId(e.target.value)}
             autoComplete="username"
           />
         </div>
-        <div className="form-group">
-          <label className="form-label">비밀번호</label>
+        <div className="auth-form-group">
+          <label className="auth-form-label">비밀번호</label>
           <input
             type="password"
-            className="form-input"
+            className="auth-form-input"
             placeholder="비밀번호를 입력해주세요"
             value={userPwd}
             onChange={(e) => setUserPwd(e.target.value)}
@@ -63,14 +63,14 @@ export default function LoginForm() {
           />
         </div>
 
-        {error && <p className="form-error">{error}</p>}
+        {error && <p className="auth-form-error">{error}</p>}
 
-        <button type="submit" className="btn-primary" disabled={loading}>
+        <button type="submit" className="auth-submit-btn" disabled={loading}>
           {loading ? '로그인 중...' : '로그인'}
         </button>
       </form>
 
-      <div className="switch-view-link">
+      <div className="auth-switch-link">
         계정이 없으신가요? <button onClick={() => navigate('/auth/signup')}>회원가입하기</button>
       </div>
     </div>

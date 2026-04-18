@@ -444,7 +444,9 @@ export const getRecommendedQuestions = async (sessionIdx = null) => {
 
 // 비로그인 전용: 서비스 소개 질문은 AI 서버를 직접 호출
 const policyChatbotGuestApi = axios.create({
-  baseURL: import.meta.env.DEV ? (import.meta.env.VITE_POLICY_CHATBOT_URL || "http://localhost:8000") : "/chatbot-ai",
+  baseURL: import.meta.env.DEV
+    ? import.meta.env.VITE_POLICY_CHATBOT_URL || "http://localhost:8000"
+    : "/chatbot-ai",
   headers: {
     "Content-Type": "application/json",
   },

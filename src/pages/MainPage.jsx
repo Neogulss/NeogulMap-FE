@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import "../styles/main.css";
-import MainNav from "../components/main/MainNav";
+import Header from "../components/layouts/Header";
 import HeroSection from "../components/main/HeroSection";
 import DashboardSection from "../components/main/DashboardSection";
 import MarqueeSection from "../components/main/MarqueeSection";
@@ -22,9 +22,9 @@ export default function MainPage() {
 
   return (
     <div className="main-page">
-      <MainNav />
+      <Header />
       <HeroSection />
-<DashboardSection />
+      <DashboardSection />
       <MarqueeSection />
       <Footer />
     </div>

@@ -14,7 +14,7 @@ export default function CustomDropdown({
 
   const variantStyle = {
     white:
-      "bg-white border-neutral-2 border-[0.125rem] hover:bg-neutral-2 rounded-[1.25rem]",
+      "bg-white border-neutral-2 border-[0.125rem] hover:bg-blue-light hover:border-primary-3 rounded-[1.25rem]",
   };
 
   const handleSelect = (option) => {
@@ -64,7 +64,7 @@ export default function CustomDropdown({
               onClick={() => handleSelect(option)}
               className="
           px-4 py-3 cursor-pointer
-          hover:bg-neutral-2
+          hover:bg-blue-light
           rounded-xl
           transition-colors duration-150
         "

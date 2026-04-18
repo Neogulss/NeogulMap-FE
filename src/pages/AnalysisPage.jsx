@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "../styles/main.css";
 import "../styles/analysis.css";
-import MainNav from "../components/main/MainNav";
+import Header from "../components/layouts/Header";
 import LeftPanel from "../components/analysis/LeftPanel";
 import MapPanel from "../components/analysis/MapPanel";
 import RightPanel from "../components/analysis/RightPanel";
@@ -366,6 +366,8 @@ export default function AnalysisPage() {
         income: null,
         worker: null,
         sales: null,
+        salesRequestStatus: "NO_DATA",
+        salesPred: null,
         swot: null,
         advice: null,
       }));
@@ -498,7 +500,7 @@ export default function AnalysisPage() {
 
   return (
     <div className="analysis-page">
-      <MainNav />
+      <Header />
       <div className="app-container">
         <LeftPanel
           isCollapsed={isLeftCollapsed}
