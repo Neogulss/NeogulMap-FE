@@ -475,7 +475,7 @@ export default function RightPanel({
   area,
   riskClosureRate,
   riskSummary,
-  riskMessage,
+  riskLoading
 }) {
   const navigate = useNavigate();
   const innerRef = useRef(null);
@@ -1831,7 +1831,7 @@ export default function RightPanel({
                <RiskAnalysis
                   riskSummary={riskSummary}
                   riskClosureRate={riskClosureRate}
-                  riskMessage={riskMessage}
+                  riskLoading={riskLoading}
               />
               </div>
 

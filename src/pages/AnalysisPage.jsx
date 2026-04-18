@@ -296,7 +296,7 @@ export default function AnalysisPage() {
             serviceIndustryCode: data.serviceIndustryCode,
         });
 
-        setRiskClosureRate(riskData.finalRiskClosureRate);
+        setRiskClosureRate(riskData.riskClosureRate);
         setRiskSummary(riskData.riskSummary);
     } catch (e) {
         console.error(e);
