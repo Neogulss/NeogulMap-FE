@@ -30,11 +30,11 @@ body.analysis-active {
   --surface: #e9ecef;
   --line: rgba(0, 0, 0, 0.08);
   --line2: rgba(0, 0, 0, 0.15);
-  --g: #009624;
-  --g2: #00b34a;
-  --g3: #00c853;
-  --g4: #1a73e8;
-  --g5: rgba(0, 200, 83, 0.08);
+  --g: #4dabf7;
+  --g2: #339af0;
+  --g3: #74c0fc;
+  --g4: #a5d8ff;
+  --g5: rgba(77, 171, 247, 0.12);
   --text: #1a1d20;
   --text2: #495057;
   --text3: #868e96;
@@ -241,7 +241,7 @@ body.analysis-active {
   background: var(--g);
   color: #fff;
   border-color: var(--g);
-  box-shadow: 0 3px 8px rgba(0, 150, 36, 0.25);
+  box-shadow: 0 3px 8px rgba(77, 171, 247, 0.28);
 }
 .cat-tab svg {
   width: 16px;
@@ -319,20 +319,23 @@ body.analysis-active {
 }
 .budget-input {
   width: 100%;
-  padding: 11px 38px 11px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--line);
-  background: var(--bg2);
-  font-size: 13px;
+  min-height: 52px;
+  padding: 0 42px 0 var(--control-padding-x);
+  border-radius: var(--control-radius);
+  border: 1px solid var(--control-border);
+  background: #fff;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text);
   outline: none;
   cursor: text;
-  transition: border-color 0.2s;
+  transition: all 0.2s;
+  box-shadow: var(--control-shadow);
 }
 .budget-input:focus {
   border-color: var(--g);
   background: #fff;
+  box-shadow: var(--control-focus);
 }
 .budget-unit {
   position: absolute;
@@ -374,7 +377,7 @@ body.analysis-active {
   background: var(--g);
   color: #fff;
   border-color: var(--g);
-  box-shadow: 0 2px 8px rgba(0, 150, 36, 0.3);
+  box-shadow: 0 2px 8px rgba(77, 171, 247, 0.3);
 }
 .floor-pill.underground {
   border-style: dashed;
@@ -414,7 +417,7 @@ body.analysis-active {
 .area-card.active {
   border-color: var(--g);
   background: var(--g5);
-  box-shadow: 0 2px 6px rgba(0, 150, 36, 0.2);
+  box-shadow: 0 2px 6px rgba(77, 171, 247, 0.22);
 }
 .area-plan-svg {
   width: 26px;
@@ -429,11 +432,11 @@ body.analysis-active {
 }
 .area-card:hover .plan-wall {
   stroke: var(--g);
-  fill: rgba(0, 150, 36, 0.07);
+  fill: rgba(77, 171, 247, 0.08);
 }
 .area-card.active .plan-wall {
   stroke: var(--g);
-  fill: rgba(0, 150, 36, 0.12);
+  fill: rgba(77, 171, 247, 0.14);
   stroke-width: 2;
 }
 .plan-door-gap {
@@ -530,20 +533,23 @@ body.analysis-active {
 
 .btn-search {
   width: 100%;
-  padding: 14px;
+  min-height: var(--control-height);
+  padding: 0 24px;
   background: var(--g);
   color: #fff;
-  border: none;
-  border-radius: 8px;
+  border: 1px solid var(--g);
+  border-radius: var(--control-radius);
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.2s;
-  letter-spacing: -0.3px;
-  box-shadow: 0 4px 12px rgba(0, 150, 36, 0.3);
+  transition: all 0.2s;
+  letter-spacing: -0.2px;
+  box-shadow: 0 12px 24px rgba(77, 171, 247, 0.2);
 }
 .btn-search:hover {
   background: var(--g2);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 30px rgba(77, 171, 247, 0.24);
 }
 
 /* 결과 뷰 상단 바 */
@@ -569,25 +575,29 @@ body.analysis-active {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding: 7px 14px 7px 10px;
-  border: 1.5px solid var(--g);
-  border-radius: 20px;
-  background: var(--g5);
+  min-height: 46px;
+  padding: 0 18px 0 14px;
+  border: 1px solid var(--control-border);
+  border-radius: 999px;
+  background: #fff;
   font-size: 13px;
   font-weight: 700;
-  color: var(--g);
+  color: var(--text2);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all 0.2s;
   flex-shrink: 0;
+  box-shadow: var(--control-shadow);
 }
 .btn-back svg {
   width: 15px;
   height: 15px;
 }
 .btn-back:hover {
-  background: var(--g);
-  color: #fff;
+  background: #fff;
+  color: var(--g);
   border-color: var(--g);
+  transform: translateY(-1px);
+  box-shadow: var(--control-shadow-hover);
 }
 
 /* 추천 리스트 섹션 */
@@ -711,12 +721,12 @@ body.analysis-active {
 .list-card:hover {
   border-color: var(--g);
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 150, 36, 0.12);
+  box-shadow: 0 6px 16px rgba(77, 171, 247, 0.14);
 }
 .list-card.active {
   border-color: var(--g);
   background: var(--g5);
-  box-shadow: 0 4px 14px rgba(0, 150, 36, 0.15);
+  box-shadow: 0 4px 14px rgba(77, 171, 247, 0.16);
 }
 
 .lc-head {
@@ -750,11 +760,11 @@ body.analysis-active {
   color: var(--g);
   padding: 4px 10px;
   border-radius: 20px;
-  border: 1.5px solid rgba(0, 150, 36, 0.2);
+  border: 1.5px solid rgba(77, 171, 247, 0.22);
 }
 .list-card.active .lc-tag {
   background: #fff;
-  border-color: rgba(0, 200, 83, 0.4);
+  border-color: rgba(77, 171, 247, 0.4);
 }
 
 /* ── 2. CENTER PANEL (Map) ── */
@@ -862,7 +872,7 @@ body.analysis-active {
   left: 6px;
   width: 12px;
   height: 12px;
-  background: #00c853;
+  background: var(--g);
   border-radius: 50%;
 }
 @keyframes pinPop {
@@ -988,17 +998,18 @@ body.analysis-active {
   transition: all 0.2s;
 }
 .rh-fav-btn:hover:not(:disabled) {
-  border-color: #f59e0b;
-  color: #f59e0b;
+  border-color: var(--g);
+  color: var(--g);
+  background: var(--g5);
 }
 .rh-fav-btn.active {
-  border-color: #f59e0b;
-  color: #f59e0b;
-  background: #fffbeb;
+  border-color: var(--g);
+  color: var(--g);
+  background: var(--g5);
 }
 .rh-fav-btn.active svg {
-  fill: #f59e0b;
-  stroke: #f59e0b;
+  fill: var(--g);
+  stroke: var(--g);
 }
 .rh-fav-btn:disabled {
   opacity: 0.6;
@@ -1109,7 +1120,7 @@ body.analysis-active {
 /* 종합 평가 박스 */
 .total-score-box {
   background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
-  border: 1px solid rgba(0, 200, 83, 0.2);
+  border: 1px solid rgba(77, 171, 247, 0.22);
   border-radius: 16px;
   padding: 32px;
   text-align: center;
@@ -1745,8 +1756,8 @@ body.analysis-active {
   gap: 6px;
 }
 .oc-open {
-  background: rgba(0, 200, 83, 0.08);
-  border: 1px solid rgba(0, 200, 83, 0.2);
+  background: rgba(77, 171, 247, 0.08);
+  border: 1px solid rgba(77, 171, 247, 0.22);
 }
 .oc-close {
   background: rgba(233, 30, 99, 0.06);
@@ -2043,7 +2054,7 @@ body.analysis-active {
   font-weight: 700;
   color: var(--text);
   white-space: nowrap;
-  box-shadow: 0 4px 16px rgba(0, 150, 36, 0.18);
+  box-shadow: 0 4px 16px rgba(77, 171, 247, 0.18);
   position: relative;
   margin-bottom: 10px;
   transition:
@@ -2083,7 +2094,7 @@ body.analysis-active {
 }
 .chatbot-widget--active .chatbot-mascot-img {
   border-color: var(--g);
-  box-shadow: 0 4px 20px rgba(0, 150, 36, 0.35);
+  box-shadow: 0 4px 20px rgba(77, 171, 247, 0.35);
 }
 .chatbot-widget:not(.chatbot-widget--active) {
   opacity: 0.9;

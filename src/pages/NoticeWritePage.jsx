@@ -66,8 +66,6 @@ const NoticeWritePage = () => {
   return (
     <>
       <div className="comm-hero">
-        <div className="hero-grid" />
-        <div className="hero-glow" />
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Notice</div>
           <h1 className="comm-title">{isEdit ? "공지사항 수정" : "공지사항 작성"}</h1>

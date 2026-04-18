@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/community.css";
-import MainNav from "../components/main/MainNav";
 import { createPost } from "../api/api";
 
 const WritePage = () => {
@@ -47,8 +46,6 @@ const WritePage = () => {
 
   return (
     <>
-      <MainNav />
-
       <div className="comm-hero">
         <div className="hero-grid"></div>
         <div className="hero-glow"></div>

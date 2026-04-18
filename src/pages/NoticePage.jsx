@@ -61,8 +61,6 @@ const NoticePage = () => {
   return (
     <>
       <div className="comm-hero">
-        <div className="hero-grid" />
-        <div className="hero-glow" />
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Notice</div>
           <h1 className="comm-title">공지사항</h1>

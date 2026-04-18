@@ -1,32 +1,23 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import heroBackground from '../../assets/images/배경화면.png';
 
 export default function HeroSection() {
     const navigate = useNavigate();
-    const descriptionText = '전국 상권의 유동인구·매출·경쟁 현황을 AI가 실시간으로 분석합니다.\n감에 의존하지 말고 숫자로 먼저 검증하세요.';
-    const [typedDescription, setTypedDescription] = useState('');
-
-    useEffect(() => {
-        let index = 0;
-        const interval = window.setInterval(() => {
-            index += 1;
-            setTypedDescription(descriptionText.slice(0, index));
-            if (index >= descriptionText.length) {
-                window.clearInterval(interval);
-            }
-        }, 38);
-
-        return () => window.clearInterval(interval);
-    }, []);
 
     const handleScrollDown = () => {
         window.scrollTo({ top: window.innerHeight, behavior: 'smooth' });
     };
 
     return (
-        <section className="hero-section">
-            <div className="hero-grid" />
-            <div className="hero-glow" />
+        <section
+            className="hero-section"
+            style={{
+                backgroundImage: `url(${heroBackground})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center center',
+                backgroundRepeat: 'no-repeat',
+            }}
+        >
             <div className="hero-planes" aria-hidden="true">
                 <div className="hero-plane plane-a">
                     <span className="hero-plane-trail" />
@@ -49,24 +40,17 @@ export default function HeroSection() {
                             <span className="ph-title-light">데이터로 검증한 입지,</span>
                             <span className="ph-title-bold">지금 확인하세요</span>
                         </div>
-                        <p className="hero-desc hero-desc-typing">{typedDescription}</p>
                         <button
                             className="btn-action"
                             onClick={() => navigate('/analysis')}
                         >
-                            AI 리포트 작성하러 가기
+                            <span className="btn-action-arrow" aria-hidden="true">→</span>
+                            <span>AI 리포트 작성하러 가기</span>
+                            <span className="btn-action-arrow" aria-hidden="true">←</span>
                         </button>
                     </div>
                 </div>
             </div>
-
-            <div className="hero-map-container">
-                <img src="/hero-cityscape.png" alt="도시 전경" className="hero-cityscape-img" />
-            </div>
-
-            <div className="hero-bottom-blur" />
-            <div className="hero-bottom-fade" />
-
             <div className="hero-scroll-hint">
                 <button className="scroll-down-text" onClick={handleScrollDown}>
                     <span>아래로 스크롤</span>
