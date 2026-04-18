@@ -43,7 +43,7 @@ export const fetchDistrictRecommendList = (
 // FastAPI AI 추천 API
 // =====================================================
 const aiApi = axios.create({
-  baseURL: "http://localhost:8001",
+  baseURL: import.meta.env.DEV ? "http://localhost:8001" : "/kwonri",
   headers: {
     "Content-Type": "application/json",
   },
@@ -444,7 +444,7 @@ export const getRecommendedQuestions = async (sessionIdx = null) => {
 
 // 비로그인 전용: 서비스 소개 질문은 AI 서버를 직접 호출
 const policyChatbotGuestApi = axios.create({
-  baseURL: import.meta.env.VITE_POLICY_CHATBOT_URL || "http://localhost:8000",
+  baseURL: import.meta.env.DEV ? (import.meta.env.VITE_POLICY_CHATBOT_URL || "http://localhost:8000") : "/chatbot-ai",
   headers: {
     "Content-Type": "application/json",
   },
