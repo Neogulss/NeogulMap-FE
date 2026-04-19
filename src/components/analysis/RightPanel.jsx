@@ -3,14 +3,14 @@ import { useNavigate } from "react-router-dom";
 import Chart from "chart.js/auto";
 import { addFavorite } from "../../api/api";
 import RiskAnalysis from "./RiskAnalysis";
-import Tooltip from "../common/Tooltip";
+import loadingDots from "../../assets/images/Loading Dots.gif";
 
 const TREND_LABELS = ["25년 1Q", "25년 2Q", "25년 3Q", "25년 4Q"];
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
 const TIME_LABELS = [
   "00~06시",
   "06~11시",
-  "11~14시", 
+  "11~14시",
   "14~17시",
   "17~21시",
   "21~24시",
@@ -475,7 +475,9 @@ export default function RightPanel({
   area,
   riskClosureRate,
   riskSummary,
-  riskLoading
+  riskLoading,
+  opinionComment,
+  opinionLoading,
 }) {
   const navigate = useNavigate();
   const innerRef = useRef(null);
@@ -1605,16 +1607,15 @@ export default function RightPanel({
 
           <div id="blur-content" className={blurClass}>
             {!hasReport && (
-              <p
-                style={{
-                  textAlign: "center",
-                  padding: "40px 0",
-                  color: "var(--text3)",
-                  fontSize: "14px",
-                }}
-              >
-                리포트 데이터를 불러오는 중...
-              </p>
+              <div className="analysis-loading" style={{ minHeight: "60vh" }}>
+                <div className="analysis-loading-raccoon">
+                  <img src="/neoguri2.png" alt="너구리" className="analysis-loading-raccoon-img" />
+                  <img src={loadingDots} alt="로딩" className="analysis-loading-gif" />
+                </div>
+                <p className="analysis-loading-text">
+                  입지너구리가 리포트를 분석중이에요!
+                </p>
+              </div>
             )}
             <div
               className="report-content"
@@ -1719,126 +1720,75 @@ export default function RightPanel({
                   })()}
 
                 {/* 종합의견 */}
-                {compEval && compEval.opinions.length > 0 && (
+                {compEval && (
                   <div className="comp-opinion-card">
-                    <div className="co-title">종합의견</div>
-                    <ul className="co-list">
-                      {compEval.opinions.map((op, i) => (
-                        <li key={i}>{op}</li>
-                      ))}
-                    </ul>
+                    <div className="co-layout">
+                      <div className="co-left">
+                        <div className="co-title">종합의견</div>
+                        {opinionLoading ? (
+                          <div className="analysis-loading" style={{ padding: "12px 0" }}>
+                            <div className="analysis-loading-raccoon">
+                              <img src="/neoguri2.png" alt="너구리" className="analysis-loading-raccoon-img" />
+                              <img src={loadingDots} alt="로딩" className="analysis-loading-gif" />
+                            </div>
+                            <p className="analysis-loading-text">
+                              AI 종합의견 생성중...
+                            </p>
+                          </div>
+                        ) : opinionComment ? (
+                          <ul className="co-list">
+                            {opinionComment
+                              .trim()
+                              .split("\n")
+                              .filter((l) => l.trim())
+                              .map((line, i) => (
+                                <li key={i}>{line.replace(/^[-•*]\s*/, "")}</li>
+                              ))}
+                          </ul>
+                        ) : (
+                          <ul className="co-list">
+                            {compEval.opinions.map((op, i) => (
+                              <li key={i}>{op}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                      <div className="co-right">
+                        <div className="co-stat">
+                          <span className="co-stat-label">예측 폐업률</span>
+                          <span
+                            className={`co-stat-value ${riskClosureRate >= 40 ? "danger" : "safe"}`}
+                          >
+                            {riskClosureRate != null
+                              ? `${riskClosureRate}%`
+                              : "-"}
+                          </span>
+                        </div>
+                        <div className="co-stat">
+                          <span className="co-stat-label">
+                            예측 점포당 월 매출
+                          </span>
+                          <span className="co-stat-value">{predSalesText}</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
-
-                {/* 상권 분석 요약 (서버 제공 코멘트) */}
-                <div className="advice-summary">
-                  <div className="advice-summary-header">
-                    <span className="advice-summary-title">상권 분석 요약</span>
-                    <Tooltip text="상권변화지표 기준: 다이나믹 (급격한 변화) → 상승 (성장세) → 유지 (안정적) → 하강 (쇠퇴세) → 침체 (장기 부진)" />
-                  </div>
-                  <ul>
-                    {selectedData.summaryComments.map((c, i) => (
-                      <li key={i} dangerouslySetInnerHTML={{ __html: c }} />
-                    ))}
-                  </ul>
-                </div>
               </div>
 
-              {/* ── 2. 핵심 지표 요약 ── */}
-              <div className="report-section">
-                <h3 className="rs-title">핵심 지표 요약</h3>
-                <div className="stat-summary-grid">
-                  {ss?.stores && (
-                    <div className="stat-sum-item">
-                      <div className="ss-label">점포수</div>
-                      <div className={`ss-diff-box ${ss.stores.diffType}`}>
-                        <div className="ss-diff-label">
-                          {ss.stores.diffLabel}
-                        </div>
-                        <div className="ss-diff-val">{ss.stores.diffVal}</div>
-                      </div>
-                      <div className="ss-main-box">
-                        <div className="ss-main-label">현재 점포수</div>
-                        <div className="ss-main-val">
-                          {ss.stores.current}
-                          <em>개</em>
-                        </div>
-                      </div>
-                      <div className="ss-rank">
-                        자치구 내 <strong>{ss.stores.rank}위</strong>/
-                        {ss.stores.totalDongCount ?? "-"}개
-                      </div>
-                    </div>
-                  )}
-                  {ss?.sales ? (
-                    <div className="stat-sum-item">
-                      <div className="ss-label">매출액 (월평균)</div>
-                      <div className={`ss-diff-box ${ss.sales.diffType}`}>
-                        <div className="ss-diff-label">
-                          {ss.sales.diffLabel}
-                        </div>
-                        <div className="ss-diff-val">{ss.sales.diffVal}</div>
-                      </div>
-                      <div className="ss-main-box">
-                        <div className="ss-main-label">평균 매출액</div>
-                        <div className="ss-main-val">
-                          {Math.round(
-                            ss.sales.current / 10000,
-                          ).toLocaleString()}
-                          <em>만원</em>
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="stat-sum-item null-stat">
-                      <div className="ss-label">매출액 (월평균)</div>
-                      <div className="ss-diff-box neutral">
-                        <div className="ss-diff-label">전분기 대비</div>
-                        <div className="ss-diff-val">-</div>
-                      </div>
-                      <div className="ss-main-box">
-                        <div className="ss-main-label">평균 매출액</div>
-                        <div className="ss-main-val ss-null">준비 중</div>
-                      </div>
-                      <div className="ss-rank">매출 API 연동 예정</div>
-                    </div>
-                  )}
-                  {ss?.pop && (
-                    <div className="stat-sum-item">
-                      <div className="ss-label">유동인구 (일평균)</div>
-                      <div className={`ss-diff-box ${ss.pop.diffType}`}>
-                        <div className="ss-diff-label">{ss.pop.diffLabel}</div>
-                        <div className="ss-diff-val">{ss.pop.diffVal}</div>
-                      </div>
-                      <div className="ss-main-box">
-                        <div className="ss-main-label">평균 유동인구</div>
-                        <div className="ss-main-val">
-                          {ss.pop.current.toLocaleString()}
-                          <em>명</em>
-                        </div>
-                      </div>
-                      <div className="ss-rank">
-                        자치구 내 <strong>{ss.pop.rank}위</strong>/
-                        {ss.pop.totalDongCount ?? "-"}개
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-              
               {/*예상 폐업률*/}
               <div className="report-section">
-               <RiskAnalysis
+                <RiskAnalysis
                   riskSummary={riskSummary}
                   riskClosureRate={riskClosureRate}
                   riskLoading={riskLoading}
-              />
+                />
               </div>
 
               {/* sales pred */}
               {/* ── 3. 예상 월 매출액 ── */}
               <div className="report-section">
-                <h3 className="rs-title">예상 점포당 월 매출</h3>
+                <h3 className="rs-title">AI 점포당 월 매출 예측</h3>
                 <div className="grid-2viz sales-forecast-grid">
                   <div className="sales-forecast-chart-area">
                     <div className="sales-forecast-head">
@@ -1954,6 +1904,88 @@ export default function RightPanel({
                   광장 기준입니다. 해당 값이 없으면 데이터 없음, 조회 실패 시
                   불러오기 실패로 표시합니다.
                 </p>
+              </div>
+
+              {/* ── 2. 핵심 지표 요약 ── */}
+              <div className="report-section">
+                <h3 className="rs-title">핵심 지표 요약</h3>
+                <div className="stat-summary-grid">
+                  {ss?.stores && (
+                    <div className="stat-sum-item">
+                      <div className="ss-label">점포수</div>
+                      <div className={`ss-diff-box ${ss.stores.diffType}`}>
+                        <div className="ss-diff-label">
+                          {ss.stores.diffLabel}
+                        </div>
+                        <div className="ss-diff-val">{ss.stores.diffVal}</div>
+                      </div>
+                      <div className="ss-main-box">
+                        <div className="ss-main-label">현재 점포수</div>
+                        <div className="ss-main-val">
+                          {ss.stores.current}
+                          <em>개</em>
+                        </div>
+                      </div>
+                      <div className="ss-rank">
+                        자치구 내 <strong>{ss.stores.rank}위</strong>/
+                        {ss.stores.totalDongCount ?? "-"}개
+                      </div>
+                    </div>
+                  )}
+                  {ss?.sales ? (
+                    <div className="stat-sum-item">
+                      <div className="ss-label">매출액 (월평균)</div>
+                      <div className={`ss-diff-box ${ss.sales.diffType}`}>
+                        <div className="ss-diff-label">
+                          {ss.sales.diffLabel}
+                        </div>
+                        <div className="ss-diff-val">{ss.sales.diffVal}</div>
+                      </div>
+                      <div className="ss-main-box">
+                        <div className="ss-main-label">평균 매출액</div>
+                        <div className="ss-main-val">
+                          {Math.round(
+                            ss.sales.current / 10000,
+                          ).toLocaleString()}
+                          <em>만원</em>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="stat-sum-item null-stat">
+                      <div className="ss-label">매출액 (월평균)</div>
+                      <div className="ss-diff-box neutral">
+                        <div className="ss-diff-label">전분기 대비</div>
+                        <div className="ss-diff-val">-</div>
+                      </div>
+                      <div className="ss-main-box">
+                        <div className="ss-main-label">평균 매출액</div>
+                        <div className="ss-main-val ss-null">준비 중</div>
+                      </div>
+                      <div className="ss-rank">매출 API 연동 예정</div>
+                    </div>
+                  )}
+                  {ss?.pop && (
+                    <div className="stat-sum-item">
+                      <div className="ss-label">유동인구 (일평균)</div>
+                      <div className={`ss-diff-box ${ss.pop.diffType}`}>
+                        <div className="ss-diff-label">{ss.pop.diffLabel}</div>
+                        <div className="ss-diff-val">{ss.pop.diffVal}</div>
+                      </div>
+                      <div className="ss-main-box">
+                        <div className="ss-main-label">평균 유동인구</div>
+                        <div className="ss-main-val">
+                          {ss.pop.current.toLocaleString()}
+                          <em>명</em>
+                        </div>
+                      </div>
+                      <div className="ss-rank">
+                        자치구 내 <strong>{ss.pop.rank}위</strong>/
+                        {ss.pop.totalDongCount ?? "-"}개
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* ── 4. 점포수 현황 ── */}

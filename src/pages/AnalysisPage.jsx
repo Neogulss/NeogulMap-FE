@@ -19,6 +19,7 @@ import {
   fetchWorkerReport,
   fetchSalesReport,
   fetchSalesPred,
+  fetchOpinionComment,
 } from "../api/api";
 import { fetchRiskResult } from '../utils/riskApi';
 
@@ -63,6 +64,8 @@ export default function AnalysisPage() {
   const [riskSummary, setRiskSummary] = useState('');
   const [riskClosureRate, setRiskClosureRate] = useState(null);
   const [riskLoading, setRiskLoading] = useState(false);
+  const [opinionComment, setOpinionComment] = useState('');
+  const [opinionLoading, setOpinionLoading] = useState(false);
 
   const mapRef = useRef(null);
   const clusterOverlaysRef = useRef([]);
@@ -260,6 +263,88 @@ export default function AnalysisPage() {
           salesPred: salesPred,
         };
       });
+      const peakFloatingHour = (() => {
+        const slots = [
+          { label: '00~06시', val: f.time0006FloatingPopulation },
+          { label: '06~11시', val: f.time0611FloatingPopulation },
+          { label: '11~14시', val: f.time1114FloatingPopulation },
+          { label: '14~17시', val: f.time1417FloatingPopulation },
+          { label: '17~21시', val: f.time1721FloatingPopulation },
+          { label: '21~24시', val: f.time2124FloatingPopulation },
+        ];
+        return slots.reduce((a, b) => a.val > b.val ? a : b).label;
+      })();
+      const peakFloatingAgeGroup = (() => {
+        const ages = [
+          { label: '10대', val: f.age10FloatingPopulation },
+          { label: '20대', val: f.age20FloatingPopulation },
+          { label: '30대', val: f.age30FloatingPopulation },
+          { label: '40대', val: f.age40FloatingPopulation },
+          { label: '50대', val: f.age50FloatingPopulation },
+          { label: '60대 이상', val: f.age60AboveFloatingPopulation },
+        ];
+        return ages.reduce((a, b) => a.val > b.val ? a : b).label;
+      })();
+      const primarySalesAgeGroup = (sal?.age10SalesAmount != null) ? (() => {
+        const ages = [
+          { label: '10대', val: sal.age10SalesAmount },
+          { label: '20대', val: sal.age20SalesAmount },
+          { label: '30대', val: sal.age30SalesAmount },
+          { label: '40대', val: sal.age40SalesAmount },
+          { label: '50대', val: sal.age50SalesAmount },
+          { label: '60대 이상', val: sal.age60AboveSalesAmount },
+        ];
+        return ages.reduce((a, b) => a.val > b.val ? a : b).label;
+      })() : null;
+
+      return {
+        // 점포 안정성
+        storeCount: s.storeCount,
+        openingStoreCount: s.openingStoreCount ?? null,
+        closureStoreCount: s.closureStoreCount ?? null,
+        avgOperatingYears: s.avgOperatingYears,
+        storePrevQuarterDiff: s.prevQuarterDiff ?? null,
+        // 업종분포 & 프랜차이즈
+        franchiseRatio: s.franchiseRatio ?? null,
+        foodRatio: s.foodRatio ?? null,
+        serviceRatio: s.serviceRatio ?? null,
+        retailRatio: s.retailRatio ?? null,
+        // 유동인구
+        totalFloatingPopulation: f.totalFloatingPopulation,
+        floatingPrevQuarterDiff: f.prevQuarterDiff ?? null,
+        peakFloatingHour,
+        peakFloatingAgeGroup,
+        maleFloatingRatio: f.totalFloatingPopulation > 0
+          ? Math.round(f.maleFloatingPopulation / f.totalFloatingPopulation * 1000) / 10
+          : null,
+        totalResidentPopulation: res?.totalResidentPopulation ?? null,
+        totalWorkerPopulation: wkr?.totalWorkerPopulation ?? null,
+        totalHouseholdCount: hh?.totalHouseholdCount ?? null,
+        // 매출 트렌드
+        monthlySalesAmount: sal?.monthlySalesAmount ?? null,
+        salesPrevQuarterAmountDiff: sal?.prevQuarterAmountDiff ?? null,
+        salesChangeRate: sal?.salesChangeRate ?? null,
+        salesToIndustryAvgRatio: sal?.salesToIndustryAvgRatio ?? null,
+        weekdaySalesAmount: sal?.weekdaySalesAmount ?? null,
+        weekendSalesAmount: sal?.weekendSalesAmount ?? null,
+        primarySalesAgeGroup,
+        primarySalesGender: sal?.maleSalesAmount != null
+          ? (sal.maleSalesAmount > sal.femaleSalesAmount ? '남성' : '여성')
+          : null,
+        // AI 예측
+        predictedSalesPerStore: salesPred?.predSalesPerStore ?? null,
+        // 상권변화지표
+        commercialChangeIndicator: com.commercialChangeIndicatorName ?? null,
+        closedBusinessMonthAvg: com.closedBusinessMonthAvg ?? null,
+        seoulClosedBusinessMonthAvg: com.seoulClosedBusinessMonthAvg ?? null,
+        // 지역 소비력
+        monthlyAvgIncomeAmount: inc?.monthlyAvgIncomeAmount ?? null,
+        foodServiceExpenditureAmount: inc?.foodServiceExpenditureAmount ?? null,
+        // 입지 인프라
+        totalVisitorFacilityCount: fac?.totalVisitorFacilityCount ?? null,
+        subwayStationCount: fac?.subwayStationCount ?? null,
+        busStopCount: fac?.busStopCount ?? null,
+      };
     } catch (err) {
       console.error("리포트 API 오류:", {
         message: err?.message,
@@ -267,6 +352,7 @@ export default function AnalysisPage() {
         url: err?.config?.url,
         data: err?.response?.data,
       });
+      return null;
     }
   }, []);
 
@@ -277,32 +363,46 @@ export default function AnalysisPage() {
       setIsRightShow(true);
       setIsRightCollapsed(false);
       setRiskLoading(true);
+      setOpinionLoading(true);
+      setOpinionComment('');
 
       if (mapRef.current) {
         const pos = new window.kakao.maps.LatLng(data.lat, data.lng);
         mapRef.current.setCenter(pos);
         mapRef.current.setLevel(5);
-        // 우측 패널 CSS 트랜지션(400ms) 완료 후 relayout + 재중앙 정렬
         setTimeout(() => {
           mapRef.current?.relayout();
           mapRef.current?.setCenter(pos);
         }, 420);
       }
       try {
-        fetchReportData(data);
-
-        const riskData = await fetchRiskResult({
+        const [reportMetrics, riskData] = await Promise.all([
+          fetchReportData(data),
+          fetchRiskResult({
             adminDongCode: data.adminDongCode,
             serviceIndustryCode: data.serviceIndustryCode,
-        });
+          }),
+        ]);
 
         setRiskClosureRate(riskData.riskClosureRate);
         setRiskSummary(riskData.riskSummary);
-    } catch (e) {
-        console.error(e);
-    } finally {
         setRiskLoading(false);
-    }
+
+        if (reportMetrics) {
+          const opinionRes = await fetchOpinionComment({
+            adminDongCode: data.adminDongCode,
+            serviceIndustryCode: data.serviceIndustryCode,
+            riskClosureRate: riskData.riskClosureRate,
+            ...reportMetrics,
+          });
+          setOpinionComment(opinionRes.data.opinion ?? '');
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setRiskLoading(false);
+        setOpinionLoading(false);
+      }
     }, [fetchReportData]);
 
   useEffect(() => {
@@ -560,7 +660,8 @@ export default function AnalysisPage() {
           riskClosureRate={riskClosureRate}
           riskSummary={riskSummary}
           riskLoading={riskLoading}
-
+          opinionComment={opinionComment}
+          opinionLoading={opinionLoading}
         />
       </div>
     </div>

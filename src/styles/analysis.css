@@ -1355,13 +1355,74 @@ body.analysis-active {
   border-radius: 8px;
   padding: 14px 16px;
 }
-.co-title {
+.co-layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.co-left {
+  flex: 1;
+  min-width: 0;
+}
+.co-right {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.co-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 16px;
+  min-width: 110px;
+  gap: 4px;
+}
+.co-stat-label {
   font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  white-space: nowrap;
+}
+.co-stat-value {
+  font-size: 18px;
   font-weight: 700;
-  color: #9ca3af;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
+  color: var(--text);
+}
+.co-stat-value.danger {
+  color: #ef4444;
+}
+.co-stat-value.safe {
+  color: #3b82f6;
+}
+.co-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.co-skel-line {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  width: 100%;
+}
+.co-skel-line--short {
+  width: 65%;
+}
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.co-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 10px;
 }
 .co-list {
   list-style: none;
@@ -1372,18 +1433,18 @@ body.analysis-active {
   gap: 6px;
 }
 .co-list li {
-  font-size: 12px;
-  line-height: 1.65;
-  color: #374151;
-  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  font-weight: 500;
   display: flex;
-  gap: 6px;
+  gap: 8px;
   word-break: keep-all;
 }
 .co-list li::before {
-  content: "–";
-  color: #9ca3af;
-  font-weight: 400;
+  content: "•";
+  color: var(--g);
+  font-weight: 900;
   flex-shrink: 0;
 }
 
@@ -2577,8 +2638,6 @@ body.analysis-active {
   }
   .sales-forecast-metric {
     padding: 16px 18px;
-  }
-  .sales-forecast-metric-main {
   }
   .sales-forecast-metric-extra {
     margin-top: 10px;

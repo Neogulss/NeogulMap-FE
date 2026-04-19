@@ -169,6 +169,9 @@ export const fetchCommercialReport = (adminDongCode, yearQuarter) =>
 export const fetchSalesPred = (adminDongCode, serviceIndustryCode) =>
   api.post("/pred/sales", { adminDongCode, serviceIndustryCode });
 
+export const fetchOpinionComment = (payload) =>
+  api.post("/report/opinion", payload);
+
 /**
  * 폐업률 예측 조회
  * @param {number} adminDongCode - 행정동 코드
