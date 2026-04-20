@@ -4,6 +4,7 @@ import "../styles/main.css";
 import "../styles/community.css";
 import Header from "../components/layouts/Header";
 import { fetchPostDetail, createComment } from "../api/api";
+import { useAlertStore } from "../stores/useAlertStore";
 
 function formatTime(createdAt) {
   if (!createdAt) return "";
@@ -18,6 +19,7 @@ function formatTime(createdAt) {
 const PostDetailPage = () => {
   const { postIdx } = useParams();
   const navigate = useNavigate();
+  const showAlert = useAlertStore((s) => s.showAlert);
 
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ const PostDetailPage = () => {
       setPost(res.data.data);
     } catch (err) {
       console.error("게시글 조회 오류:", err);
-      alert("게시글을 불러오지 못했습니다.");
+      showAlert({ message: "게시글을 불러오지 못했습니다.", type: "error" });
       navigate("/community");
     } finally {
       setLoading(false);
@@ -43,10 +45,10 @@ const PostDetailPage = () => {
   }, [postIdx]);
 
   const handleCommentSubmit = async () => {
-    if (!commentText.trim()) { alert("댓글을 입력하세요."); return; }
+    if (!commentText.trim()) { showAlert({ message: "댓글을 입력하세요.", type: "error" }); return; }
 
     const userIdx = Number(localStorage.getItem("userIdx"));
-    if (!userIdx) { alert("로그인이 필요합니다."); navigate("/auth/signin"); return; }
+    if (!userIdx) { showAlert({ message: "로그인이 필요합니다.", type: "error" }); navigate("/auth/signin"); return; }
 
     setSubmitting(true);
     try {
@@ -55,7 +57,7 @@ const PostDetailPage = () => {
       await loadPost(); // 댓글 목록 갱신
     } catch (err) {
       console.error("댓글 등록 오류:", err);
-      alert("댓글 등록에 실패했습니다.");
+      showAlert({ message: "댓글 등록에 실패했습니다.", type: "error" });
     } finally {
       setSubmitting(false);
     }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signUpUser } from '../../api/api';
+import { useAlertStore } from '../../stores/useAlertStore';
 
 export default function SignupForm() {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ export default function SignupForm() {
   const [termPrivacy, setTermPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const showAlert = useAlertStore((s) => s.showAlert);
 
   const handleCheckAll = (e) => {
     const checked = e.target.checked;
@@ -69,7 +71,7 @@ export default function SignupForm() {
         age ? Number(age) : null,
         businessType === 'reg' ? 'Y' : 'N'
       );
-      alert('회원가입이 완료되었습니다. 로그인해주세요.');
+      showAlert({ message: '회원가입이 완료되었습니다. 로그인해주세요.', type: 'success' });
       navigate('/auth/signin');
     } catch (err) {
       const msg = err.response?.data?.message;

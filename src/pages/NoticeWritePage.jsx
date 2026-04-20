@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import "../styles/community.css";
 import "../styles/notice.css";
 import { createNotice, updateNotice, fetchNoticeDetail } from "../api/api";
+import { useAlertStore } from "../stores/useAlertStore";
 
 const isAdmin = () =>
   localStorage.getItem("userId") === import.meta.env.VITE_ADMIN_USER_ID;
@@ -11,6 +12,7 @@ const NoticeWritePage = () => {
   const navigate = useNavigate();
   const { noticeIdx } = useParams(); // 수정 시에만 존재
   const isEdit = !!noticeIdx;
+  const showAlert = useAlertStore((s) => s.showAlert);
 
   const [title, setTitle] = useState("");
   const [contents, setContents] = useState("");
@@ -20,7 +22,7 @@ const NoticeWritePage = () => {
   // 수정 모드일 때 기존 데이터 로드
   useEffect(() => {
     if (!isAdmin()) {
-      alert("관리자만 접근할 수 있습니다.");
+      showAlert({ message: "관리자만 접근할 수 있습니다.", type: "error" });
       navigate("/notice");
       return;
     }
@@ -34,30 +36,30 @@ const NoticeWritePage = () => {
         setIsFixed(data.isFixed ?? "N");
       })
       .catch(() => {
-        alert("공지사항을 불러오지 못했습니다.");
+        showAlert({ message: "공지사항을 불러오지 못했습니다.", type: "error" });
         navigate("/notice");
       });
-  }, [noticeIdx, isEdit, navigate]);
+  }, [noticeIdx, isEdit, navigate, showAlert]);
 
   const handleSubmit = async () => {
-    if (!title.trim()) { alert("제목을 입력하세요."); return; }
-    if (!contents.trim()) { alert("내용을 입력하세요."); return; }
+    if (!title.trim()) { showAlert({ message: "제목을 입력하세요.", type: "error" }); return; }
+    if (!contents.trim()) { showAlert({ message: "내용을 입력하세요.", type: "error" }); return; }
 
     setSubmitting(true);
     try {
       if (isEdit) {
         await updateNotice(Number(noticeIdx), title, contents, isFixed);
-        alert("공지사항이 수정되었습니다.");
+        showAlert({ message: "공지사항이 수정되었습니다.", type: "success" });
         navigate(`/notice/${noticeIdx}`);
       } else {
         await createNotice(title, contents, isFixed);
-        alert("공지사항이 등록되었습니다.");
+        showAlert({ message: "공지사항이 등록되었습니다.", type: "success" });
         navigate("/notice");
       }
     } catch (err) {
       console.error("공지사항 저장 오류:", err);
       const msg = err.response?.data?.message;
-      alert(msg || "저장 중 오류가 발생했습니다.");
+      showAlert({ message: msg || "저장 중 오류가 발생했습니다.", type: "error" });
     } finally {
       setSubmitting(false);
     }

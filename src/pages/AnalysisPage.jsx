@@ -527,12 +527,10 @@ export default function AnalysisPage() {
       }
     } catch (err) {
       console.error("AI 분석 API 오류:", err);
-      alert(
-        "분석 중 오류가 발생했습니다. FastAPI 서버가 실행 중인지 확인해주세요.",
-      );
+      showAlert({ message: "분석 중 오류가 발생했습니다. FastAPI 서버가 실행 중인지 확인해주세요.", type: "error" });
       setIsAnalyzing(false);
     }
-  }, [selectedSubCategory, budgetMax, floor, area]);
+  }, [selectedSubCategory, budgetMax, floor, area, showAlert]);
 
   // runAnalysis ref 동기화 (항상 최신 버전 유지)
   useEffect(() => {
