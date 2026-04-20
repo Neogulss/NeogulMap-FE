@@ -8,7 +8,6 @@ import { fetchPostList } from "../api/api";
 const SORT_OPTIONS = [
   { label: "최신순", value: "LATEST" },
   { label: "조회순", value: "VIEWS" },
-  { label: "추천순", value: "LIKES" },
 ];
 
 const PAGE_SIZE = 10;
