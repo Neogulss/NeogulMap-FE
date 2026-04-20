@@ -413,7 +413,7 @@ export default function AnalysisPage() {
   useEffect(() => {
     if (!pendingDongRef.current || resultList.length === 0) return;
     const target = resultList.find(
-      (item) => item.adminDongCode === pendingDongRef.current,
+      (item) => Number(item.adminDongCode) === Number(pendingDongRef.current),
     );
     if (target) {
       pendingDongRef.current = null;

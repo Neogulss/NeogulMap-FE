@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Chart from "chart.js/auto";
-import { addFavorite } from "../../api/api";
+import {
+  addFavorite,
+  deleteFavorite,
+  fetchMyFavoriteList,
+} from "../../api/api";
 import RiskAnalysis from "./RiskAnalysis";
 import loadingDots from "../../assets/images/Loading Dots.gif";
 
@@ -484,11 +488,41 @@ export default function RightPanel({
 
   const [isFavorited, setIsFavorited] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
+  const [savedFavoriteIdx, setSavedFavoriteIdx] = useState(null);
 
-  // 상권이 바뀌면 즐겨찾기 상태 초기화
+  // 상권이 바뀌면 즐겨찾기 상태를 서버에서 확인
   useEffect(() => {
     setIsFavorited(false);
-  }, [selectedData?.id]);
+    setSavedFavoriteIdx(null);
+    if (!isLoggedIn || !selectedData?.adminDongCode) return;
+
+    const userIdx = Number(localStorage.getItem("userIdx"));
+    fetchMyFavoriteList(userIdx)
+      .then((res) => {
+        const favorites = res.data.data?.favorites ?? [];
+        const match = favorites.find(
+          (f) => Number(f.adminDongCode) === Number(selectedData.adminDongCode),
+        );
+        if (match) {
+          setIsFavorited(true);
+          setSavedFavoriteIdx(match.favoriteIdx);
+        }
+      })
+      .catch(() => {});
+  }, [selectedData?.id, selectedData?.adminDongCode, isLoggedIn]);
+
+  const syncFavoriteIdx = async (userIdx, adminDongCode) => {
+    try {
+      const res = await fetchMyFavoriteList(userIdx);
+      const favorites = res.data.data?.favorites ?? [];
+      const match = favorites.find(
+        (f) => Number(f.adminDongCode) === Number(adminDongCode),
+      );
+      if (match) setSavedFavoriteIdx(match.favoriteIdx);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const handleFavorite = async () => {
     if (!isLoggedIn) {
@@ -496,10 +530,27 @@ export default function RightPanel({
       navigate("/auth/signin");
       return;
     }
-    if (isFavorited || favLoading) return;
+    if (favLoading) return;
 
     const userIdx = Number(localStorage.getItem("userIdx"));
-    // 유저가 입력한 최대 자본금을 그대로 저장 (만원 단위)
+
+    // 이미 즐겨찾기된 상태 → 해제
+    if (isFavorited && savedFavoriteIdx != null) {
+      setFavLoading(true);
+      try {
+        await deleteFavorite(savedFavoriteIdx, userIdx);
+        setIsFavorited(false);
+        setSavedFavoriteIdx(null);
+      } catch (err) {
+        alert(err.response?.data?.message || "즐겨찾기 해제에 실패했습니다.");
+      } finally {
+        setFavLoading(false);
+      }
+      return;
+    }
+
+    if (isFavorited) return;
+
     const initialCap = Math.floor(budgetMax ?? 0);
     const catName =
       selectedSubCategory || selectedData?.serviceIndustryCodeName || "";
@@ -515,7 +566,6 @@ export default function RightPanel({
         floor ?? 1,
         area ?? 33,
       );
-      // 백엔드가 반환하지 않는 추가 조건을 로컬에 보관
       const favMeta = JSON.parse(localStorage.getItem("favMeta") || "{}");
       favMeta[selectedData.adminDongCode] = {
         floor: floor ?? 1,
@@ -524,10 +574,12 @@ export default function RightPanel({
       };
       localStorage.setItem("favMeta", JSON.stringify(favMeta));
       setIsFavorited(true);
+      await syncFavoriteIdx(userIdx, selectedData.adminDongCode);
     } catch (err) {
       const msg = err.response?.data?.message;
       if (msg?.includes("이미")) {
-        setIsFavorited(true); // 이미 추가된 경우 별표만 채움
+        setIsFavorited(true);
+        await syncFavoriteIdx(userIdx, selectedData.adminDongCode);
       } else {
         alert(msg || "즐겨찾기 추가에 실패했습니다.");
       }
@@ -1567,10 +1619,16 @@ export default function RightPanel({
               서울시 {selectedData.districtName} {selectedData.name}
             </h2>
             <button
-              className={`rh-fav-btn${isFavorited ? " active" : ""}`}
+              className={`rh-fav-btn${isFavorited && savedFavoriteIdx != null ? " removable" : isFavorited ? " active" : ""}`}
               onClick={handleFavorite}
               disabled={favLoading}
-              title={isFavorited ? "즐겨찾기 완료" : "즐겨찾기 추가"}
+              title={
+                isFavorited && savedFavoriteIdx != null
+                  ? "즐겨찾기 해제"
+                  : isFavorited
+                    ? "즐겨찾기 완료"
+                    : "즐겨찾기 추가"
+              }
             >
               <svg
                 viewBox="0 0 24 24"
@@ -1582,7 +1640,11 @@ export default function RightPanel({
               >
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
               </svg>
-              {isFavorited ? "즐겨찾기 완료" : "즐겨찾기"}
+              {isFavorited && savedFavoriteIdx != null
+                ? "즐겨찾기 해제"
+                : isFavorited
+                  ? "즐겨찾기 완료"
+                  : "즐겨찾기"}
             </button>
           </div>
           <div className="rh-meta">
@@ -1609,8 +1671,16 @@ export default function RightPanel({
             {!hasReport && (
               <div className="analysis-loading" style={{ minHeight: "60vh" }}>
                 <div className="analysis-loading-raccoon">
-                  <img src="/neoguri2.png" alt="너구리" className="analysis-loading-raccoon-img" />
-                  <img src={loadingDots} alt="로딩" className="analysis-loading-gif" />
+                  <img
+                    src="/neoguri2.png"
+                    alt="너구리"
+                    className="analysis-loading-raccoon-img"
+                  />
+                  <img
+                    src={loadingDots}
+                    alt="로딩"
+                    className="analysis-loading-gif"
+                  />
                 </div>
                 <p className="analysis-loading-text">
                   입지너구리가 리포트를 분석중이에요!
@@ -1724,12 +1794,23 @@ export default function RightPanel({
                   <div className="comp-opinion-card">
                     <div className="co-layout">
                       <div className="co-left">
-                        <div className="co-title">종합의견</div>
+                        <div className="co-title">AI 종합의견</div>
                         {opinionLoading ? (
-                          <div className="analysis-loading" style={{ padding: "12px 0" }}>
+                          <div
+                            className="analysis-loading"
+                            style={{ padding: "12px 0" }}
+                          >
                             <div className="analysis-loading-raccoon">
-                              <img src="/neoguri2.png" alt="너구리" className="analysis-loading-raccoon-img" />
-                              <img src={loadingDots} alt="로딩" className="analysis-loading-gif" />
+                              <img
+                                src="/neoguri2.png"
+                                alt="너구리"
+                                className="analysis-loading-raccoon-img"
+                              />
+                              <img
+                                src={loadingDots}
+                                alt="로딩"
+                                className="analysis-loading-gif"
+                              />
                             </div>
                             <p className="analysis-loading-text">
                               AI 종합의견 생성중...
@@ -1934,7 +2015,7 @@ export default function RightPanel({
                   )}
                   {ss?.sales ? (
                     <div className="stat-sum-item">
-                      <div className="ss-label">매출액 (월평균)</div>
+                      <div className="ss-label">매출액 (분기 평균)</div>
                       <div className={`ss-diff-box ${ss.sales.diffType}`}>
                         <div className="ss-diff-label">
                           {ss.sales.diffLabel}
@@ -1953,7 +2034,7 @@ export default function RightPanel({
                     </div>
                   ) : (
                     <div className="stat-sum-item null-stat">
-                      <div className="ss-label">매출액 (월평균)</div>
+                      <div className="ss-label">매출액 (분기 평균)</div>
                       <div className="ss-diff-box neutral">
                         <div className="ss-diff-label">전분기 대비</div>
                         <div className="ss-diff-val">-</div>
