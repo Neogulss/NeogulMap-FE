@@ -10,6 +10,7 @@ import {
   withdrawUser,
 } from '../api/api';
 import '../styles/mypage.css';
+import { useAlertStore } from '../stores/useAlertStore';
 
 function formatMan(v) {
   if (!v) return '0만원';
@@ -31,6 +32,8 @@ function formatDate(dateStr) {
 export default function MyPage() {
   const navigate = useNavigate();
   const userIdx = Number(localStorage.getItem('userIdx'));
+  const showAlert = useAlertStore((s) => s.showAlert);
+  
 
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
@@ -115,7 +118,7 @@ export default function MyPage() {
         totalCount: prev.totalCount - 1,
       }));
     } catch (err) {
-      alert(err.response?.data?.message || '삭제에 실패했습니다.');
+      showAlert({ message: err.response?.data?.message || '삭제에 실패했습니다.', type: 'error' });
     }
   };
 

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import "../styles/community.css";
 import "../styles/notice.css";
 import { fetchNoticeDetail, deleteNotice } from "../api/api";
+import { useAlertStore } from "../stores/useAlertStore";
 
 const isAdmin = () =>
   localStorage.getItem("userId") === import.meta.env.VITE_ADMIN_USER_ID;
@@ -23,6 +24,8 @@ const NoticeDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const admin = isAdmin();
+  const showAlert = useAlertStore((s) => s.showAlert);
+  
 
   useEffect(() => {
     const load = async () => {
@@ -32,26 +35,26 @@ const NoticeDetailPage = () => {
         setNotice(res.data.data);
       } catch (err) {
         console.error("공지사항 조회 오류:", err);
-        alert("공지사항을 불러오지 못했습니다.");
+        showAlert({ message: "공지사항을 불러오지 못했습니다.", type: "error" });
         navigate("/notice");
       } finally {
         setLoading(false);
       }
     };
     load();
-  }, [noticeIdx, navigate]);
+  }, [noticeIdx, navigate, showAlert]);
 
   const handleDelete = async () => {
     if (!window.confirm("공지사항을 삭제하시겠습니까?")) return;
     setDeleting(true);
     try {
       await deleteNotice(Number(noticeIdx));
-      alert("공지사항이 삭제되었습니다.");
+      showAlert({ message: "공지사항이 삭제되었습니다.", type: "success" });
       navigate("/notice");
     } catch (err) {
       console.error("공지사항 삭제 오류:", err);
       const msg = err.response?.data?.message;
-      alert(msg || "삭제 중 오류가 발생했습니다.");
+      showAlert({ message: msg || "삭제 중 오류가 발생했습니다.", type: "error" });
     } finally {
       setDeleting(false);
     }

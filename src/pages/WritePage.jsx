@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/community.css";
 import { createPost } from "../api/api";
+import { useAlertStore } from "../stores/useAlertStore";
 
 const WritePage = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const showAlert = useAlertStore((s) => s.showAlert);
 
   const handleInput = (e) => {
     e.target.style.height = "auto";
@@ -16,17 +18,17 @@ const WritePage = () => {
 
   const handleSubmit = async () => {
     if (!title.trim()) {
-      alert("제목을 입력하세요");
+      showAlert({ message: "제목을 입력하세요.", type: "warning" });
       return;
     }
     if (!content.trim()) {
-      alert("내용을 입력하세요");
+      showAlert({ message: "내용을 입력하세요.", type: "warning" });
       return;
     }
 
     const userIdx = Number(localStorage.getItem("userIdx"));
     if (!userIdx) {
-      alert("로그인이 필요합니다.");
+      showAlert({ message: "로그인이 필요합니다.", type: "error" });
       navigate("/auth/signin");
       return;
     }
@@ -34,11 +36,11 @@ const WritePage = () => {
     setSubmitting(true);
     try {
       await createPost(userIdx, title, content);
-      alert("게시글이 등록되었습니다.");
+      showAlert({ message: "게시글이 등록되었습니다.", type: "success" });
       navigate("/community");
     } catch (err) {
       console.error("게시글 등록 오류:", err);
-      alert("등록 중 오류가 발생했습니다.");
+      showAlert({ message: "등록 중 오류가 발생했습니다.", type: "error" });
     } finally {
       setSubmitting(false);
     }

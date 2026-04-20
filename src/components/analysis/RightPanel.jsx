@@ -8,6 +8,7 @@ import {
 } from "../../api/api";
 import RiskAnalysis from "./RiskAnalysis";
 import loadingDots from "../../assets/images/Loading Dots.gif";
+import { useAlertStore } from "../../stores/useAlertStore";
 
 const TREND_LABELS = ["25년 1Q", "25년 2Q", "25년 3Q", "25년 4Q"];
 const DAY_LABELS = ["월", "화", "수", "목", "금", "토", "일"];
@@ -693,6 +694,8 @@ export default function RightPanel({
 }) {
   const navigate = useNavigate();
   const innerRef = useRef(null);
+  const showAlert = useAlertStore((s) => s.showAlert);
+
 
   const [isFavorited, setIsFavorited] = useState(false);
   const [favLoading, setFavLoading] = useState(false);
@@ -750,7 +753,7 @@ export default function RightPanel({
         setIsFavorited(false);
         setSavedFavoriteIdx(null);
       } catch (err) {
-        alert(err.response?.data?.message || "즐겨찾기 해제에 실패했습니다.");
+        showAlert(err.response?.data?.message || "즐겨찾기 해제에 실패했습니다.");
       } finally {
         setFavLoading(false);
       }

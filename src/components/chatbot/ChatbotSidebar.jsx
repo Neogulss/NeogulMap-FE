@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useAlertStore } from "../../stores/useAlertStore";
 
 export default function ChatbotSidebar({
   sessions,
@@ -14,6 +15,7 @@ export default function ChatbotSidebar({
 }) {
   const [editingSessionIdx, setEditingSessionIdx] = useState(null);
   const [editingTitle, setEditingTitle] = useState("");
+  const showAlert = useAlertStore((s) => s.showAlert);
 
   const sortedSessions = useMemo(() => {
     return [...sessions];
@@ -32,7 +34,7 @@ export default function ChatbotSidebar({
 
   const saveEdit = async (sessionIdx) => {
     if (!editingTitle.trim()) {
-      alert("제목을 입력해주세요.");
+      showAlert({ message: "제목을 입력해주세요.", type: "warning" });
       return;
     }
 
