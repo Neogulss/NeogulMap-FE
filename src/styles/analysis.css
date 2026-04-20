@@ -998,9 +998,9 @@ body.analysis-active {
   transition: all 0.2s;
 }
 .rh-fav-btn:hover:not(:disabled) {
-  border-color: var(--g);
-  color: var(--g);
-  background: var(--g5);
+  border-color: #e6a800;
+  color: #7a5800;
+  background: #fff8d6;
 }
 .rh-fav-btn.active {
   border-color: var(--g);
@@ -1010,6 +1010,20 @@ body.analysis-active {
 .rh-fav-btn.active svg {
   fill: var(--g);
   stroke: var(--g);
+}
+.rh-fav-btn.removable {
+  border-color: #e6a800;
+  color: #7a5800;
+  background: #fff8d6;
+}
+.rh-fav-btn.removable svg {
+  fill: #e6a800;
+  stroke: #e6a800;
+}
+.rh-fav-btn.removable:hover:not(:disabled) {
+  border-color: #c98f00;
+  color: #5a3f00;
+  background: #ffeea0;
 }
 .rh-fav-btn:disabled {
   opacity: 0.6;
