@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
 import {
+    MdPointOfSale,
+    MdStorefront,
+    MdGroups,
+    MdBusinessCenter,
+    MdAccessTimeFilled,
+} from 'react-icons/md';
+import {
     fetchMyFavoriteList,
     fetchFloatingReport,
     fetchTopIndustries,
@@ -215,50 +222,49 @@ export default function DashboardSection() {
         <section className="dashboard-section">
             <div className="dashboard-inner">
 
-                <div className="hero-dashboard-grid">
-                    <div className="dashboard-header dashboard-sidekick">
-                        <div className="fav-section">
-                            <div className="fav-mascot-wrap">
-                                <div className="fav-speech">{speechText()}</div>
-                                <img src="/neoguri2.png" className="fav-neoguri" alt="AI 상권 분석 너구리 마스코트" />
-                            </div>
-                            <p className="dh-title">{areaTitle}</p>
-                            <select
-                                className="addr-dropdown"
-                                value={selectedFav?.favoriteIdx ?? ''}
-                                onChange={handleFavSelect}
-                                disabled={!userIdx || favLoading || favorites.length === 0}
-                            >
-                                <option value="" disabled>
-                                    {!userIdx ? '로그인이 필요합니다' : favorites.length === 0 ? '즐겨찾기가 없습니다' : '즐겨찾기 상권 선택'}
-                                </option>
-                                {favorites.map(fav => (
-                                    <option key={fav.favoriteIdx} value={fav.favoriteIdx}>
-                                        {fav.districtName} {fav.adminDongName}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+                <div className="dashboard-section-header" data-reveal data-delay="0">
+                    <h2 className="dashboard-section-title">이 상권, 지금 어떨까요?</h2>
+                    <p className="dashboard-section-desc">즐겨찾기 상권을 선택하면 매출·유동인구·경쟁 현황을 한눈에 확인할 수 있습니다.</p>
+                </div>
+
+                <div className="dashboard-control" data-reveal data-delay="0.15">
+                    <div className="dashboard-mascot" aria-hidden="true">
+                        <div className="dashboard-mascot-bubble">관심 상권을 골라봐요</div>
+                        <img src="/neoguri2.png" className="dashboard-mascot-img" alt="" />
                     </div>
+                    <div className="dc-select-wrap">
+                        <p className="dh-title">{areaTitle}</p>
+                        <select
+                            className="addr-dropdown"
+                            value={selectedFav?.favoriteIdx ?? ''}
+                            onChange={handleFavSelect}
+                            disabled={!userIdx || favLoading || favorites.length === 0}
+                        >
+                            <option value="" disabled>
+                                {!userIdx ? '로그인이 필요합니다' : favorites.length === 0 ? '즐겨찾기가 없습니다' : '즐겨찾기 상권 선택'}
+                            </option>
+                            {favorites.map(fav => (
+                                <option key={fav.favoriteIdx} value={fav.favoriteIdx}>
+                                    {fav.districtName} {fav.adminDongName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div className="hero-dashboard-grid">
 
                     {/* 카드 1 — 평균매출 */}
                     <div
                         className={`grid-card card-revenue${flippedCards.revenue ? ' is-flipped' : ''}`}
                         onClick={() => toggleFlip('revenue')}
+                        data-reveal data-delay="0.1"
                     >
                         <div className={`card-flip-inner${flippedCards.revenue ? ' flipped' : ''}`}>
                             <div className="card-front">
                                 <CardHeader title="평균매출은?" accent date="2025년 12월" flipped={false} />
                                 <div className="gc-illus">
-                                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                                        <line x1="20" y1="95" x2="100" y2="95" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
-                                        <line x1="20" y1="25" x2="20"  y2="95" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
-                                        <rect x="35" y="65" width="14" height="30" fill="#e8f5e8" stroke="#1a1d20" strokeWidth="2.5" rx="2" />
-                                        <rect x="55" y="45" width="14" height="50" fill="#00C853" stroke="#1a1d20" strokeWidth="2.5" rx="2" />
-                                        <rect x="75" y="25" width="14" height="70" fill="#D4AF37" stroke="#1a1d20" strokeWidth="2.5" rx="2" />
-                                        <path d="M 25 55 L 50 35 L 70 45 L 95 15" fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                                        <path d="M 80 15 H 95 V 30" fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
+                                    <MdPointOfSale className="gc-illus-icon gc-illus-icon--revenue" aria-hidden="true" />
                                 </div>
                                 <div className="gc-val-wrap">
                                     <div className="gc-val-main">
@@ -267,6 +273,7 @@ export default function DashboardSection() {
                                             ? <><strong>{salesVal.toLocaleString()}</strong>만원</>
                                             : <ValSkeleton />}
                                     </div>
+                                    <div className="gc-meta">선택 상권 평균 매출 기준</div>
                                 </div>
                             </div>
                             <CardBack
@@ -281,22 +288,13 @@ export default function DashboardSection() {
                     <div
                         className={`grid-card card-store${flippedCards.store ? ' is-flipped' : ''}`}
                         onClick={() => toggleFlip('store')}
+                        data-reveal data-delay="0.2"
                     >
                         <div className={`card-flip-inner${flippedCards.store ? ' flipped' : ''}`}>
                             <div className="card-front">
                                 <CardHeader title="업소 수는?" date="2025년 12월" flipped={false} />
                                 <div className="gc-illus">
-                                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                                        <rect x="25" y="50" width="70" height="50" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" rx="4" />
-                                        <path d="M 15 50 L 25 35 H 95 L 105 50 Z" fill="#D4AF37" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
-                                        <line x1="40" y1="35" x2="35" y2="50" stroke="#1a1d20" strokeWidth="3" />
-                                        <line x1="60" y1="35" x2="60" y2="50" stroke="#1a1d20" strokeWidth="3" />
-                                        <line x1="80" y1="35" x2="85" y2="50" stroke="#1a1d20" strokeWidth="3" />
-                                        <rect x="45" y="65" width="30" height="35" fill="#e8f5e8" stroke="#1a1d20" strokeWidth="3" rx="2" />
-                                        <circle cx="68" cy="82" r="2" fill="#1a1d20" />
-                                        <path d="M 60 5 C 50 5 42 13 42 23 C 42 35 60 55 60 55 C 60 55 78 35 78 23 C 78 13 70 5 60 5 Z" fill="#00C853" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
-                                        <circle cx="60" cy="22" r="5" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" />
-                                    </svg>
+                                    <MdStorefront className="gc-illus-icon gc-illus-icon--store" aria-hidden="true" />
                                 </div>
                                 <div className="gc-val-wrap">
                                     <div className="gc-val-main">
@@ -304,6 +302,7 @@ export default function DashboardSection() {
                                             ? <><strong>{storeCountVal.toLocaleString()}</strong>개</>
                                             : <ValSkeleton />}
                                     </div>
+                                    <div className="gc-meta">현재 업종 분포 합산 기준</div>
                                 </div>
                             </div>
                             <CardBack
@@ -318,19 +317,13 @@ export default function DashboardSection() {
                     <div
                         className={`grid-card card-population${flippedCards.pop ? ' is-flipped' : ''}`}
                         onClick={() => toggleFlip('pop')}
+                        data-reveal data-delay="0.3"
                     >
                         <div className={`card-flip-inner${flippedCards.pop ? ' flipped' : ''}`}>
                             <div className="card-front">
                                 <CardHeader title="유동인구는?" date="2025년 12월" flipped={false} />
                                 <div className="gc-illus">
-                                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="35" cy="40" r="10" fill="#e8f5e8" stroke="#1a1d20" strokeWidth="3" />
-                                        <path d="M 15 95 V 70 C 15 60 25 55 35 55 C 45 55 55 60 55 70 V 95" fill="#e8f5e8" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
-                                        <circle cx="85" cy="40" r="10" fill="#e8f5e8" stroke="#1a1d20" strokeWidth="3" />
-                                        <path d="M 65 95 V 70 C 65 60 75 55 85 55 C 95 55 105 60 105 70 V 95" fill="#e8f5e8" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
-                                        <circle cx="60" cy="30" r="12" fill="#D4AF37" stroke="#1a1d20" strokeWidth="3" />
-                                        <path d="M 35 95 V 65 C 35 52 45 46 60 46 C 75 46 85 52 85 65 V 95" fill="#00C853" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
-                                    </svg>
+                                    <MdGroups className="gc-illus-icon gc-illus-icon--population" aria-hidden="true" />
                                 </div>
                                 <div className="gc-val-wrap">
                                     <div className="gc-val-main">
@@ -339,6 +332,7 @@ export default function DashboardSection() {
                                             ? <><strong>{dailyPopVal.toLocaleString()}</strong>명</>
                                             : <ValSkeleton />}
                                     </div>
+                                    <div className="gc-meta">일 평균 유입 인구 추정치</div>
                                 </div>
                             </div>
                             <CardBack
@@ -353,19 +347,13 @@ export default function DashboardSection() {
                     <div
                         className={`grid-card card-category-sales${flippedCards.catSales ? ' is-flipped' : ''}`}
                         onClick={() => toggleFlip('catSales')}
+                        data-reveal data-delay="0.4"
                     >
                         <div className={`card-flip-inner${flippedCards.catSales ? ' flipped' : ''}`}>
                             <div className="card-front">
                                 <CardHeader title="주요 업종 매출은?" date="2025년 12월" flipped={false} />
                                 <div className="gc-illus">
-                                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M 45 50 V 38 C 45 25 75 25 75 38 V 50" fill="none" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
-                                        <path d="M 28 50 L 38 95 H 82 L 92 50 Z" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" strokeLinejoin="round" />
-                                        <line x1="33" y1="65" x2="87" y2="65" stroke="#1a1d20" strokeWidth="2" strokeLinecap="round" opacity="0.15" />
-                                        <line x1="36" y1="80" x2="84" y2="80" stroke="#1a1d20" strokeWidth="2" strokeLinecap="round" opacity="0.15" />
-                                        <rect x="50" y="65" width="20" height="14" fill="#D4AF37" rx="2" stroke="#1a1d20" strokeWidth="2.5" />
-                                        <circle cx="60" cy="72" r="2.5" fill="#ffffff" />
-                                    </svg>
+                                    <MdBusinessCenter className="gc-illus-icon gc-illus-icon--category" aria-hidden="true" />
                                 </div>
                                 <div className="gc-val-wrap">
                                     <div className="gc-val-main">
@@ -377,6 +365,7 @@ export default function DashboardSection() {
                                     <div className="gc-val-sub">
                                         {topIndustryName ?? (reportLoading ? <ValSkeleton /> : '즐겨찾기를 선택하세요')}
                                     </div>
+                                    <div className="gc-meta">상위 업종 대표 매출 기준</div>
                                 </div>
                             </div>
                             <CardBack
@@ -391,21 +380,13 @@ export default function DashboardSection() {
                     <div
                         className={`grid-card card-delivery${flippedCards.peak ? ' is-flipped' : ''}`}
                         onClick={() => toggleFlip('peak')}
+                        data-reveal data-delay="0.5"
                     >
                         <div className={`card-flip-inner${flippedCards.peak ? ' flipped' : ''}`}>
                             <div className="card-front">
                                 <CardHeader title="피크 시간대는?" date="2025년 12월" flipped={false} />
                                 <div className="gc-illus">
-                                    <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="60" cy="60" r="38" fill="#ffffff" stroke="#1a1d20" strokeWidth="3" />
-                                        <line x1="60" y1="60" x2="60" y2="30" stroke="#1a1d20" strokeWidth="3" strokeLinecap="round" />
-                                        <line x1="60" y1="60" x2="82" y2="72" stroke="#D4AF37" strokeWidth="3.5" strokeLinecap="round" />
-                                        <circle cx="60" cy="60" r="4" fill="#1a1d20" />
-                                        <line x1="60" y1="24" x2="60" y2="20" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
-                                        <line x1="96" y1="60" x2="100" y2="60" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
-                                        <line x1="24" y1="60" x2="20" y2="60" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
-                                        <line x1="60" y1="96" x2="60" y2="100" stroke="#1a1d20" strokeWidth="2.5" strokeLinecap="round" />
-                                    </svg>
+                                    <MdAccessTimeFilled className="gc-illus-icon gc-illus-icon--peak" aria-hidden="true" />
                                 </div>
                                 <div className="gc-val-wrap">
                                     <div className="gc-val-main">
@@ -414,6 +395,7 @@ export default function DashboardSection() {
                                             : (reportLoading ? <ValSkeleton /> : '—')}
                                     </div>
                                     <div className="gc-val-sub">가장 붐비는 시간대</div>
+                                    <div className="gc-meta">유입량이 가장 높은 시간 구간</div>
                                 </div>
                             </div>
                             <CardBack
