@@ -30,7 +30,7 @@ export default function CustomAlert({ alert }) {
   };
 
   const getIcon = () => {
-  const common = "w-10 h-10"; // 👈 여기서 한 번에 관리
+  const common = "w-10 h-10";
 
   switch (alert.type) {
     case "success":
