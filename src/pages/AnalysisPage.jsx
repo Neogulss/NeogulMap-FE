@@ -23,6 +23,7 @@ import {
 // 예측 데이터 : utils/ 를 통해 결과 받음
 import { fetchRiskResult } from "../utils/riskApi";
 import { fetchSalesResult } from "../utils/salesApi";
+import { useAlertStore } from "../stores/useAlertStore";
 
 const YEAR_QUARTER = 20254;
 const HISTORY_QUARTERS = [20244, 20251, 20252, 20253, 20254];
@@ -36,6 +37,7 @@ const CATEGORY_TABS = [
 export default function AnalysisPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const showAlert = useAlertStore((s) => s.showAlert);
 
   const initState = location.state;
   const [selectedCategory, setSelectedCategory] = useState(
@@ -433,19 +435,19 @@ export default function AnalysisPage() {
 
   const runAnalysis = useCallback(async () => {
     if (!selectedSubCategory) {
-      alert("상세 업종을 선택해주세요.");
+      showAlert({ message: "상세 업종을 선택해주세요.", type: "warning" });
       return;
     }
     if (!budgetMax) {
-      alert("최대 자본금을 입력해주세요.");
+      showAlert({ message: "최대 자본금을 입력해주세요.", type: "warning" });
       return;
     }
     if (!floor) {
-      alert("층수를 입력해주세요.");
+      showAlert({ message: "층수를 입력해주세요.", type: "warning" });
       return;
     }
     if (!area) {
-      alert("면적을 입력해주세요.");
+      showAlert({ message: "면적을 입력해주세요.", type: "warning" });
       return;
     }
 
