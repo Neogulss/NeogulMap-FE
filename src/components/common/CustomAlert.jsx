@@ -13,7 +13,7 @@ export default function CustomAlert({ alert }) {
       removeAlert(alert.id);
     }, alert.duration);
 
-    return () => clearTimeout(timer);
+    return () => clearTimeout(timer); 
   }, [alert, removeAlert]);
 
   const getStyle = () => {
