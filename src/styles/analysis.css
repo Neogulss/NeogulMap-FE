@@ -1322,7 +1322,7 @@ body.analysis-active {
 }
 .ceb-bar {
   height: 100%;
-  background: linear-gradient(90deg, #818cf8, #a78bfa);
+  background: linear-gradient(90deg, #2f6fba, #9b72cf);
   border-radius: 6px;
   transition: width 0.6s ease;
 }
@@ -1342,7 +1342,7 @@ body.analysis-active {
 .ceb-detail {
   font-size: 12px;
   font-weight: 700;
-  color: #818cf8;
+  color: #9b72cf;
   min-width: 48px;
   text-align: right;
   flex-shrink: 0;
@@ -1393,10 +1393,10 @@ body.analysis-active {
   color: var(--text);
 }
 .co-stat-value.danger {
-  color: #ef4444;
+  color: #e84855;
 }
 .co-stat-value.safe {
-  color: #3b82f6;
+  color: #5aaa6e;
 }
 .co-skeleton {
   display: flex;
@@ -1545,6 +1545,9 @@ body.analysis-active {
   min-width: 0;
   padding: 8px 0 14px;
 }
+.sales-forecast-metric:not(:last-child) {
+  border-bottom: 1px solid var(--line);
+}
 
 .sales-forecast-metric-main {
   display: flex;
@@ -1563,10 +1566,6 @@ body.analysis-active {
   gap: 8px;
   margin-top: 2px;
   width: 100%;
-}
-
-.sales-forecast-metric:not(:last-child) {
-  border-bottom: 1px solid var(--line);
 }
 
 .sales-forecast-metric-label {
@@ -1596,11 +1595,11 @@ body.analysis-active {
 }
 
 .sales-forecast-metric-value.above {
-  color: #2563eb;
+  color: #5aaa6e;
 }
 
 .sales-forecast-metric-value.below {
-  color: #dc2626;
+  color: #e84855;
 }
 
 .sales-forecast-metric-sub {
@@ -1626,13 +1625,13 @@ body.analysis-active {
 }
 
 .sales-forecast-status-badge.above {
-  background: rgba(37, 99, 235, 0.12);
-  color: #2563eb;
+  background: rgba(90, 170, 110, 0.12);
+  color: #5aaa6e;
 }
 
 .sales-forecast-status-badge.below {
-  background: rgba(220, 38, 38, 0.12);
-  color: #dc2626;
+  background: rgba(232, 72, 85, 0.12);
+  color: #e84855;
 }
 
 .sales-forecast-status-badge.neutral {
@@ -1641,11 +1640,11 @@ body.analysis-active {
 }
 
 .sales-forecast-metric-sub.above {
-  color: #2563eb;
+  color: #5aaa6e;
 }
 
 .sales-forecast-metric-sub.below {
-  color: #dc2626;
+  color: #e84855;
 }
 
 .sales-forecast-metric-tags {
@@ -1673,11 +1672,11 @@ body.analysis-active {
 }
 
 .sales-forecast-trend-row.up strong {
-  color: #059669;
+  color: #5aaa6e;
 }
 
 .sales-forecast-trend-row.down strong {
-  color: #dc2626;
+  color: #e84855;
 }
 
 .sales-forecast-trend-row.neutral strong {
@@ -1717,8 +1716,8 @@ body.analysis-active {
 }
 
 .pred-confidence-badge.up {
-  background: #ecfdf3;
-  color: #047857;
+  background: rgba(90, 170, 110, 0.12);
+  color: #5aaa6e;
 }
 
 .pred-confidence-badge.low {
@@ -1727,8 +1726,8 @@ body.analysis-active {
 }
 
 .pred-confidence-badge.down {
-  background: #fef2f2;
-  color: #b91c1c;
+  background: rgba(232, 72, 85, 0.12);
+  color: #e84855;
 }
 
 .pred-confidence-badge.neutral {
@@ -1838,10 +1837,10 @@ body.analysis-active {
   border: 1px solid var(--line2);
 }
 .ss-diff-box.up {
-  color: #e91e63;
+  color: #5aaa6e;
 }
 .ss-diff-box.down {
-  color: #1a73e8;
+  color: #e84855;
 }
 .ss-diff-label {
   font-size: 11px;
@@ -2071,8 +2070,12 @@ body.analysis-active {
   gap: 12px;
 }
 .ssrow-item {
-  background: var(--bg2);
-  border: 1px solid var(--line);
+  background: linear-gradient(
+    180deg,
+    rgba(47, 111, 186, 0.05) 0%,
+    rgba(255, 255, 255, 0.96) 100%
+  );
+  border: 1px solid rgba(47, 111, 186, 0.12);
   border-radius: 10px;
   padding: 14px 16px;
   display: flex;
@@ -2091,10 +2094,10 @@ body.analysis-active {
   font-family: var(--mono);
 }
 .ssrow-val.up {
-  color: #e91e63;
+  color: #5aaa6e;
 }
 .ssrow-val.down {
-  color: #1a73e8;
+  color: #e84855;
 }
 
 /* ── 프랜차이즈 통계 ── */
@@ -2123,17 +2126,17 @@ body.analysis-active {
   font-family: var(--mono);
 }
 .fr-franchise {
-  background: rgba(26, 115, 232, 0.08);
-  color: #1a73e8;
+  background: rgba(47, 111, 186, 0.1);
+  color: #2f6fba;
 }
 .fr-franchise strong {
-  color: #1a73e8;
+  color: #2f6fba;
 }
 .fr-general {
-  background: var(--bg2);
+  background: rgba(255, 140, 66, 0.1);
 }
 .fr-general strong {
-  color: var(--text);
+  color: #ff8c42;
 }
 
 /* ── 개업/폐업 그리드 ── */
@@ -2151,20 +2154,36 @@ body.analysis-active {
   gap: 6px;
 }
 .oc-open {
-  background: rgba(77, 171, 247, 0.08);
-  border: 1px solid rgba(77, 171, 247, 0.22);
+  background: linear-gradient(
+    180deg,
+    rgba(90, 170, 110, 0.06) 0%,
+    rgba(255, 255, 255, 0.96) 100%
+  );
+  border: 1px solid rgba(90, 170, 110, 0.14);
 }
 .oc-close {
-  background: rgba(233, 30, 99, 0.06);
-  border: 1px solid rgba(233, 30, 99, 0.15);
+  background: linear-gradient(
+    180deg,
+    rgba(232, 72, 85, 0.06) 0%,
+    rgba(255, 255, 255, 0.96) 100%
+  );
+  border: 1px solid rgba(232, 72, 85, 0.14);
 }
 .oc-survival {
-  background: rgba(26, 115, 232, 0.06);
-  border: 1px solid rgba(26, 115, 232, 0.15);
+  background: linear-gradient(
+    180deg,
+    rgba(47, 111, 186, 0.05) 0%,
+    rgba(255, 255, 255, 0.96) 100%
+  );
+  border: 1px solid rgba(47, 111, 186, 0.12);
 }
 .oc-operating {
-  background: var(--bg2);
-  border: 1px solid var(--line);
+  background: linear-gradient(
+    180deg,
+    rgba(254, 156, 0, 0.08) 0%,
+    rgba(255, 255, 255, 0.92) 100%
+  );
+  border: 1px solid rgba(254, 156, 0, 0.18);
 }
 .oc-label {
   font-size: 11px;
@@ -2178,13 +2197,16 @@ body.analysis-active {
   font-family: var(--mono);
 }
 .oc-open .oc-val {
-  color: var(--g);
+  color: #5aaa6e;
 }
 .oc-close .oc-val {
-  color: #e91e63;
+  color: #e84855;
 }
 .oc-survival .oc-val {
-  color: #1a73e8;
+  color: #2f6fba;
+}
+.oc-operating .oc-val {
+  color: #fe9c00;
 }
 .oc-diff {
   font-size: 11px;
@@ -2262,10 +2284,10 @@ body.analysis-active {
   overflow: hidden;
 }
 .gb-male {
-  background: #1a73e8;
+  background: #2f6fba;
 }
 .gb-female {
-  background: #e91e63;
+  background: #e84855;
 }
 
 /* ── 집객시설 그리드 ── */
@@ -2317,7 +2339,7 @@ body.analysis-active {
 .il-label {
   font-size: 12px;
   font-weight: 700;
-  color: #1a73e8;
+  color: #2f6fba;
 }
 .il-val {
   font-size: 40px;
@@ -2359,20 +2381,20 @@ body.analysis-active {
 .ct-bar-wrap {
   flex: 1;
   height: 8px;
-  background: var(--bg3);
+  background: rgba(47, 111, 186, 0.08);
   border-radius: 4px;
   overflow: hidden;
 }
 .ct-bar {
   height: 100%;
-  background: #1a73e8;
+  background: #2f6fba;
   border-radius: 4px;
   transition: width 0.5s var(--ease);
 }
 .ct-val {
   font-size: 12px;
   font-weight: 700;
-  color: var(--text);
+  color: #2f6fba;
   font-family: var(--mono);
   width: 36px;
   text-align: right;

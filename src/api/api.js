@@ -166,8 +166,8 @@ export const fetchCommercialReport = (adminDongCode, yearQuarter) =>
  * @param {string} serviceIndustryCode - 서비스 업종 코드
  * @returns {Promise}
  */
-export const fetchSalesPred = (adminDongCode, serviceIndustryCode) =>
-  api.post("/pred/sales", { adminDongCode, serviceIndustryCode });
+// export const fetchSalesPred = (adminDongCode, serviceIndustryCode) =>
+//   api.post("/pred/sales", { adminDongCode, serviceIndustryCode });
 
 export const fetchOpinionComment = (payload) =>
   api.post("/report/opinion", payload);

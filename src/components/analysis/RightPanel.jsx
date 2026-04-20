@@ -17,38 +17,66 @@ const TIME_LABELS = [
 ];
 
 // 차트 색상 팔레트
+const CATEGORY_COLORS = {
+  food: "#2f6fba",
+  service: "#20b2a0",
+  retail: "#ff8c42",
+};
+const SEMANTIC_COLORS = {
+  male: "#2f6fba",
+  female: "#e84855",
+  up: "#5aaa6e",
+  down: "#e84855",
+  franchise: "#2f6fba",
+  general: "#ff8c42",
+};
+const COMPARISON_COLORS = {
+  selected: "#2f6fba",
+  dong: "#20b2a0",
+  seoul: "#fe9c00",
+};
+const FORECAST_COLOR = "#9b72cf";
+const CONSUMPTION_COLORS = [
+  "#2f6fba",
+  "#ff8c42",
+  "#20b2a0",
+  "#e84855",
+  "#9b72cf",
+  "#5aaa6e",
+  "#f6c234",
+  "#e8a0bf",
+  "#a0aec0",
+];
+const GENDER_COLORS = {
+  male: SEMANTIC_COLORS.male,
+  female: SEMANTIC_COLORS.female,
+};
 const AGE_COLORS = [
-  "#ff6b6b",
-  "#ff9f43",
-  "#ffd43b",
-  "#a9e34b",
-  "#4dabf7",
-  "#cc5de8",
+  "#2f6fba",
+  "#ff8c42",
+  "#20b2a0",
+  "#e84855",
+  "#9b72cf",
+  "#5aaa6e",
 ];
 const DAY_COLORS = [
-  "#4dabf7",
-  "#748ffc",
-  "#9775fa",
-  "#f783ac",
-  "#ff6b6b",
-  "#ff9f43",
-  "#a9e34b",
+  "#2f6fba",
+  "#ff8c42",
+  "#20b2a0",
+  "#e84855",
+  "#9b72cf",
+  "#5aaa6e",
+  "#f6c234",
 ];
 const TIME_COLORS = [
-  "#748ffc",
-  "#4dabf7",
-  "#69db7c",
-  "#ffd43b",
-  "#ff9f43",
-  "#cc5de8",
+  "#2f6fba",
+  "#ff8c42",
+  "#20b2a0",
+  "#e84855",
+  "#9b72cf",
+  "#5aaa6e",
 ];
-const STORE_HISTORY_COLORS = [
-  "#c5d8f5",
-  "#9dbde8",
-  "#75a3da",
-  "#4d88cd",
-  "#1a73e8",
-];
+const STORE_HISTORY_COLORS = ["#b8d0ee", "#88aedd", "#5a8dcc", "#2f6fba"];
 
 /** null-safe 숫자 포맷 */
 const n = (v, suffix = "") =>
@@ -360,19 +388,19 @@ function calcComprehensiveEvaluation(selectedData) {
   let grade, gradeColor;
   if (total >= 90) {
     grade = "최우수 상권";
-    gradeColor = "#1a73e8";
+    gradeColor = "#2f6fba";
   } else if (total >= 80) {
     grade = "우수 상권";
-    gradeColor = "#2ecc71";
+    gradeColor = "#20b2a0";
   } else if (total >= 70) {
     grade = "양호 상권";
-    gradeColor = "#f39c12";
+    gradeColor = "#5aaa6e";
   } else if (total >= 60) {
     grade = "보통 상권";
-    gradeColor = "#e67e22";
+    gradeColor = "#ff8c42";
   } else {
     grade = "주의 상권";
-    gradeColor = "#e74c3c";
+    gradeColor = "#e84855";
   }
 
   // ── 종합의견 생성 ──
@@ -593,7 +621,7 @@ export default function RightPanel({
               {
                 data: storeHistory,
                 backgroundColor: storeHistory.map(
-                  (_, i) => STORE_HISTORY_COLORS[i] ?? "#1a73e8",
+                  (_, i) => STORE_HISTORY_COLORS[i] ?? "#2f6fba",
                 ),
                 borderRadius: 4,
               },
@@ -632,7 +660,10 @@ export default function RightPanel({
                   s.franchiseRatio,
                   s.generalRatio ?? 100 - s.franchiseRatio,
                 ],
-                backgroundColor: ["#1a73e8", "#ff9f43"],
+                backgroundColor: [
+                  SEMANTIC_COLORS.franchise,
+                  SEMANTIC_COLORS.general,
+                ],
                 borderWidth: 2,
                 borderColor: "#fff",
               },
@@ -656,7 +687,11 @@ export default function RightPanel({
     // ── 평균영업기간 비교 ──
     if (chartOperatingCompareRef.current) {
       const opData = [dOp.selected, dOp.dong, dOp.seoul].map((v) => v ?? 0);
-      const opColors = ["#1a73e8", "#00b4d8", "#f4845f"];
+      const opColors = [
+        COMPARISON_COLORS.selected,
+        COMPARISON_COLORS.dong,
+        COMPARISON_COLORS.seoul,
+      ];
       chartInstancesRef.current.operatingCompare = new Chart(
         chartOperatingCompareRef.current.getContext("2d"),
         {
@@ -699,7 +734,11 @@ export default function RightPanel({
             datasets: [
               {
                 data: [dInd.food, dInd.service, dInd.retail],
-                backgroundColor: ["#1a73e8", "#e91e63", "#f5a623"],
+                backgroundColor: [
+                  CATEGORY_COLORS.food,
+                  CATEGORY_COLORS.service,
+                  CATEGORY_COLORS.retail,
+                ],
                 borderWidth: 2,
                 borderColor: "#fff",
               },
@@ -734,19 +773,19 @@ export default function RightPanel({
               {
                 label: "외식업",
                 data: industryTrend.map((t) => t.food),
-                backgroundColor: "#1a73e8",
+                backgroundColor: CATEGORY_COLORS.food,
                 borderRadius: 4,
               },
               {
                 label: "서비스업",
                 data: industryTrend.map((t) => t.service),
-                backgroundColor: "#e91e63",
+                backgroundColor: CATEGORY_COLORS.service,
                 borderRadius: 4,
               },
               {
                 label: "소매업",
                 data: industryTrend.map((t) => t.retail),
-                backgroundColor: "#f5a623",
+                backgroundColor: CATEGORY_COLORS.retail,
                 borderRadius: 4,
               },
             ],
@@ -787,14 +826,14 @@ export default function RightPanel({
             datasets: [
               {
                 data: d.historyData.salesHourly,
-                borderColor: "#1a73e8",
-                backgroundColor: "rgba(26,115,232,0.1)",
+                borderColor: "#2f6fba",
+                backgroundColor: "rgba(47, 111, 186, 0.12)",
                 fill: true,
                 tension: 0.4,
                 borderWidth: 3,
                 pointRadius: 6,
                 pointBackgroundColor: "#fff",
-                pointBorderColor: "#1a73e8",
+                pointBorderColor: "#2f6fba",
               },
             ],
           },
@@ -938,13 +977,13 @@ export default function RightPanel({
               {
                 label: "남성",
                 data: maleAges,
-                backgroundColor: "#1a73e8",
+                backgroundColor: GENDER_COLORS.male,
                 borderRadius: 3,
               },
               {
                 label: "여성",
                 data: femaleAges,
-                backgroundColor: "#e91e63",
+                backgroundColor: GENDER_COLORS.female,
                 borderRadius: 3,
               },
             ],
@@ -1002,17 +1041,7 @@ export default function RightPanel({
             datasets: [
               {
                 data: consumptionData,
-                backgroundColor: [
-                  "#1a73e8",
-                  "#e91e63",
-                  "#f5a623",
-                  "#00b34a",
-                  "#9c27b0",
-                  "#ff5722",
-                  "#607d8b",
-                  "#795548",
-                  "#bdbdbd",
-                ],
+                backgroundColor: CONSUMPTION_COLORS,
                 borderWidth: 2,
                 borderColor: "#fff",
               },
@@ -1111,8 +1140,8 @@ export default function RightPanel({
                 data: salesForecastRows.map((row) =>
                   Math.round(row.value / 10000),
                 ),
-                borderColor: "#8b5cf6",
-                backgroundColor: "rgba(139, 92, 246, 0.08)",
+                borderColor: FORECAST_COLOR,
+                backgroundColor: "rgba(155, 114, 207, 0.08)",
                 borderWidth: 3,
                 borderDash: [8, 6],
                 fill: true,
@@ -1120,7 +1149,7 @@ export default function RightPanel({
                 pointRadius: 7,
                 pointHoverRadius: 8,
                 pointBackgroundColor: salesForecastRows.map((row) =>
-                  row.isPlaceholder ? "#cbd5e1" : "#8b5cf6",
+                  row.isPlaceholder ? "#a0aec0" : FORECAST_COLOR,
                 ),
                 pointBorderColor: "#ffffff",
                 pointBorderWidth: 3,
@@ -1529,16 +1558,56 @@ export default function RightPanel({
   const totalExp = inc?.totalExpenditureAmount ?? 0;
   const consumptionRows = inc
     ? [
-        ["음식(외식)", inc.foodServiceExpenditureAmount],
-        ["의류·신발", inc.clothingShoesExpenditureAmount],
-        ["생활용품", inc.householdGoodsExpenditureAmount],
-        ["의료비", inc.medicalExpenditureAmount],
-        ["교통", inc.transportExpenditureAmount],
-        ["여가·문화", inc.leisureCultureExpenditureAmount],
-        ["교육", inc.educationExpenditureAmount],
-        ["유흥", inc.entertainmentExpenditureAmount],
-        ["기타", inc.etcExpenditureAmount],
-      ].map(([label, val]) => [label, pct(val ?? 0, totalExp)])
+        {
+          label: "음식(외식)",
+          value: inc.foodServiceExpenditureAmount,
+          color: CONSUMPTION_COLORS[0],
+        },
+        {
+          label: "의류·신발",
+          value: inc.clothingShoesExpenditureAmount,
+          color: CONSUMPTION_COLORS[1],
+        },
+        {
+          label: "생활용품",
+          value: inc.householdGoodsExpenditureAmount,
+          color: CONSUMPTION_COLORS[2],
+        },
+        {
+          label: "의료비",
+          value: inc.medicalExpenditureAmount,
+          color: CONSUMPTION_COLORS[3],
+        },
+        {
+          label: "교통",
+          value: inc.transportExpenditureAmount,
+          color: CONSUMPTION_COLORS[4],
+        },
+        {
+          label: "여가·문화",
+          value: inc.leisureCultureExpenditureAmount,
+          color: CONSUMPTION_COLORS[5],
+        },
+        {
+          label: "교육",
+          value: inc.educationExpenditureAmount,
+          color: CONSUMPTION_COLORS[6],
+        },
+        {
+          label: "유흥",
+          value: inc.entertainmentExpenditureAmount,
+          color: CONSUMPTION_COLORS[7],
+        },
+        {
+          label: "기타",
+          value: inc.etcExpenditureAmount,
+          color: CONSUMPTION_COLORS[8],
+        },
+      ].map(({ label, value, color }) => ({
+        label,
+        value: pct(value ?? 0, totalExp),
+        color,
+      }))
     : [];
 
   return (
@@ -1609,8 +1678,16 @@ export default function RightPanel({
             {!hasReport && (
               <div className="analysis-loading" style={{ minHeight: "60vh" }}>
                 <div className="analysis-loading-raccoon">
-                  <img src="/neoguri2.png" alt="너구리" className="analysis-loading-raccoon-img" />
-                  <img src={loadingDots} alt="로딩" className="analysis-loading-gif" />
+                  <img
+                    src="/neoguri2.png"
+                    alt="너구리"
+                    className="analysis-loading-raccoon-img"
+                  />
+                  <img
+                    src={loadingDots}
+                    alt="로딩"
+                    className="analysis-loading-gif"
+                  />
                 </div>
                 <p className="analysis-loading-text">
                   입지너구리가 리포트를 분석중이에요!
@@ -1646,8 +1723,8 @@ export default function RightPanel({
                                   x2="100%"
                                   y2="100%"
                                 >
-                                  <stop offset="0%" stopColor="#818cf8" />
-                                  <stop offset="100%" stopColor="#a78bfa" />
+                                  <stop offset="0%" stopColor="#2f6fba" />
+                                  <stop offset="100%" stopColor="#9b72cf" />
                                 </linearGradient>
                               </defs>
                               {/* 트랙 */}
@@ -1726,10 +1803,21 @@ export default function RightPanel({
                       <div className="co-left">
                         <div className="co-title">종합의견</div>
                         {opinionLoading ? (
-                          <div className="analysis-loading" style={{ padding: "12px 0" }}>
+                          <div
+                            className="analysis-loading"
+                            style={{ padding: "12px 0" }}
+                          >
                             <div className="analysis-loading-raccoon">
-                              <img src="/neoguri2.png" alt="너구리" className="analysis-loading-raccoon-img" />
-                              <img src={loadingDots} alt="로딩" className="analysis-loading-gif" />
+                              <img
+                                src="/neoguri2.png"
+                                alt="너구리"
+                                className="analysis-loading-raccoon-img"
+                              />
+                              <img
+                                src={loadingDots}
+                                alt="로딩"
+                                className="analysis-loading-gif"
+                              />
                             </div>
                             <p className="analysis-loading-text">
                               AI 종합의견 생성중...
@@ -2143,19 +2231,19 @@ export default function RightPanel({
                         label: "외식업",
                         ratio: s.foodRatio,
                         count: s.foodCount,
-                        color: "#1a73e8",
+                        color: CATEGORY_COLORS.food,
                       },
                       {
                         label: "서비스업",
                         ratio: s.serviceRatio,
                         count: s.serviceCount,
-                        color: "#e91e63",
+                        color: CATEGORY_COLORS.service,
                       },
                       {
                         label: "소매업",
                         ratio: s.retailRatio,
                         count: s.retailCount,
-                        color: "#f5a623",
+                        color: CATEGORY_COLORS.retail,
                       },
                     ].map(({ label, ratio, count, color }) => (
                       <div className="ir-item" key={label}>
@@ -2204,14 +2292,13 @@ export default function RightPanel({
                 </div>
               </div>
 
-              {/* ── 6. 매출액 분석 (NULL) ── */}
               {/* ── 6. 매출액 분석 ── */}
               {sal ? (
                 <div className="report-section">
                   <h3 className="rs-title">매출액 분석</h3>
                   <div className="store-summary-row">
                     <div className="ssrow-item">
-                      <span className="ssrow-label">월평균 매출</span>
+                      <span className="ssrow-label">1분기 월평균 매출</span>
                       <span className="ssrow-val">
                         {n(Math.round(sal.monthlySalesAmount / 10000), "만원")}
                       </span>
@@ -2635,17 +2722,20 @@ export default function RightPanel({
                     </div>
                   </div>
                   <div className="consumption-table">
-                    {consumptionRows.map(([label, val]) => (
+                    {consumptionRows.map(({ label, value, color }) => (
                       <div className="ct-row" key={label}>
                         <span className="ct-label">{label}</span>
                         <div className="ct-bar-wrap">
                           <div
                             className="ct-bar"
-                            style={{ width: `${Math.min(val, 100)}%` }}
+                            style={{
+                              width: `${Math.min(value, 100)}%`,
+                              background: color,
+                            }}
                           />
                         </div>
-                        <span className="ct-val">
-                          {val > 0 ? `${val}%` : "-"}
+                        <span className="ct-val" style={{ color }}>
+                          {value > 0 ? `${value}%` : "-"}
                         </span>
                       </div>
                     ))}

@@ -18,10 +18,11 @@ import {
   fetchIncomeReport,
   fetchWorkerReport,
   fetchSalesReport,
-  fetchSalesPred,
   fetchOpinionComment,
 } from "../api/api";
-import { fetchRiskResult } from '../utils/riskApi';
+// 예측 데이터 : utils/ 를 통해 결과 받음
+import { fetchRiskResult } from "../utils/riskApi";
+import { fetchSalesResult } from "../utils/salesApi";
 
 const YEAR_QUARTER = 20254;
 const HISTORY_QUARTERS = [20244, 20251, 20252, 20253, 20254];
@@ -61,10 +62,10 @@ export default function AnalysisPage() {
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [isRightShow, setIsRightShow] = useState(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
-  const [riskSummary, setRiskSummary] = useState('');
+  const [riskSummary, setRiskSummary] = useState("");
   const [riskClosureRate, setRiskClosureRate] = useState(null);
   const [riskLoading, setRiskLoading] = useState(false);
-  const [opinionComment, setOpinionComment] = useState('');
+  const [opinionComment, setOpinionComment] = useState("");
   const [opinionLoading, setOpinionLoading] = useState(false);
 
   const mapRef = useRef(null);
@@ -107,8 +108,8 @@ export default function AnalysisPage() {
         incomeRes,
         workerRes,
         salesRes,
-        // 예상 매출
-        salesPredRes,
+        // 월 매출 예측 데이터
+        salesPred,
         ...storeHistoryRes
       ] = await Promise.all([
         fetchStoreReport(
@@ -130,10 +131,8 @@ export default function AnalysisPage() {
           data.serviceIndustryCode,
           YEAR_QUARTER,
         ).catch(() => null),
-        //예상 매출
-        fetchSalesPred(data.adminDongCode, data.serviceIndustryCode).catch(
-          () => null,
-        ),
+        // 월 매출 예측 데이터
+        fetchSalesResult(data).catch(() => null),
         ...HISTORY_QUARTERS.map((q) =>
           fetchStoreReport(
             data.adminDongCode,
@@ -160,8 +159,8 @@ export default function AnalysisPage() {
       const inc = incomeRes?.data?.data ?? null;
       const wkr = workerRes?.data?.data ?? null;
       const sal = salesRes?.data?.data ?? null;
-      // 예상 매출
-      const salesPred = salesPredRes?.data?.data ?? null;
+      // 월 매출 예측 데이터
+      const salesPredResult = salesPred ?? null;
       // null 상태 설명
       const salesRequestStatus =
         salesRes == null ? "ERROR" : sal == null ? "NO_DATA" : "OK";
@@ -260,42 +259,45 @@ export default function AnalysisPage() {
           worker: wkr,
           sales: sal,
           salesRequestStatus,
-          salesPred: salesPred,
+          salesPred: salesPredResult,
         };
       });
       const peakFloatingHour = (() => {
         const slots = [
-          { label: '00~06시', val: f.time0006FloatingPopulation },
-          { label: '06~11시', val: f.time0611FloatingPopulation },
-          { label: '11~14시', val: f.time1114FloatingPopulation },
-          { label: '14~17시', val: f.time1417FloatingPopulation },
-          { label: '17~21시', val: f.time1721FloatingPopulation },
-          { label: '21~24시', val: f.time2124FloatingPopulation },
+          { label: "00~06시", val: f.time0006FloatingPopulation },
+          { label: "06~11시", val: f.time0611FloatingPopulation },
+          { label: "11~14시", val: f.time1114FloatingPopulation },
+          { label: "14~17시", val: f.time1417FloatingPopulation },
+          { label: "17~21시", val: f.time1721FloatingPopulation },
+          { label: "21~24시", val: f.time2124FloatingPopulation },
         ];
-        return slots.reduce((a, b) => a.val > b.val ? a : b).label;
+        return slots.reduce((a, b) => (a.val > b.val ? a : b)).label;
       })();
       const peakFloatingAgeGroup = (() => {
         const ages = [
-          { label: '10대', val: f.age10FloatingPopulation },
-          { label: '20대', val: f.age20FloatingPopulation },
-          { label: '30대', val: f.age30FloatingPopulation },
-          { label: '40대', val: f.age40FloatingPopulation },
-          { label: '50대', val: f.age50FloatingPopulation },
-          { label: '60대 이상', val: f.age60AboveFloatingPopulation },
+          { label: "10대", val: f.age10FloatingPopulation },
+          { label: "20대", val: f.age20FloatingPopulation },
+          { label: "30대", val: f.age30FloatingPopulation },
+          { label: "40대", val: f.age40FloatingPopulation },
+          { label: "50대", val: f.age50FloatingPopulation },
+          { label: "60대 이상", val: f.age60AboveFloatingPopulation },
         ];
-        return ages.reduce((a, b) => a.val > b.val ? a : b).label;
+        return ages.reduce((a, b) => (a.val > b.val ? a : b)).label;
       })();
-      const primarySalesAgeGroup = (sal?.age10SalesAmount != null) ? (() => {
-        const ages = [
-          { label: '10대', val: sal.age10SalesAmount },
-          { label: '20대', val: sal.age20SalesAmount },
-          { label: '30대', val: sal.age30SalesAmount },
-          { label: '40대', val: sal.age40SalesAmount },
-          { label: '50대', val: sal.age50SalesAmount },
-          { label: '60대 이상', val: sal.age60AboveSalesAmount },
-        ];
-        return ages.reduce((a, b) => a.val > b.val ? a : b).label;
-      })() : null;
+      const primarySalesAgeGroup =
+        sal?.age10SalesAmount != null
+          ? (() => {
+              const ages = [
+                { label: "10대", val: sal.age10SalesAmount },
+                { label: "20대", val: sal.age20SalesAmount },
+                { label: "30대", val: sal.age30SalesAmount },
+                { label: "40대", val: sal.age40SalesAmount },
+                { label: "50대", val: sal.age50SalesAmount },
+                { label: "60대 이상", val: sal.age60AboveSalesAmount },
+              ];
+              return ages.reduce((a, b) => (a.val > b.val ? a : b)).label;
+            })()
+          : null;
 
       return {
         // 점포 안정성
@@ -314,9 +316,12 @@ export default function AnalysisPage() {
         floatingPrevQuarterDiff: f.prevQuarterDiff ?? null,
         peakFloatingHour,
         peakFloatingAgeGroup,
-        maleFloatingRatio: f.totalFloatingPopulation > 0
-          ? Math.round(f.maleFloatingPopulation / f.totalFloatingPopulation * 1000) / 10
-          : null,
+        maleFloatingRatio:
+          f.totalFloatingPopulation > 0
+            ? Math.round(
+                (f.maleFloatingPopulation / f.totalFloatingPopulation) * 1000,
+              ) / 10
+            : null,
         totalResidentPopulation: res?.totalResidentPopulation ?? null,
         totalWorkerPopulation: wkr?.totalWorkerPopulation ?? null,
         totalHouseholdCount: hh?.totalHouseholdCount ?? null,
@@ -328,9 +333,12 @@ export default function AnalysisPage() {
         weekdaySalesAmount: sal?.weekdaySalesAmount ?? null,
         weekendSalesAmount: sal?.weekendSalesAmount ?? null,
         primarySalesAgeGroup,
-        primarySalesGender: sal?.maleSalesAmount != null
-          ? (sal.maleSalesAmount > sal.femaleSalesAmount ? '남성' : '여성')
-          : null,
+        primarySalesGender:
+          sal?.maleSalesAmount != null
+            ? sal.maleSalesAmount > sal.femaleSalesAmount
+              ? "남성"
+              : "여성"
+            : null,
         // AI 예측
         predictedSalesPerStore: salesPred?.predSalesPerStore ?? null,
         // 상권변화지표
@@ -364,7 +372,7 @@ export default function AnalysisPage() {
       setIsRightCollapsed(false);
       setRiskLoading(true);
       setOpinionLoading(true);
-      setOpinionComment('');
+      setOpinionComment("");
 
       if (mapRef.current) {
         const pos = new window.kakao.maps.LatLng(data.lat, data.lng);
@@ -395,7 +403,7 @@ export default function AnalysisPage() {
             riskClosureRate: riskData.riskClosureRate,
             ...reportMetrics,
           });
-          setOpinionComment(opinionRes.data.opinion ?? '');
+          setOpinionComment(opinionRes.data.opinion ?? "");
         }
       } catch (e) {
         console.error(e);
@@ -403,7 +411,9 @@ export default function AnalysisPage() {
         setRiskLoading(false);
         setOpinionLoading(false);
       }
-    }, [fetchReportData]);
+    },
+    [fetchReportData],
+  );
 
   useEffect(() => {
     handleSelectRef.current = handleSelectData;
