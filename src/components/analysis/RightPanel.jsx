@@ -86,6 +86,186 @@ const STORE_HISTORY_COLORS = ["#b8d0ee", "#88aedd", "#5a8dcc", "#2f6fba"];
 const n = (v, suffix = "") =>
   v != null ? `${Number(v).toLocaleString()}${suffix}` : "-";
 
+const roundToOne = (value) => {
+  const rounded = Math.round(Number(value) * 10) / 10;
+  return Object.is(rounded, -0) ? 0 : rounded;
+};
+
+const formatYearValue = (value) => `${roundToOne(value).toFixed(1)}년`;
+
+const formatYearDelta = (value) => {
+  const rounded = roundToOne(value);
+  if (rounded === 0) return "0년";
+  return `${rounded > 0 ? "+" : ""}${rounded.toFixed(1)}년`;
+};
+
+const getNiceTickStep = (maxValue, targetTicks = 5) => {
+  if (!Number.isFinite(maxValue) || maxValue <= 0) return 10;
+
+  const roughStep = maxValue / targetTicks;
+  const magnitude = 10 ** Math.floor(Math.log10(roughStep));
+  const residual = roughStep / magnitude;
+
+  if (residual <= 1) return magnitude;
+  if (residual <= 2) return 2 * magnitude;
+  if (residual <= 5) return 5 * magnitude;
+  return 10 * magnitude;
+};
+
+const getPaddedAxisBounds = (
+  values,
+  { targetTicks = 4, minPadding = 1, paddingRatio = 0.2, clampMin = null } = {},
+) => {
+  const numericValues = values.filter((value) => Number.isFinite(value));
+
+  if (!numericValues.length) {
+    return { min: 0, max: 10, step: 10 };
+  }
+
+  const dataMin = Math.min(...numericValues);
+  const dataMax = Math.max(...numericValues);
+  const dataRange = dataMax - dataMin;
+
+  const baseRange =
+    dataRange > 0 ? dataRange : Math.max(Math.abs(dataMax) * 0.1, minPadding);
+  const step = getNiceTickStep(baseRange, targetTicks);
+  const padding =
+    dataRange > 0
+      ? Math.max(
+          minPadding,
+          Math.ceil((baseRange * paddingRatio) / step) * step,
+        )
+      : Math.max(minPadding, step);
+
+  let min = Math.floor((dataMin - padding) / step) * step;
+  let max = Math.ceil((dataMax + padding) / step) * step;
+
+  if (clampMin != null) {
+    min = Math.max(clampMin, min);
+  }
+
+  if (max <= min) {
+    max = min + step;
+  }
+
+  return { min, max, step };
+};
+
+const lollipopValueLabelsPlugin = {
+  id: "lollipopValueLabels",
+  afterDatasetsDraw(chart, _args, options) {
+    if (!options?.enabled) return;
+
+    const datasetIndex = options.datasetIndex ?? 0;
+    const meta = chart.getDatasetMeta(datasetIndex);
+    const values = chart.data.datasets[datasetIndex]?.data ?? [];
+
+    if (!meta?.data?.length) return;
+
+    const { ctx, chartArea } = chart;
+    const offset = options.offset ?? 10;
+    const colors = options.colors ?? [];
+    const formatter =
+      options.formatter ?? ((value) => `${Number(value).toLocaleString()}`);
+
+    ctx.save();
+    ctx.font = options.font ?? "700 12px Pretendard";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+
+    meta.data.forEach((element, index) => {
+      const value = values[index];
+      if (!Number.isFinite(value)) return;
+
+      ctx.fillStyle = colors[index] ?? options.color ?? "#111827";
+      ctx.fillText(
+        formatter(value, index),
+        chartArea.right + offset,
+        element.y,
+      );
+    });
+
+    ctx.restore();
+  },
+};
+
+const baselineDeviationLabelsPlugin = {
+  id: "baselineDeviationLabels",
+  afterDatasetsDraw(chart, _args, options) {
+    if (!options?.enabled) return;
+
+    const datasetIndex = options.datasetIndex ?? 0;
+    const meta = chart.getDatasetMeta(datasetIndex);
+    const values = chart.data.datasets[datasetIndex]?.data ?? [];
+    const actualValues = options.actualValues ?? [];
+    const colors = options.colors ?? [];
+    const yScale = chart.scales[options.scaleId ?? "y"];
+
+    if (!meta?.data?.length || !yScale) return;
+
+    const { ctx, chartArea } = chart;
+    const zeroY = yScale.getPixelForValue(0);
+    const deltaFormatter = options.deltaFormatter ?? formatYearDelta;
+    const showActualValues = options.showActualValues ?? true;
+
+    ctx.save();
+
+    ctx.strokeStyle = options.baselineColor ?? "rgba(148, 163, 184, 0.9)";
+    ctx.lineWidth = options.baselineWidth ?? 1.5;
+    ctx.setLineDash(options.baselineDash ?? [6, 4]);
+    ctx.beginPath();
+    ctx.moveTo(chartArea.left, zeroY);
+    ctx.lineTo(chartArea.right, zeroY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    if (options.baselineLabel) {
+      ctx.font = options.baselineFont ?? "600 11px Pretendard";
+      ctx.fillStyle = options.baselineTextColor ?? "#94a3b8";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "bottom";
+      ctx.fillText(options.baselineLabel, chartArea.right, zeroY - 6);
+    }
+
+    meta.data.forEach((element, index) => {
+      const delta = Number(values[index] ?? 0);
+      const actualValue = Number(actualValues[index] ?? 0);
+
+      if (!Number.isFinite(delta) || !Number.isFinite(actualValue)) return;
+
+      const tipY =
+        delta >= 0
+          ? Math.min(element.y, element.base)
+          : Math.max(element.y, element.base);
+      const deltaY = delta >= 0 ? tipY - 8 : tipY + 8;
+      const actualY = Math.min(
+        chartArea.bottom - 4,
+        Math.max(element.y, element.base) + 14,
+      );
+      const color = colors[index] ?? options.color ?? "#111827";
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = color;
+
+      ctx.font = options.deltaFont ?? "700 12px Pretendard";
+      ctx.textBaseline = delta >= 0 ? "bottom" : "top";
+      ctx.fillText(deltaFormatter(delta, index), element.x, deltaY);
+
+      if (showActualValues) {
+        ctx.font = options.actualFont ?? "600 12px Pretendard";
+        ctx.textBaseline = "top";
+        ctx.fillText(
+          (options.actualFormatter ?? formatYearValue)(actualValue, index),
+          element.x,
+          actualY,
+        );
+      }
+    });
+
+    ctx.restore();
+  },
+};
+
 const formatQuarterLabel = (code) => {
   if (code == null) return null;
   const value = String(code);
@@ -630,7 +810,6 @@ export default function RightPanel({
   const chartFloatingDayRef = useRef(null);
   const chartFloatingAgeRef = useRef(null);
   const chartResidentAgeRef = useRef(null);
-  const chartConsumptionRef = useRef(null);
   const chartSalesForecastRef = useRef(null);
   const chartSalesTimeRef = useRef(null);
   const chartSalesDayRef = useRef(null);
@@ -663,39 +842,70 @@ export default function RightPanel({
     const storeHistory = d.historyData.stores ?? [];
     const hasStoreHistory = storeHistory.some((v) => v != null);
     if (chartStoresHistoryRef.current && hasStoreHistory) {
-      chartInstancesRef.current.storesHistory = new Chart(
-        chartStoresHistoryRef.current.getContext("2d"),
-        {
-          type: "bar",
-          data: {
-            labels: TREND_LABELS,
-            datasets: [
-              {
-                data: storeHistory,
-                backgroundColor: storeHistory.map(
-                  (_, i) => STORE_HISTORY_COLORS[i] ?? "#2f6fba",
-                ),
-                borderRadius: 4,
+      const storeHistoryAxis = getPaddedAxisBounds(storeHistory, {
+        targetTicks: 4,
+        minPadding: 2,
+        paddingRatio: 0.22,
+        clampMin: 0,
+      });
+      const storeHistoryCtx = chartStoresHistoryRef.current.getContext("2d");
+      const storeHistoryGradient = storeHistoryCtx.createLinearGradient(
+        0,
+        0,
+        0,
+        260,
+      );
+      storeHistoryGradient.addColorStop(0, "rgba(47, 111, 186, 0.26)");
+      storeHistoryGradient.addColorStop(1, "rgba(47, 111, 186, 0.02)");
+
+      chartInstancesRef.current.storesHistory = new Chart(storeHistoryCtx, {
+        type: "line",
+        data: {
+          labels: TREND_LABELS,
+          datasets: [
+            {
+              data: storeHistory,
+              borderColor: "#2f6fba",
+              backgroundColor: storeHistoryGradient,
+              fill: true,
+              tension: 0.28,
+              borderWidth: 3,
+              pointRadius: 5,
+              pointHoverRadius: 7,
+              pointBackgroundColor: "#ffffff",
+              pointBorderColor: "#2f6fba",
+              pointBorderWidth: 3,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => `${ctx.parsed.y.toLocaleString()}개`,
               },
-            ],
+            },
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-              y: { display: false, beginAtZero: true },
-              x: {
-                grid: { display: false },
-                ticks: {
-                  font: { size: 10, family: "Pretendard", weight: "500" },
-                  color: "#868e96",
-                },
+          scales: {
+            y: {
+              display: false,
+              min: storeHistoryAxis.min,
+              max: storeHistoryAxis.max,
+              ticks: { stepSize: storeHistoryAxis.step },
+            },
+            x: {
+              grid: { display: false },
+              ticks: {
+                font: { size: 10, family: "Pretendard", weight: "500" },
+                color: "#868e96",
               },
             },
           },
         },
-      );
+      });
     }
 
     // ── 프랜차이즈 비율 ──
@@ -738,35 +948,99 @@ export default function RightPanel({
 
     // ── 평균영업기간 비교 ──
     if (chartOperatingCompareRef.current) {
-      const opData = [dOp.selected, dOp.dong, dOp.seoul].map((v) => v ?? 0);
+      const opActualValues = [dOp.selected, dOp.dong, dOp.seoul].map((v) =>
+        roundToOne(v ?? 0),
+      );
+      const opLabels = [
+        ["선택상권", formatYearValue(opActualValues[0])],
+        ["행정동", formatYearValue(opActualValues[1])],
+        ["서울시", formatYearValue(opActualValues[2])],
+      ];
+      const seoulAvgYears = opActualValues[2];
+      const opDeviationData = [
+        roundToOne(opActualValues[0] - seoulAvgYears),
+        roundToOne(opActualValues[1] - seoulAvgYears),
+        0,
+      ];
       const opColors = [
         COMPARISON_COLORS.selected,
         COMPARISON_COLORS.dong,
-        COMPARISON_COLORS.seoul,
+        "#a0aec0",
       ];
+      const opDeviationAxis = getPaddedAxisBounds(opDeviationData, {
+        targetTicks: 4,
+        minPadding: 0.3,
+        paddingRatio: 0.4,
+      });
+
       chartInstancesRef.current.operatingCompare = new Chart(
         chartOperatingCompareRef.current.getContext("2d"),
         {
           type: "bar",
           data: {
-            labels: ["선택상권", "행정동", "서울시"],
+            labels: opLabels,
             datasets: [
-              { data: opData, backgroundColor: opColors, borderRadius: 6 },
+              {
+                data: opDeviationData,
+                backgroundColor: opColors,
+                borderRadius: 8,
+                borderSkipped: false,
+                barPercentage: 0.56,
+                categoryPercentage: 0.58,
+              },
             ],
           },
+          plugins: [baselineDeviationLabelsPlugin],
           options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: {
+                top: 24,
+                right: 8,
+                bottom: 8,
+              },
+            },
             plugins: {
               legend: { display: false },
-              tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y}년` } },
+              tooltip: {
+                callbacks: {
+                  label: (ctx) =>
+                    `서울 평균 대비 ${formatYearDelta(ctx.parsed.y)}`,
+                  afterLabel: (ctx) =>
+                    `실제 평균 영업기간 ${formatYearValue(
+                      opActualValues[ctx.dataIndex],
+                    )}`,
+                },
+              },
+              baselineDeviationLabels: {
+                enabled: true,
+                datasetIndex: 0,
+                scaleId: "y",
+                actualValues: opActualValues,
+                colors: opColors,
+                baselineLabel: "서울 평균",
+                showActualValues: false,
+              },
             },
             scales: {
-              y: { display: false, beginAtZero: true },
+              y: {
+                display: false,
+                min: opDeviationAxis.min,
+                max: opDeviationAxis.max,
+                ticks: {
+                  stepSize: opDeviationAxis.step,
+                },
+                grid: { display: false },
+                border: { display: false },
+              },
               x: {
                 grid: { display: false },
+                border: { display: false },
                 ticks: {
+                  padding: 14,
                   font: { size: 11, family: "Pretendard", weight: "600" },
+                  color: "#475569",
                 },
               },
             },
@@ -920,6 +1194,15 @@ export default function RightPanel({
     const dayTotal = dayVals.reduce((a, b) => a + (b ?? 0), 0);
     if (chartFloatingDayRef.current && dayTotal > 0) {
       const dayRatios = dayVals.map((v) => pct(v ?? 0, dayTotal));
+      const dayAxis = getPaddedAxisBounds(dayRatios, {
+        targetTicks: 4,
+        minPadding: 0.5,
+        paddingRatio: 0.25,
+        clampMin: 0,
+      });
+      const lollipopPointRadius = 8;
+      const lollipopStemVals = dayRatios;
+
       chartInstancesRef.current.floatingDay = new Chart(
         chartFloatingDayRef.current.getContext("2d"),
         {
@@ -928,25 +1211,92 @@ export default function RightPanel({
             labels: DAY_LABELS,
             datasets: [
               {
-                data: dayRatios,
+                type: "bar",
+                data: DAY_LABELS.map(() => dayAxis.max),
+                base: dayAxis.min,
+                backgroundColor: "rgba(148, 163, 184, 0.26)",
+                borderRadius: 999,
+                borderSkipped: false,
+                grouped: false,
+                barThickness: 3,
+                categoryPercentage: 0.72,
+                barPercentage: 0.18,
+              },
+              {
+                type: "bar",
+                data: lollipopStemVals,
+                base: dayAxis.min,
                 backgroundColor: DAY_COLORS,
-                borderRadius: 4,
+                borderRadius: 999,
+                borderSkipped: false,
+                grouped: false,
+                barThickness: 3,
+                categoryPercentage: 0.72,
+                barPercentage: 0.18,
+              },
+              {
+                type: "line",
+                data: dayRatios,
+                showLine: false,
+                pointRadius: lollipopPointRadius,
+                pointHoverRadius: lollipopPointRadius + 1,
+                pointBorderWidth: 2,
+                pointBackgroundColor: DAY_COLORS,
+                pointBorderColor: "#ffffff",
               },
             ],
           },
+          plugins: [lollipopValueLabelsPlugin],
           options: {
+            indexAxis: "y",
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+              padding: {
+                right: 44,
+              },
+            },
+            interaction: { mode: "nearest", axis: "y", intersect: false },
             plugins: {
               legend: { display: false },
-              tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y}%` } },
+              tooltip: {
+                filter: (ctx) => ctx.datasetIndex === 1,
+                callbacks: {
+                  label: (ctx) => `${ctx.parsed.x.toFixed(1)}%`,
+                },
+              },
+              lollipopValueLabels: {
+                enabled: true,
+                datasetIndex: 2,
+                colors: DAY_COLORS,
+                offset: 10,
+                font: "700 12px Pretendard",
+                formatter: (value) => `${value.toFixed(1)}%`,
+              },
             },
             scales: {
-              y: { display: false, beginAtZero: true },
               x: {
+                display: true,
+                min: dayAxis.min,
+                max: dayAxis.max,
                 grid: { display: false },
+                border: { display: true, color: "rgba(148, 163, 184, 0.35)" },
+                ticks: {
+                  stepSize: dayAxis.step,
+                  maxTicksLimit: 3,
+                  color: "#9ca3af",
+                  font: { size: 11, family: "Pretendard", weight: "600" },
+                  callback: (value) => `${value}%`,
+                  padding: 8,
+                },
+              },
+              y: {
+                grid: { display: false },
+                border: { display: false },
                 ticks: {
                   font: { size: 11, family: "Pretendard", weight: "600" },
+                  color: "#6b7280",
+                  padding: 12,
                 },
               },
             },
@@ -1053,61 +1403,6 @@ export default function RightPanel({
             scales: {
               y: { display: false, beginAtZero: true },
               x: { grid: { display: false }, ticks: { font: { size: 11 } } },
-            },
-          },
-        },
-      );
-    }
-
-    // ── 소비트렌드 ──  (금액 → 비율 계산)
-    if (chartConsumptionRef.current && inc) {
-      const totalExp = inc.totalExpenditureAmount ?? 0;
-      const consumptionData = [
-        inc.foodServiceExpenditureAmount, // 음식 (외식)
-        inc.clothingShoesExpenditureAmount,
-        inc.householdGoodsExpenditureAmount,
-        inc.medicalExpenditureAmount,
-        inc.transportExpenditureAmount,
-        inc.leisureCultureExpenditureAmount,
-        inc.educationExpenditureAmount,
-        inc.entertainmentExpenditureAmount,
-        inc.etcExpenditureAmount,
-      ].map((v) => pct(v ?? 0, totalExp));
-
-      chartInstancesRef.current.consumption = new Chart(
-        chartConsumptionRef.current.getContext("2d"),
-        {
-          type: "doughnut",
-          data: {
-            labels: [
-              "음식(외식)",
-              "의류·신발",
-              "생활용품",
-              "의료비",
-              "교통",
-              "여가·문화",
-              "교육",
-              "유흥",
-              "기타",
-            ],
-            datasets: [
-              {
-                data: consumptionData,
-                backgroundColor: CONSUMPTION_COLORS,
-                borderWidth: 2,
-                borderColor: "#fff",
-              },
-            ],
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: true,
-                position: "right",
-                labels: { boxWidth: 10, padding: 8, font: { size: 10 } },
-              },
             },
           },
         },
@@ -1263,6 +1558,16 @@ export default function RightPanel({
         sal.time1721SalesAmount,
         sal.time2124SalesAmount,
       ].map((v) => Math.round((v ?? 0) / 10000));
+      const salesTimeMax = salesTimeVals.length
+        ? Math.max(...salesTimeVals)
+        : 0;
+      const salesTimeStep = getNiceTickStep(salesTimeMax);
+      const salesTimeAxisMin = 0;
+      const salesTimeAxisMax = Math.max(
+        salesTimeStep,
+        Math.ceil(salesTimeMax / salesTimeStep) * salesTimeStep,
+      );
+
       chartInstancesRef.current.salesTime = new Chart(
         chartSalesTimeRef.current.getContext("2d"),
         {
@@ -1290,12 +1595,13 @@ export default function RightPanel({
             },
             scales: {
               y: {
-                beginAtZero: false,
-                min: Math.max(0, salesForecastMin - salesForecastPadding),
-                max: salesForecastMax + salesForecastPadding,
+                beginAtZero: true,
+                min: salesTimeAxisMin,
+                max: salesTimeAxisMax,
                 grid: { color: "rgba(148, 163, 184, 0.18)" },
                 border: { display: false },
                 ticks: {
+                  stepSize: salesTimeStep,
                   color: "#94a3b8",
                   font: { size: 10, family: "Pretendard", weight: "600" },
                   callback: (value) => `${value.toLocaleString()}만원`,
@@ -1661,6 +1967,10 @@ export default function RightPanel({
         color,
       }))
     : [];
+  const topConsumptionRows = [...consumptionRows]
+    .filter(({ value }) => value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 3);
 
   return (
     <aside className={panelClass} id="right-panel">
@@ -2022,7 +2332,7 @@ export default function RightPanel({
                         </div>
                         <div className="sales-forecast-metric-extra">
                           <span
-                            className={`sales-forecast-metric-sub sales-forecast-status-badge ${seoulAverageTone}`}
+                            className={`sales-forecast-status-badge ${seoulAverageTone}`}
                           >
                             {seoulAverageStatusText}
                           </span>
@@ -2234,51 +2544,53 @@ export default function RightPanel({
               {/* ── 4. 개업 / 폐업 현황 ── */}
               <div className="report-section">
                 <h3 className="rs-title">개업 / 폐업 현황</h3>
-                <div className="open-close-grid">
-                  <div className="oc-card oc-open">
-                    <div className="oc-label">개업</div>
-                    <div className="oc-val">
-                      {n(s?.openingStoreCount, "개")}
+                <div className="open-close-layout">
+                  <div className="open-close-grid">
+                    <div className="oc-card oc-open">
+                      <div className="oc-label">개업</div>
+                      <div className="oc-val">
+                        {n(s?.openingStoreCount, "개")}
+                      </div>
+                      <div className="oc-diff">
+                        전분기{" "}
+                        {s?.openingPrevQuarterDiff != null
+                          ? `${s.openingPrevQuarterDiff >= 0 ? "+" : ""}${s.openingPrevQuarterDiff}개`
+                          : "-"}
+                      </div>
                     </div>
-                    <div className="oc-diff">
-                      전분기{" "}
-                      {s?.openingPrevQuarterDiff != null
-                        ? `${s.openingPrevQuarterDiff >= 0 ? "+" : ""}${s.openingPrevQuarterDiff}개`
-                        : "-"}
+                    <div className="oc-card oc-close">
+                      <div className="oc-label">폐업</div>
+                      <div className="oc-val">
+                        {n(s?.closureStoreCount, "개")}
+                      </div>
+                      <div className="oc-diff">
+                        전분기{" "}
+                        {s?.closurePrevQuarterDiff != null
+                          ? `${s.closurePrevQuarterDiff >= 0 ? "+" : ""}${s.closurePrevQuarterDiff}개`
+                          : "-"}
+                      </div>
+                    </div>
+                    <div className="oc-card oc-operating">
+                      <div className="oc-label">평균 영업기간</div>
+                      <div className="oc-val">
+                        {n(s?.avgOperatingYears, "년")}
+                      </div>
+                      <div className="oc-diff">
+                        서울시 평균{" "}
+                        {com?.seoulOperatingBusinessMonthAvg != null
+                          ? `${(com.seoulOperatingBusinessMonthAvg / 12).toFixed(1)}년`
+                          : "-"}
+                      </div>
                     </div>
                   </div>
-                  <div className="oc-card oc-close">
-                    <div className="oc-label">폐업</div>
-                    <div className="oc-val">
-                      {n(s?.closureStoreCount, "개")}
+                  <div className="viz-box open-close-chart-box">
+                    <div className="viz-header">
+                      <div className="viz-title">평균 영업기간 비교</div>
+                      <div className="viz-meta">단위: 년 / 서울 평균 대비</div>
                     </div>
-                    <div className="oc-diff">
-                      전분기{" "}
-                      {s?.closurePrevQuarterDiff != null
-                        ? `${s.closurePrevQuarterDiff >= 0 ? "+" : ""}${s.closurePrevQuarterDiff}개`
-                        : "-"}
+                    <div className="chart-container">
+                      <canvas ref={chartOperatingCompareRef} />
                     </div>
-                  </div>
-                  <div className="oc-card oc-operating">
-                    <div className="oc-label">평균 영업기간</div>
-                    <div className="oc-val">
-                      {n(s?.avgOperatingYears, "년")}
-                    </div>
-                    <div className="oc-diff">
-                      서울시 평균{" "}
-                      {com?.seoulOperatingBusinessMonthAvg != null
-                        ? `${(com.seoulOperatingBusinessMonthAvg / 12).toFixed(1)}년`
-                        : "-"}
-                    </div>
-                  </div>
-                </div>
-                <div className="viz-box">
-                  <div className="viz-header">
-                    <div className="viz-title">평균 영업기간 비교</div>
-                    <div className="viz-meta">단위: 년</div>
-                  </div>
-                  <div className="chart-container">
-                    <canvas ref={chartOperatingCompareRef} />
                   </div>
                 </div>
               </div>
@@ -2752,55 +3064,74 @@ export default function RightPanel({
               {inc ? (
                 <div className="report-section">
                   <h3 className="rs-title">소득수준 & 소비트렌드</h3>
-                  <div className="income-summary">
-                    <div className="income-level-card">
-                      <div className="il-label">소득 분위</div>
-                      <div className="il-val">
-                        {inc.incomeRangeCode ?? "-"}
-                        <span>분위</span>
+                  <div className="income-summary income-summary--flat">
+                    <div className="income-level-panel">
+                      <div className="il-copy">
+                        <div className="il-label">소득 분위</div>
+                        <div className="il-range">월평균 소득 기준</div>
                       </div>
-                      <div className="il-range">
-                        월평균 소득
-                        <br />
-                        {inc.monthlyAvgIncomeAmount != null
-                          ? `${Math.round(inc.monthlyAvgIncomeAmount / 10000).toLocaleString()}만원`
-                          : "-"}
-                      </div>
-                    </div>
-                    <div className="consumption-chart-wrap">
-                      <div
-                        className="viz-header"
-                        style={{ marginBottom: "12px" }}
-                      >
-                        <div className="viz-title">소비트렌드 구성</div>
-                        <div className="viz-meta">단위: % (지출 기준)</div>
-                      </div>
-                      <div
-                        className="chart-container"
-                        style={{ height: "220px" }}
-                      >
-                        <canvas ref={chartConsumptionRef} />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="consumption-table">
-                    {consumptionRows.map(({ label, value, color }) => (
-                      <div className="ct-row" key={label}>
-                        <span className="ct-label">{label}</span>
-                        <div className="ct-bar-wrap">
-                          <div
-                            className="ct-bar"
-                            style={{
-                              width: `${Math.min(value, 100)}%`,
-                              background: color,
-                            }}
-                          />
+                      <div className="il-value-group">
+                        <div className="il-val">
+                          {inc.incomeRangeCode ?? "-"}
+                          <span>분위</span>
                         </div>
-                        <span className="ct-val" style={{ color }}>
-                          {value > 0 ? `${value}%` : "-"}
-                        </span>
+                        <div className="il-income">
+                          {inc.monthlyAvgIncomeAmount != null
+                            ? `${Math.round(inc.monthlyAvgIncomeAmount / 10000).toLocaleString()}만원`
+                            : "-"}
+                        </div>
                       </div>
-                    ))}
+                    </div>
+                    <div className="consumption-chart-wrap consumption-chart-wrap--flat">
+                      {topConsumptionRows.length > 0 && (
+                        <div className="consumption-highlights">
+                          {topConsumptionRows.map(
+                            ({ label, value, color }, index) => (
+                              <div
+                                key={`top-${label}`}
+                                className="consumption-highlight"
+                                style={{ "--highlight-color": color }}
+                              >
+                                <span className="consumption-highlight-rank">
+                                  {index + 1}위
+                                </span>
+                                <div className="consumption-highlight-main">
+                                  <span className="consumption-highlight-label">
+                                    {label}
+                                  </span>
+                                  <strong
+                                    className="consumption-highlight-value"
+                                    style={{ color }}
+                                  >
+                                    {value}%
+                                  </strong>
+                                </div>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      )}
+                      <div className="consumption-table consumption-table--inset">
+                        {consumptionRows.map(({ label, value, color }) => (
+                          <div className="ct-row" key={label}>
+                            <span className="ct-label">{label}</span>
+                            <div className="ct-bar-wrap">
+                              <div
+                                className="ct-bar"
+                                style={{
+                                  width: `${Math.min(value, 100)}%`,
+                                  background: color,
+                                }}
+                              />
+                            </div>
+                            <span className="ct-val" style={{ color }}>
+                              {value > 0 ? `${value}%` : "-"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="viz-meta">단위: % (지출 기준)</div>
+                    </div>
                   </div>
                 </div>
               ) : (
