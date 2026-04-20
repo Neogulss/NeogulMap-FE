@@ -10,13 +10,6 @@ export default function RiskAnalysis({
   let riskColor = "text-blue-600";
   let bgColor = "bg-blue-50";
 
-  if (riskClosureRate >= 40) {
-    riskColor = "text-red-600";
-    bgColor = "bg-red-50";
-  } else if (riskClosureRate >= 20) {
-    riskColor = "text-blue-600";
-    bgColor = "bg-blue-50";
-  }
 
   return (
     <>
