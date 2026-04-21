@@ -1,6 +1,7 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
 @theme {
-  --font-sans: "Pretendard Variable", "Pretendard", system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: "Pretendard", "Pretendard Variable", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", "Segoe UI", Roboto, system-ui, sans-serif;
   --font-mono: ui-monospace, Consolas, monospace;
 
   --text-h-1: 4.25rem; --text-h-1--line-height: 6.375rem; --text-h-1--font-weight: 700;

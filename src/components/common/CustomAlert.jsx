@@ -19,11 +19,11 @@ export default function CustomAlert({ alert }) {
   const getStyle = () => {
     switch (alert.type) {
       case "success":
-        return "bg-green-500";
+        return "bg-[#FCFFFA] text-[#1E9B5C] border-[#1E9B5C] border-solid border-2";
       case "error":
-        return "bg-red-500";
+        return "bg-[#FFEFEE] text-[#EA4B42] border-[#EA4B42] border-solid border-2";
       case "warning":
-        return "bg-amber-50 text-amber-300";
+        return "bg-[#FFFCF4] text-[#E6A900] border-[#E4B22B] border-solid border-2";
       default:
         return "bg-blue-500";
     }
@@ -48,8 +48,7 @@ export default function CustomAlert({ alert }) {
     <div
       className={`relative min-w-30 min-h-25  rounded-md shadow-lg  ${getStyle()} flex justify-between items-center`}
     >
-    <button className="absolute top-2 right-2 bg-transparent!" onClick={() => removeAlert(alert.id)}>✕</button>
-  
+    <button className="absolute top-2 right-2 bg-transparent! font-bold" onClick={() => removeAlert(alert.id)}>✕</button>
   <div className="flex flex-col items-center justify-center">
         {getIcon()}
           <span className="py-2! mx-4!">{alert.message}</span>
