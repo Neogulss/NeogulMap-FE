@@ -12,7 +12,7 @@ export default function MainNav() {
   const handleLogout = async () => {
     try {
       await logoutUser();
-    } catch (_) {
+    } catch {
       // 세션 만료 등 무시
     }
     localStorage.removeItem("userIdx");

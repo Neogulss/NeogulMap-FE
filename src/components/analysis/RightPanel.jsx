@@ -822,6 +822,19 @@ export default function RightPanel({
     chartInstancesRef.current = {};
   };
 
+  const resizeCharts = () => {
+    Object.values(chartInstancesRef.current).forEach((inst) => {
+      if (!inst) return;
+
+      try {
+        inst.resize();
+        inst.update("none");
+      } catch {
+        // 패널 전환 중 이미 정리된 차트는 무시합니다.
+      }
+    });
+  };
+
   useEffect(() => {
     if (!selectedData?.historyData || !selectedData?.compareData) {
       destroyCharts();
@@ -834,7 +847,6 @@ export default function RightPanel({
     const s = d.storeRaw;
     const f = d.floatingRaw;
     const res = d.resident;
-    const inc = d.income;
     const dOp = d.historyData.operating;
     const dInd = d.compareData.industry;
 
@@ -1286,7 +1298,7 @@ export default function RightPanel({
                   maxTicksLimit: 3,
                   color: "#9ca3af",
                   font: { size: 11, family: "Pretendard", weight: "600" },
-                  callback: (value) => `${value}%`,
+                  callback: (value) => `${roundToOne(value).toFixed(1)}%`,
                   padding: 8,
                 },
               },
@@ -1719,6 +1731,46 @@ export default function RightPanel({
     };
   }, [selectedData]);
 
+  useEffect(() => {
+    if (!selectedData || !isShow || isCollapsed) return;
+
+    const runResize = () => resizeCharts();
+    let rafId = 0;
+    let nestedRafId = 0;
+    const timeoutId = window.setTimeout(runResize, 430);
+
+    rafId = window.requestAnimationFrame(() => {
+      nestedRafId = window.requestAnimationFrame(runResize);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.cancelAnimationFrame(nestedRafId);
+      window.clearTimeout(timeoutId);
+    };
+  }, [selectedData, isShow, isCollapsed]);
+
+  useEffect(() => {
+    if (!selectedData || !innerRef.current || typeof ResizeObserver === "undefined")
+      return;
+
+    let rafId = 0;
+    const resizeObserver = new ResizeObserver(() => {
+      window.cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(() => {
+        if (!isShow || isCollapsed) return;
+        resizeCharts();
+      });
+    });
+
+    resizeObserver.observe(innerRef.current);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      resizeObserver.disconnect();
+    };
+  }, [selectedData, isShow, isCollapsed]);
+
   const panelClass = [
     "right-panel",
     isShow ? "show" : "",
@@ -1795,6 +1847,19 @@ export default function RightPanel({
     formatQuarterLabel(salesPred?.baseYearQuarterCode) ?? "2025년 4분기";
   const predictedQuarterLabel =
     formatQuarterLabel(salesPred?.predYearQuarterCode) ?? "2026년 1분기";
+  const compEvalRiskMetric = {
+    label: "예측 폐업률",
+    value: riskClosureRate != null ? `${riskClosureRate}%` : "-",
+    tone:
+      riskClosureRate == null ? "" : riskClosureRate >= 40 ? "danger" : "safe",
+    meta: "AI 리스크",
+  };
+  const compEvalSalesMetric = {
+    label: "예측 점포당 월 매출",
+    value: predSalesText,
+    tone: "sales",
+    meta: predictedQuarterLabel,
+  };
 
   // sales pred
   const forecastChangeRate =
@@ -2080,66 +2145,97 @@ export default function RightPanel({
                     const offset = circ * (1 - compEval.total / 100);
                     return (
                       <div className="comp-eval-box">
-                        {/* 원형 게이지 */}
-                        <div className="comp-eval-circle-area">
-                          <div className="comp-eval-circle-wrap">
-                            <svg
-                              className="comp-eval-svg"
-                              viewBox="0 0 220 220"
+                        <div className="comp-eval-hero">
+                          <div className="comp-eval-side-circle comp-eval-side-circle--risk">
+                            <div className="comp-eval-side-label">
+                              {compEvalRiskMetric.label}
+                            </div>
+                            <div
+                              className={[
+                                "comp-eval-side-value",
+                                compEvalRiskMetric.tone,
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
                             >
-                              <defs>
-                                <linearGradient
-                                  id="ceGaugeGrad"
-                                  x1="0%"
-                                  y1="0%"
-                                  x2="100%"
-                                  y2="100%"
-                                >
-                                  <stop offset="0%" stopColor="#2f6fba" />
-                                  <stop offset="100%" stopColor="#9b72cf" />
-                                </linearGradient>
-                              </defs>
-                              {/* 트랙 */}
-                              <circle
-                                cx="110"
-                                cy="110"
-                                r={R}
-                                fill="none"
-                                stroke="#f0f1f5"
-                                strokeWidth="14"
-                              />
-                              {/* 진행 호 */}
-                              <circle
-                                cx="110"
-                                cy="110"
-                                r={R}
-                                fill="none"
-                                stroke="url(#ceGaugeGrad)"
-                                strokeWidth="14"
-                                strokeLinecap="round"
-                                strokeDasharray={circ}
-                                strokeDashoffset={offset}
-                                transform="rotate(-90 110 110)"
-                                style={{
-                                  transition: "stroke-dashoffset 0.8s ease",
-                                }}
-                              />
-                            </svg>
-                            <div className="comp-eval-circle-inner">
-                              <div
-                                className="comp-eval-circle-grade"
-                                style={{ color: compEval.gradeColor }}
-                              >
-                                {compEval.grade.split(" ")[0]}
-                              </div>
-                              <div className="comp-eval-circle-score">
-                                {compEval.total}
-                                <span>/100</span>
-                              </div>
+                              {compEvalRiskMetric.value}
                             </div>
                           </div>
-                          <div className="comp-eval-label">
-                            종합평가점수 <EvalCriteriaPanel />
+
+                          <div className="comp-eval-circle-area">
+                            <div className="comp-eval-circle-wrap">
+                              <svg
+                                className="comp-eval-svg"
+                                viewBox="0 0 220 220"
+                              >
+                                <defs>
+                                  <linearGradient
+                                    id="ceGaugeGrad"
+                                    x1="0%"
+                                    y1="0%"
+                                    x2="100%"
+                                    y2="100%"
+                                  >
+                                    <stop offset="0%" stopColor="#2f6fba" />
+                                    <stop offset="100%" stopColor="#9b72cf" />
+                                  </linearGradient>
+                                </defs>
+                                <circle
+                                  cx="110"
+                                  cy="110"
+                                  r={R}
+                                  fill="none"
+                                  stroke="#f0f1f5"
+                                  strokeWidth="14"
+                                />
+                                <circle
+                                  cx="110"
+                                  cy="110"
+                                  r={R}
+                                  fill="none"
+                                  stroke="url(#ceGaugeGrad)"
+                                  strokeWidth="14"
+                                  strokeLinecap="round"
+                                  strokeDasharray={circ}
+                                  strokeDashoffset={offset}
+                                  transform="rotate(-90 110 110)"
+                                  style={{
+                                    transition: "stroke-dashoffset 0.8s ease",
+                                  }}
+                                />
+                              </svg>
+                              <div className="comp-eval-circle-inner">
+                                <div
+                                  className="comp-eval-circle-grade"
+                                  style={{ color: compEval.gradeColor }}
+                                >
+                                  {compEval.grade.split(" ")[0]}
+                                </div>
+                                <div className="comp-eval-circle-score">
+                                  {compEval.total}
+                                  <span>/100</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="comp-eval-label">
+                              종합평가점수 <EvalCriteriaPanel />
+                            </div>
+                          </div>
+
+                          <div className="comp-eval-side-circle comp-eval-side-circle--sales">
+                            <div className="comp-eval-side-label">
+                              {compEvalSalesMetric.label}
+                            </div>
+                            <div
+                              className={[
+                                "comp-eval-side-value",
+                                compEvalSalesMetric.tone,
+                              ]
+                                .filter(Boolean)
+                                .join(" ")}
+                            >
+                              {compEvalSalesMetric.value}
+                            </div>
                           </div>
                         </div>
 
@@ -2212,24 +2308,6 @@ export default function RightPanel({
                             ))}
                           </ul>
                         )}
-                      </div>
-                      <div className="co-right">
-                        <div className="co-stat">
-                          <span className="co-stat-label">예측 폐업률</span>
-                          <span
-                            className={`co-stat-value ${riskClosureRate >= 40 ? "danger" : "safe"}`}
-                          >
-                            {riskClosureRate != null
-                              ? `${riskClosureRate}%`
-                              : "-"}
-                          </span>
-                        </div>
-                        <div className="co-stat">
-                          <span className="co-stat-label">
-                            예측 점포당 월 매출
-                          </span>
-                          <span className="co-stat-value">{predSalesText}</span>
-                        </div>
                       </div>
                     </div>
                   </div>
