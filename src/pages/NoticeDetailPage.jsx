@@ -26,7 +26,6 @@ const NoticeDetailPage = () => {
   const admin = isAdmin();
   const showAlert = useAlertStore((s) => s.showAlert);
   
-
   useEffect(() => {
     const load = async () => {
       setLoading(true);
