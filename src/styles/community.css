@@ -74,7 +74,7 @@ body {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(77, 171, 247, 0.05) 1px, transparent 1px),
+    linear-gradient(rgba(77, 171, 247, 0.255) 1px, transparent 1px),
     linear-gradient(90deg, rgba(77, 171, 247, 0.05) 1px, transparent 1px);
   background-size: 64px 64px;
   animation: gridShift 20s linear infinite;

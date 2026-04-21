@@ -46,6 +46,8 @@ const CommunityPage = () => {
   return (
     <>
       <div className="comm-hero">
+          <div className="hero-grid"></div>
+        <div className="hero-glow"></div>
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Community</div>
           <h1 className="comm-title">창업자들의 생생한 이야기</h1>
