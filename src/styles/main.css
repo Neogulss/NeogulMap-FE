@@ -730,7 +730,7 @@ body.main-active {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
   position: relative;
-  height: 320px;
+  height: auto;
   perspective: 1000px;
   box-shadow: 0 2px 12px rgba(31, 41, 55, 0.06);
 }
@@ -748,23 +748,29 @@ body.main-active {
 /* ── 카드 플립 ── */
 .card-flip-inner {
   position: relative;
-  flex: 1;
+  justify-content: center;
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  flex:1;
+  display: flex;
+  height: 100%;
+  width: 100%;
 }
 .card-flip-inner.flipped {
   transform: rotateY(180deg);
 }
 .card-front {
-  display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 .card-back {
   position: absolute;
   inset: 0;
+  flex: 1;
+  display: flex;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform: rotateY(180deg);
@@ -773,6 +779,7 @@ body.main-active {
   background: #ffffff;
   border-radius: 12px;
   padding: 28px 22px 24px;
+  overflow-y: auto;
 }
 .top5-title {
   font-size: 12px;
