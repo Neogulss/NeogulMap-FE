@@ -748,7 +748,7 @@ body.main-active {
 /* ── 카드 플립 ── */
 .card-flip-inner {
   position: relative;
-  justify-content: center;
+  justify-content: space-between;
   transform-style: preserve-3d;
   transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
   flex:1;
@@ -765,12 +765,11 @@ body.main-active {
   overflow-y: auto;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  width: 100%;
 }
 .card-back {
   position: absolute;
   inset: 0;
-  flex: 1;
-  display: flex;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   transform: rotateY(180deg);
@@ -780,6 +779,7 @@ body.main-active {
   border-radius: 12px;
   padding: 28px 22px 24px;
   overflow-y: auto;
+  width: 100%;
 }
 .top5-title {
   font-size: 12px;
@@ -865,6 +865,7 @@ body.main-active {
 
 .gc-header {
   display: flex;
+  width: 100%;
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
@@ -898,6 +899,7 @@ body.main-active {
   gap: 4px;
   color: var(--text3);
   transition: color 0.2s;
+  padding: 2px;
 }
 .gc-click svg {
   width: 20px;
@@ -963,6 +965,7 @@ body.main-active {
   text-align: center;
   margin-top: auto;
   z-index: 2;
+  width: 100%;
 }
 .gc-val-main {
   font-family: var(--sans);
@@ -987,6 +990,7 @@ body.main-active {
   font-size: 16px;
   color: var(--text3);
   font-weight: 400;
+  width: 100%;
 }
 .gc-val-sub strong {
   font-weight: 600;
@@ -999,6 +1003,7 @@ body.main-active {
   font-weight: 600;
   letter-spacing: -0.2px;
   color: #94a0ab;
+  width: 100%;
 }
 
 /* 즐겨찾기 섹션 */
