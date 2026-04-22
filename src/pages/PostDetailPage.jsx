@@ -45,10 +45,17 @@ const PostDetailPage = () => {
   }, [postIdx]);
 
   const handleCommentSubmit = async () => {
-    if (!commentText.trim()) { showAlert({ message: "댓글을 입력하세요.", type: "error" }); return; }
+    if (!commentText.trim()) {
+      showAlert({ message: "댓글을 입력하세요.", type: "error" });
+      return;
+    }
 
     const userIdx = Number(localStorage.getItem("userIdx"));
-    if (!userIdx) { showAlert({ message: "로그인이 필요합니다.", type: "error" }); navigate("/auth/signin"); return; }
+    if (!userIdx) {
+      showAlert({ message: "로그인이 필요합니다.", type: "error" });
+      navigate("/auth/signin");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -67,102 +74,137 @@ const PostDetailPage = () => {
     <>
       <Header />
 
-      <div className="comm-hero" style={{ padding: "120px 0 40px" }}>
-        <div className="hero-grid" />
-        <div className="hero-glow" />
-        <div className="comm-hero-inner">
-          <div className="comm-eyebrow">Community</div>
-          {loading ? (
-            <h1 className="comm-title" style={{ fontSize: "28px" }}>불러오는 중...</h1>
-          ) : (
-            <h1 className="comm-title" style={{ fontSize: "28px", wordBreak: "keep-all" }}>
-              {post?.title}
-            </h1>
-          )}
+      <main style={{ paddingTop: "64px" }}>
+        <div
+          className="comm-hero comm-hero--community"
+          style={{ padding: "120px 0 40px" }}
+        >
+          <div className="hero-glow" />
+          <div className="comm-hero-inner">
+            <div className="comm-eyebrow">Community</div>
+            {loading ? (
+              <h1 className="comm-title" style={{ fontSize: "28px" }}>
+                불러오는 중...
+              </h1>
+            ) : (
+              <h1
+                className="comm-title"
+                style={{ fontSize: "38px", wordBreak: "keep-all" }}
+              >
+                창업자들의 생생한 이야기
+              </h1>
+            )}
+          </div>
         </div>
-      </div>
-
-      <div className="detail-wrap">
-        {loading ? (
-          <p style={{ textAlign: "center", padding: "80px 0", color: "var(--text3)" }}>
-            불러오는 중...
-          </p>
-        ) : post ? (
-          <>
-            {/* 게시글 메타 */}
-            <div className="detail-meta">
-              <div className="post-author">
-                <div className="author-pic" />
-                <span>{post.userNickname}</span>
-              </div>
-              <div className="detail-meta-right">
-                <span>{formatTime(post.createdAt)}</span>
-                <span>👁 {post.views}</span>
-                {post.likes > 0 && <span>❤️ {post.likes}</span>}
-              </div>
-            </div>
-
-            {/* 본문 */}
-            <div className="detail-content">
-              {post.contents?.split("\n").map((line, i) => (
-                <p key={i}>{line || <br />}</p>
-              ))}
-            </div>
-
-            {/* 하단 버튼 */}
-            <div className="detail-actions">
-              <button className="btn-back" onClick={() => navigate("/community")}>
-                ← 목록으로
-              </button>
-            </div>
-
-            {/* 댓글 섹션 */}
-            <div className="comment-section">
-              <div className="comment-header">
-                댓글 <span className="comment-count">{post.comments?.length ?? 0}</span>
-              </div>
-
-              {/* 댓글 목록 */}
-              <div className="comment-list">
-                {post.comments?.length === 0 ? (
-                  <p className="comment-empty">첫 번째 댓글을 남겨보세요.</p>
-                ) : (
-                  post.comments?.map((c) => (
-                    <div key={c.commentIdx} className="comment-item">
-                      <div className="comment-top">
-                        <div className="post-author">
-                          <div className="author-pic" />
-                          <span>{c.userNickname}</span>
-                        </div>
-                        <span className="comment-time">{formatTime(c.createdAt)}</span>
-                      </div>
-                      <div className="comment-body">{c.contents}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* 댓글 입력 */}
-              <div className="comment-form">
-                <textarea
-                  className="comment-input"
-                  placeholder="댓글을 입력하세요."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  rows={3}
-                />
-                <button
-                  className="comment-submit"
-                  onClick={handleCommentSubmit}
-                  disabled={submitting}
+ 
+        <div className="detail-wrap">
+          {loading ? (
+            <p
+              style={{
+                textAlign: "center",
+                padding: "80px 0",
+                color: "var(--text3)",
+              }}
+            >
+              불러오는 중...
+            </p>
+          ) : post ? (
+            <>
+              {/* 게시글 메타 */}
+              <div>
+                <h1
+                  className="comm-title"
+                  style={{
+                    fontSize: "28px",
+                    fontWeight: "500",
+                    wordBreak: "keep-all",
+                  }}
                 >
-                  {submitting ? "등록 중..." : "등록"}
+                  {post?.title}
+                </h1>
+              </div>
+              <div className="detail-meta">
+                <div className="post-author">
+                  <div className="author-pic" />
+                  <span>{post.userNickname}</span>
+                </div>
+                <div className="detail-meta-right">
+                  <span>{formatTime(post.createdAt)}</span>
+                  <span>👁 {post.views}</span>
+                  {post.likes > 0 && <span>❤️ {post.likes}</span>}
+                </div>
+              </div>
+
+              {/* 본문 */}
+              <div className="detail-content">
+                {post.contents?.split("\n").map((line, i) => (
+                  <p key={i}>{line || <br />}</p>
+                ))}
+              </div>
+
+              {/* 하단 버튼 */}
+              <div className="detail-actions">
+                <button
+                  className="btn-back"
+                  onClick={() => navigate("/community")}
+                >
+                  ← 목록으로
                 </button>
               </div>
-            </div>
-          </>
-        ) : null}
-      </div>
+
+              {/* 댓글 섹션 */}
+              <div className="comment-section">
+                <div className="comment-header">
+                  댓글{" "}
+                  <span className="comment-count">
+                    {post.comments?.length ?? 0}
+                  </span>
+                </div>
+
+                {/* 댓글 목록 */}
+                <div className="comment-list">
+                  {post.comments?.length === 0 ? (
+                    <p className="comment-empty">첫 번째 댓글을 남겨보세요.</p>
+                  ) : (
+                    post.comments?.map((c) => (
+                      <div key={c.commentIdx} className="comment-item">
+                        <div className="comment-top">
+                          <div className="post-author">
+                            <div className="author-pic" />
+                            <span>{c.userNickname}</span>
+                          </div>
+                          <span className="comment-time">
+                            {formatTime(c.createdAt)}
+                          </span>
+                        </div>
+                        <div className="comment-body">{c.contents}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* 댓글 입력 */}
+                <div className="comment-form">
+                  <textarea
+                    className="comment-input"
+                    placeholder="댓글을 입력하세요."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    rows={3}
+                  />
+                  <button
+                    className="comment-submit"
+                    onClick={handleCommentSubmit}
+                    disabled={submitting}
+                  >
+                    {submitting ? "등록 중..." : "등록"}
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </main>
     </>
   );
 };

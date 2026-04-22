@@ -60,8 +60,7 @@ const NoticePage = () => {
 
   return (
     <>
-      <div className="comm-hero">
-         <div className="hero-grid"></div>
+      <div className="comm-hero comm-hero--notice">
         <div className="hero-glow"></div>
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Notice</div>
