@@ -25,7 +25,7 @@ const NoticeDetailPage = () => {
   const [deleting, setDeleting] = useState(false);
   const admin = isAdmin();
   const showAlert = useAlertStore((s) => s.showAlert);
-  
+
   useEffect(() => {
     const load = async () => {
       setLoading(true);
@@ -34,7 +34,10 @@ const NoticeDetailPage = () => {
         setNotice(res.data.data);
       } catch (err) {
         console.error("공지사항 조회 오류:", err);
-        showAlert({ message: "공지사항을 불러오지 못했습니다.", type: "error" });
+        showAlert({
+          message: "공지사항을 불러오지 못했습니다.",
+          type: "error",
+        });
         navigate("/notice");
       } finally {
         setLoading(false);
@@ -53,7 +56,10 @@ const NoticeDetailPage = () => {
     } catch (err) {
       console.error("공지사항 삭제 오류:", err);
       const msg = err.response?.data?.message;
-      showAlert({ message: msg || "삭제 중 오류가 발생했습니다.", type: "error" });
+      showAlert({
+        message: msg || "삭제 중 오류가 발생했습니다.",
+        type: "error",
+      });
     } finally {
       setDeleting(false);
     }
@@ -61,32 +67,63 @@ const NoticeDetailPage = () => {
 
   return (
     <>
-      <div className="comm-hero" style={{ padding: "140px 0 60px" }}>
+      <div
+        className="comm-hero comm-hero--notice"
+        style={{ padding: "140px 0 60px" }}
+      >
+        <div className="hero-glow" />
         <div className="comm-hero-inner">
           <div className="comm-eyebrow">Notice</div>
-          {loading ? (
-            <h1 className="comm-title" style={{ fontSize: "28px" }}>불러오는 중...</h1>
-          ) : (
-            <h1 className="comm-title" style={{ fontSize: "28px", wordBreak: "keep-all" }}>
-              {notice?.isFixed === "Y" && (
-                <span className="notice-badge" style={{ fontSize: "13px", marginRight: "12px", verticalAlign: "middle" }}>중요</span>
-              )}
-              {notice?.title}
-            </h1>
-          )}
+          <h1 className="comm-title">공지사항</h1>
         </div>
       </div>
 
       <div className="detail-wrap">
         {loading ? (
-          <p style={{ textAlign: "center", padding: "80px 0", color: "var(--text3)" }}>
+          <p
+            style={{
+              textAlign: "center",
+              padding: "80px 0",
+              color: "var(--text3)",
+            }}
+          >
             불러오는 중...
           </p>
         ) : notice ? (
           <>
+            {loading ? (
+              <h1 className="comm-title" style={{ fontSize: "28px" }}>
+                불러오는 중...
+              </h1>
+            ) : (
+              <h1
+                className="comm-title"
+                style={{ fontSize: "28px", wordBreak: "keep-all" }}
+              >
+                {notice?.isFixed === "Y" && (
+                  <span
+                    className="notice-badge"
+                    style={{
+                      fontSize: "13px",
+                      marginRight: "12px",
+                      verticalAlign: "middle",
+                    }}
+                  >
+                    중요
+                  </span>
+                )}
+                {notice?.title}
+              </h1>
+            )}
             <div className="detail-meta">
-              <div style={{ fontSize: "14px", color: "var(--text3)", fontWeight: 500 }}>
-                공지사항
+              <div
+                style={{
+                  fontSize: "14px",
+                  color: "var(--text3)",
+                  fontWeight: 500,
+                }}
+              >
+                너굴즈
               </div>
               <div className="detail-meta-right">
                 <span>{formatDate(notice.createdAt)}</span>
@@ -100,7 +137,10 @@ const NoticeDetailPage = () => {
               ))}
             </div>
 
-            <div className="detail-actions" style={{ justifyContent: "space-between" }}>
+            <div
+              className="detail-actions"
+              style={{ justifyContent: "space-between" }}
+            >
               <button className="btn-back" onClick={() => navigate("/notice")}>
                 ← 목록으로
               </button>
