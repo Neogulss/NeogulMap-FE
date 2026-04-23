@@ -2004,6 +2004,7 @@ body.analysis-active {
   border-radius: 12px;
   padding: 24px;
   position: relative;
+  min-width: 0;
 }
 .viz-header {
   display: flex;
